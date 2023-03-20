@@ -15,7 +15,7 @@ elif [ "$branch" = "devops" ]; then
 		Clone(){
 
 		echo "Cloning repo ..."
-		git clone -b $1 'https://github.com/Blueteam2023/Blueteam.git'
+		git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git'
 		cd $GIT_REPO
 	}
 
@@ -38,15 +38,15 @@ fi
 
 ###Clone  branch repo###
 
-Clone(){
+# Clone(){
 
-    echo "Cloning repo ..."
-	git clone -b $1 'https://github.com/Blueteam2023/Blueteam.git'
-	cd $GIT_REPO
-}
+#     echo "Cloning repo ..."
+# 	git clone -b $1 'https://github.com/Blueteam2023/Blueteam.git'
+# 	cd $GIT_REPO
+# }
 
-Build(){
-	echo "Building images ..."
-	docker-compose -f $TEAM_1/docker-compose.yml up -d 
-	return $?
-}
+# Build(){
+# 	echo "Building images ..."
+# 	docker-compose -f $TEAM_1/docker-compose.yml up -d 
+# 	return $?
+# }
