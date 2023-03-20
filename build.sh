@@ -1,7 +1,7 @@
 #!/bin/sh
 
-TEAM_1=weight
-TEAM_2=biling
+# TEAM_1=weight
+# TEAM_2=biling
 GIT_REPO=Blueteam
 
 branch=$1
@@ -12,6 +12,20 @@ elif [ "$branch" = "weight" ]; then
     echo "building weight image"
 elif [ "$branch" = "devops" ]; then 
     echo "building devops image"
+		Clone(){
+
+		echo "Cloning repo ..."
+		git clone -b $1 'https://github.com/Blueteam2023/Blueteam.git'
+		cd $GIT_REPO
+	}
+
+	Build(){
+		echo "Building images ..."
+		docker-compose  up 
+		return $?
+	}
+
+
 fi
 
 
