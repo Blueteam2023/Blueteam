@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  db:
+    container_name: weight-database
+    image: mysql:5.7
+    expose:
+      - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./datadump:/docker-entrypoint-initdb.d
+    stdin_open: true
+    tty: true
