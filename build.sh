@@ -12,23 +12,20 @@ elif [ "$branch" = "weight" ]; then
     echo "building weight image"
 elif [ "$branch" = "devops" ]; then 
     echo "building devops image"
-		Clone(){
-
-		echo "Cloning repo ..."
-		git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git'
-		cd $GIT_REPO
-	}
-
-	Build(){
-		echo "Building images ..."
-		docker-compose  up 
-		return $?
-	}
-
-
+	Clone
 fi
 
+Clone(){
+	echo "Cloning repo ..."
+	git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git'
+	cd $GIT_REPO
+}
 
+Build(){
+	echo "Building images ..."
+	docker-compose  up 
+	return $?
+}
 ###Create Dir###
 # CreateDir(){
 # 	MY_PATH=$1
