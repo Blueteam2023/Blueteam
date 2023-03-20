@@ -6,15 +6,6 @@ GIT_REPO=Blueteam
 
 branch=$1
 
-if [ "$branch" = "billing" ]; then
-    echo "building billing image"
-elif [ "$branch" = "weight" ]; then
-    echo "building weight image"
-elif [ "$branch" = "devops" ]; then 
-    echo "building devops image"
-	Clone
-fi
-
 Clone(){
 	echo "Cloning repo ..."
 	git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git'
@@ -26,6 +17,17 @@ Build(){
 	docker-compose  up 
 	return $?
 }
+
+if [ "$branch" = "billing" ]; then
+    echo "building billing image"
+elif [ "$branch" = "weight" ]; then
+    echo "building weight image"
+elif [ "$branch" = "devops" ]; then 
+    echo "building devops image"
+	Clone
+fi
+
+
 ###Create Dir###
 # CreateDir(){
 # 	MY_PATH=$1
