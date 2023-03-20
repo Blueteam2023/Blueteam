@@ -9,6 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ./datadump:/docker-entrypoint-initdb.d
+      - ./datadir:/var/lib/mysql
     stdin_open: true
     tty: true
   app:
