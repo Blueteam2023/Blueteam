@@ -7,7 +7,7 @@ services:
     expose:
       - "8080"
     networks:
-      - app_network
+      - blueteam
 
 networks:
   app_network:

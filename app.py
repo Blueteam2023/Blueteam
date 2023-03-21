@@ -5,7 +5,7 @@ import subprocess
 app = Flask(__name__)
 
 
-app.route("/trigger", methods=['POST'])
+@app.route("/trigger", methods=['POST'])
 def trigger():
   if request.method == 'POST':
         event_type = request.headers.get('X-GitHub-Event')
