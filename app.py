@@ -15,7 +15,7 @@ def trigger():
         print(event_type)
         if event_type == 'pull_request':
             action = payload['action']
-            branch = payload['head']['ref']
+            branch = payload['pull_request']['head']['ref']
             pusher = payload['pull_request']['user']['login']
             url = payload['pull_request']['url']
             if action == 'open':
