@@ -24,7 +24,7 @@ def trigger():
                 pattern = r'Merge pull request #\d+ from .*/(.*)'
                 source_branch = re.search(pattern, payload['head_commit']['message'])
                 print(source_branch.group(1))
-            #    subprocess.run(['./scripts/production.sh', source_branch])
+                subprocess.run(['./scripts/production.sh', source_branch.group(1)])
                 print("Bulding production")
 
             return jsonify({"action": "", "pusher": pusher, "repository.branches_url": branch})
