@@ -35,7 +35,8 @@ Clone(){
 	
 }
 
-Modify_files(b){
+Modify_files(){
+	b=$1
 	sed -i "s/DB_HOST=*/DB_HOST=test-$b-db/" .env
 	sed -i "s//container_name: $b-app: container_name: test-$b-app/" docker-compose.yml
 	sed -i "s//container_name: $b-database: container_name: test-$b-database/" docker-compose.yml
@@ -47,9 +48,9 @@ Modify_files(b){
 build(){
 	echo "Building testing containers"
 	cd /app/testenv/$branch
-	Modify_files($branch)
+	Modify_files $branch
 	cd /app/testenv/$sec_branch
-	Modify_files($sec_branch)
+	Modify_files $sec_branch
 	docker-compose -f /app/testenv/$branch/docker-compose.* up
 	docker-compose -f /app/testenv/$sec_branch/docker-compose.* up
 }
