@@ -23,7 +23,7 @@ def trigger():
             elif branch =="main":
                 pattern = r'Merge pull request #\d+ from .*/(.*)'
                 source_branch = re.search(pattern, payload['head_commit']['message'])
-                print(source_branch)
+                print(source_branch.group(1))
             #    subprocess.run(['./scripts/production.sh', source_branch])
                 print("Bulding production")
 
