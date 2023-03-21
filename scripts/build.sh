@@ -43,7 +43,7 @@ if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
 elif [ "$branch" = "devops" ]; then  # testing porpuses
     echo "building devops image"
 	deploy
-	#build
+	build
 	test
 fi
 
