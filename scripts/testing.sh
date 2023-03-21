@@ -30,7 +30,12 @@ clearExists(){
 # Clone
 Clone(){
 	echo "Cloning repo from $branch"
-	cd testenv
+	if [ -d "/app/testenv" ]; then
+		cd /app/testenv
+	else
+		mkdir /app/testenv
+		cd /app/testenv
+	fi
 	git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git' .
 	
 }
