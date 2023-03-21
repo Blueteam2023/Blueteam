@@ -8,11 +8,10 @@ app = Flask(__name__)
 @app.route("/trigger", methods = ['POST'])
 def trigger():
     if request.method == 'POST':
-        # Check if the request is a push event from GitHub 
         if 'X-GitHub-Event' in request.headers and request.headers['X-GitHub-Event'] == 'push':
+            
             payload = request.get_json()
 
-            # Get the repository name and commit information from the payload
             #repo_name = payload['repository']['full_name']
             #action = payload['action']
             #commit_info = payload['commits'][0]
@@ -22,16 +21,12 @@ def trigger():
             branch = branch_split[-1]
 
             # testing events
-            # print(f"New push to {repo_name} to branch {branch} by {commit_info['author']['name']}: {commit_info['message']}")
+            # print(f"New push to {repo_name} to branch {branch} by {pusher}: {commit_info['message']}")
 
-            if branch == "billing":
-                subprocess.run(['./build.sh', branch])
-                print("doing billing tests")
-            elif branch == "weight":
-                subprocess.run(['./build.sh', branch])
-                print("doing weight tests")
+            if branch == "billing" or branch == "weight":
+                subprocess.run(['./scripts/build.sh', branch])
             elif branch == "devops":
-                subprocess.run(['./build.sh', branch])
+                subprocess.run(['./scripts/build.sh', branch])
                 print("doing devops tests")
             else:
                 return 400
