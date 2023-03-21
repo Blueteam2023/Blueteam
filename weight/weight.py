@@ -7,7 +7,7 @@ import json
 import csv
 UNIT_CHECK=""
 DIRECTION_CHECK = ""
-
+NOT_EXIST = 0
 app = Flask(__name__)
 
 def calculateNeto(bruto,containers_weight1,containers_weight2,truckTara,unit):
@@ -75,7 +75,7 @@ def weight():
     force = request.args.get('force')
     produce = request.args.get('produce')
     
-    
+    #or truck weight on out
     truckTara = getTaraTruck(truck)
     weight_data = {"datetime":timestamp,"direction":direction,"truck":truck,"containers":containers,"bruto":weight,"truckTara":truckTara,"neto":"na","produce":produce}
     
@@ -83,44 +83,53 @@ def weight():
     last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
 
     match direction:
-        case "in":    
-            if last_transaction["direction"] == "in" and force == True:
-                id = sqlQueries.change_transaction(weight_data)
-                retr_val["id"] = last_transaction["id"]
-                return retr_val
-            elif last_transaction['direction'] == "out":
+        case "in": 
+            if last_transaction == NOT_EXIST:
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
-                return retr_val
-            elif last_transaction == "none":
-                #insert data ti containers registerd
-                id = sqlQueries.insert_transaction(weight_data)
-                retr_val["id"] = id
-                return retr_val
-            return "ERROR: 404 truck cannot get in while inside to override last transaction change force to true."
+                return retr_val   
+            match last_transaction["direction"]:
+                case "in":
+                    if force == True:
+                        id = sqlQueries.change_transaction(weight_data)
+                        retr_val["id"] = last_transaction["id"]
+                        return retr_val
+                    return "ERROR: 404 truck cannot get in while inside to override last transaction change force to true."
+                case "out":        
+                    id = sqlQueries.insert_transaction(weight_data)
+                    retr_val["id"] = id
+                    return retr_val
+                case "none":
+                    return "ERROR: 404 Truck id recognized as registered container id"
             
         case "out":
-            if last_transaction == "none":
-                return "ERROR: 404 container id recognized, containers cant have in/out directions"
+
+            if last_transaction == NOT_EXIST:
+                return "ERROR: 404 Truck not exist"
             
             containers_weight1,containers_weight2 = getWeightContainers(containers)
             neto = calculateNeto(last_transaction["bruto"],containers_weight1,containers_weight2,truckTara,unit)
             retr_val += {"truckTara":truckTara,"neto":neto}
+
+            match last_transaction["direction"]:
+                case "in":
+                    id = sqlQueries.insert_transaction(weight_data)
+                    retr_val["id"] = id
+                    return retr_val
+                case "out":
+                    if force == True:
+                        id = sqlQueries.change_transaction(weight_data)
+                        retr_val["id"] = last_transaction["id"]
+                        return retr_val
+                    return "ERROR: 404 truck cannot get out if not inside to override last transaction change force to true."
+                case "none":
+                    return "ERROR: 404 container id recognized, containers can not have in/out directions"
             
-            if last_transaction["direction"] == "in":
-                id = sqlQueries.insert_transaction(weight_data)
-                retr_val["id"] = id
-                return retr_val
             
-            elif last_transaction["direction"] == "out" and force == True:
-                id = sqlQueries.change_transaction(weight_data)
-                retr_val["id"] = last_transaction["id"]
-                return retr_val
-            return "ERROR: 404 truck cannot get out if not inside to override last transaction change force to true."
-        
         
         case "none":
-                if last_transaction == "none":
+                if last_transaction == NOT_EXIST:
+                    id = sqlQueries.insert_transaction(weight_data)
                     #id = sqlQueries.register_container()
                     retr_val["id"] = id
                     return retr_val
