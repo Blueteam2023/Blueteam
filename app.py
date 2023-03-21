@@ -18,7 +18,7 @@ def trigger():
             branch = payload['pull_request']['head']['ref']
             pusher = payload['pull_request']['user']['login']
             url = payload['pull_request']['url']
-            if action == 'open':
+            if action == 'opened':
                 #email = payload['head_commit']['committer']['email']
                 if branch == "billing" or branch=="weight" or branch=="devops": # remove devops
                     print("Starting testing process")
