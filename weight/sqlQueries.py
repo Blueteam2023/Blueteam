@@ -38,6 +38,10 @@ def get_containers_by_id(id: list[str]):
     raise NotImplementedError
 
 
+def insert_transaction(values: dict[str, Any]):
+    raise NotImplementedError
+
+
 # For Carmen
 def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str, directions: list[str]):
     cnx = connect(**config)
