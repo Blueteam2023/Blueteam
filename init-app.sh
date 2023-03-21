@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+
+docker rmi -f test
+
+
+
 # Build the image
 docker build -t gan-shmuel .
 
