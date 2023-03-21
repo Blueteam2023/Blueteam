@@ -26,7 +26,8 @@ def trigger():
                 print(source_branch.group(1))
                 subprocess.run(['./scripts/production.sh', source_branch.group(1)])
                 print("Bulding production")
-
+            else:
+                return "Invalid branch" ,400
             return jsonify({"action": "", "pusher": pusher, "repository.branches_url": branch})
         else:
             return 'Unknown event', 400  
