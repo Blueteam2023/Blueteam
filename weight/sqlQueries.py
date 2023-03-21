@@ -34,7 +34,7 @@ def change_transaction(values: dict[str, Any]):
     raise NotImplementedError
 
 
-def get_container_weight_by_id(id: str):
+def get_containers_by_id(id: list[str]):
     raise NotImplementedError
 
 
