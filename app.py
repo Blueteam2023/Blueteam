@@ -12,6 +12,7 @@ def trigger():
         event_type = request.headers.get('X-GitHub-Event')
         payload = request.get_json()
         action = payload['action']
+        print(event_type)
         if event_type == 'pull_request':
             action = payload['action']
             branch = payload['head']['ref']
