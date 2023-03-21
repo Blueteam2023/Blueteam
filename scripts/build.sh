@@ -14,6 +14,17 @@ deleteDirectory() {
 	fi
 }
 
+clearExists(){
+	if docker ps -a | grep $branch-app-test > /dev/null; then
+	
+	
+	fi
+	if docker ps -a | grep $branch-db-test > /dev/null; then
+	
+	
+	fi
+}
+
 # Clone
 deploy(){
 	echo "Cloning repo from $branch"
@@ -24,9 +35,11 @@ deploy(){
 
 # Docker-compose
 build(){
-	cd testenv/$branch/$GIT_REPO/$branch
 	echo "Building $branch images"
-	docker-compose up 
+	cd /app/testenv/$branch/$GIT_REPO/$branch/
+	sed -i "s/container_name: $branch-app/container_name: test-$branch-app/" docker-compose.yml
+	sed -i "s/container_name: $branch-db/container_name: test-$branch-db/" docker-compose.yml
+	docker-compose -f "/app/testenv/$branch/$GIT_REPO/$branch/docker-compose.yml" -p test up 
 	return $?
 }
 

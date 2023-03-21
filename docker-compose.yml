@@ -2,6 +2,7 @@ version: '3'
 
 services:
   ci:
+    container_name: test-branch-db
     image: hello-world:latest
     expose:
       - "8080"
