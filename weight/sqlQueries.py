@@ -2,23 +2,15 @@ from typing import Any
 from mysql.connector import connect
 
 
-def get_transactions_by_id(config: dict[str, Any], truck_id: str):
-    query = f"SELECT * FROM transactions WHERE truck_id = '{truck_id}'"
+# For Yuval
+def get_last_transaction_by_truck(truck_id: str):
+    raise NotImplementedError
 
-    try:
-        cnx = connect(**config)
-        cursor = cnx.cursor()
-        cursor.execute(query)
 
-        result = ""
-        for id, datetime, direction, truck, containers, bruto, truckTara, neto, produce in cursor:
-            result += f"{id} {datetime} {direction} {truck} {containers} {bruto} {truckTara} {neto} {produce}"
-        return result
-    except:
-        cnx = None
-        cursor = None
-        # TODO: implement error logging
-    finally:
-        if cnx and cursor:
-            cursor.close()
-            cnx.close()
+def change_transaction(id: int, values: dict[str, Any]):
+    raise NotImplementedError
+
+
+# For Carmen
+def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str, directions: list[str]):
+    raise NotImplementedError
