@@ -11,24 +11,28 @@ def trigger():
     if request.method == 'POST':
         event_type = request.headers.get('X-GitHub-Event')
         payload = request.get_json()
-        if event_type == 'push':
-            # handle push event
-            branch = payload['ref'].split('/')[-1]
-            pusher = payload['pusher']['name']
-            email = payload['head_commit']['committer']['email']
-            if branch == "billing" or branch=="weight":
-                subprocess.run(['./scripts/build.sh', branch])
-            elif branch =="devops":
-                subprocess.run(['./scripts/build.sh', branch])
-            elif branch =="main":
-                pattern = r'Merge pull request #\d+ from .*/(.*)'
-                source_branch = re.search(pattern, payload['head_commit']['message'])
-                print(source_branch.group(1))
-                subprocess.run(['./scripts/production.sh', source_branch.group(1)])
-                print("Bulding production")
+        action = payload['action']
+        if event_type == 'pull_request':
+            action = payload['action']
+            branch = payload['head']['ref']
+            pusher = payload['pull_request']['user']['login']
+            url = payload['pull_request']['url']
+            if action == 'open':
+                #email = payload['head_commit']['committer']['email']
+                if branch == "billing" or branch=="weight" or branch=="devops": # remove devops
+                    print("Starting testing process")
+                    subprocess.run(['./scripts/testing.sh', branch, pusher, url])
+                    return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
+                else:
+                    return "Invalid branch", 400
+                #subprocess.run(['./scripts/production.sh', source_branch.group(1)])
+            elif action == 'closed' and payload['pull_request']['merged_at'] is not None:
+                print(f"Deploing to production from {branch}")
+                subprocess.run(['./scripts/production.sh', branch, pusher])
+                return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
             else:
-                return "Invalid branch" ,400
-            return jsonify({"action": "", "pusher": pusher, "repository.branches_url": branch})
+                print(f"Unkown action: {action}")
+                return "Invalid request" ,400
         else:
             return 'Unknown event', 400  
 
