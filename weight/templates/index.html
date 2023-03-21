@@ -1,0 +1,324 @@
+<!-- <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Weight Submission Form</title>
+    <style>
+      /* CSS code for styling the page */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+      }
+
+      form {
+        margin: 20px auto;
+        max-width: 600px;
+        padding: 20px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 0px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      input[type="text"], select {
+        padding: 5px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+
+      input[type="submit"], input[type="reset"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 8px 16px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+
+      input[type="submit"]:hover, input[type="reset"]:hover {
+        background-color: #3e8e41;
+      }
+
+      .checkbox {
+        display: inline-block;
+        margin-right: 10px;
+      }
+
+      .checkbox label {
+        font-weight: normal;
+      }
+
+      .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+
+      .tab button {
+        background-color: inherit;
+        float: left;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+      }
+
+      .tab button.active {
+        background-color: #ccc;
+      }
+
+      .tabcontent {
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="/weight" method="post">
+      <h1>Weight Submission Form</h1>
+      <label for="direction">Direction:</label>
+      <select id="direction" name="direction">
+        <option value="in">In</option>
+        <option value="out">Out</option>
+        <option value="none">None</option>
+      </select>
+
+      <label for="truck_license">Truck License:</label>
+      <input type="text" id="truck_license" name="truck_license">
+
+      <label for="container_ids">Container IDs:</label>
+      <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'container_tab_1')">Container 1</button>
+        <button class="tablinks" onclick="openTab(event, 'container_tab_2')">Container 2</button>
+        <button class="tablinks" onclick="openTab(event, 'container_tab_3')">Container 3</button>
+      </div>
+      <div id="container_tab_1" class="tabcontent">
+		<input type="text" name="container_ids[]" placeholder="Container 1 ID">
+	  </div>
+	
+	  <div id="container_tab_2" class="tabcontent">
+		<input type="text" name="container_ids[]" placeholder="Container 2 ID">
+	  </div>
+	
+	  <div id="container_tab_3" class="tabcontent">
+		<input type="text" name="container_ids[]" placeholder="Container 3 ID">
+	  </div>
+	
+	  <label for="unit">Unit:</label>
+	  <select id="unit" name="unit">
+		<option value="kg">kg</option>
+		<option value="lbs">lbs</option>
+	  </select>
+	
+	  <label for="force_on">Force On:</label>
+	  <div class="checkbox">
+		<label><input type="radio" name="force_on" value="true" checked>Yes</label>
+		<label><input type="radio" name="force_on" value="false">No</label>
+	  </div>
+	
+	  <label for="produce">Produce:</label>
+	  <input type="text" id="produce" name="produce">
+	
+	  <input type="submit" value="Submit">
+	  <input type="reset" value="Reset">
+	</form>
+	
+	<script>
+	  // JavaScript code for handling the tab inputs
+	  function openTab(evt, tabName) {
+		var i, tabcontent, tablinks;
+		tabcontent = document.getElementsByClassName("tabcontent");
+		for (i = 0; i < tabcontent.length; i++) {
+		  tabcontent[i].style.display = "none";
+		}
+		tablinks = document.getElementsByClassName("tablinks");
+		for (i = 0; i < tablinks.length; i++) {
+		  tablinks[i].className = tablinks[i].className.replace(" active", "");
+		}
+		document.getElementById(tabName).style.display = "block";
+		evt.currentTarget.className += " active";
+	  }
+	</script>
+	  </body>
+	</html>
+ -->
+
+ <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Weight Tracker</title>
+    <style>
+      /* CSS styles */
+      body {
+        background-color: #f2f2f2;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        color: #444;
+      }
+css
+Copy code
+  h1 {
+    color: #3366cc;
+    margin-bottom: 30px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 16px;
+    color: #444;
+  }
+
+  input[type="submit"] {
+    background-color: #3366cc;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+
+  /* Additional styles */
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .input-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .input-container label {
+    flex-basis: 100%;
+  }
+
+  .input-container input[type="text"], .input-container select {
+    flex-basis: calc(50% - 10px);
+    margin-right: 20px;
+  }
+
+  .input-container textarea {
+    flex-basis: 100%;
+  }
+
+  .input-container button {
+    background-color: #ccc;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .input-container button:hover {
+    background-color: #999;
+  }
+
+  .input-container input[type="checkbox"] {
+    margin-right: 10px;
+  }
+
+  .input-container input[type="checkbox"] + label {
+    display: inline-block;
+  }
+
+  .input-container .error {
+    color: #f00;
+    font-size: 12px;
+    margin-top: 5px;
+  }
+</style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Weight Tracker</h1>
+      <form action="/weight" method="post">
+        <div class="input-container">
+          <label for="direction">Direction:</label>
+          <select id="direction" name="direction">
+            <option value="in">In</option>
+            <option value="out">Out</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+        <div class="input-container">
+          <label for="truck-license">Truck License:</label>
+          <input type="text" id="truck-license" name="truck-license">
+        </div>
+        <div class="input-container">
+          <label>Containers:</label>
+          <div id="container-inputs">
+            <input type="text" name="container[]" placeholder="Container 1">
+			<input type="text" name="container[]" placeholder="Container 2">
+			<button type="button" onclick="addContainer()">Add Container</button>
+			</div>
+			</div>
+			<div class="input-container">
+			<label for="weight">Weight:</label>
+			<input type="text" id="weight" name="weight">
+			</div>
+			<div class="input-container">
+			<label for="date">Date:</label>
+			<input type="date" id="date" name="date">
+			</div>
+			<div class="input-container">
+			<input type="checkbox" id="accept-terms" name="accept-terms">
+			<label for="accept-terms">I accept the terms and conditions</label>
+			</div>
+			<div class="input-container">
+			<button type="submit">Submit</button>
+			</div>
+			</form>
+			</div>
+			<script>
+			function addContainer() {
+			var containerInputs = document.getElementById("container-inputs");
+			var input = document.createElement("input");
+			input.type = "text";
+			input.name = "container[]";
+			input.placeholder = "Container " + (containerInputs.children.length + 1);
+			containerInputs.insertBefore(input, containerInputs.lastElementChild);
+			}
+			</script>
+			
+			  </body>
+			</html> 

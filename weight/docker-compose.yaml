@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  db:
+    container_name: weight-database
+    image: mysql:5.7
+    expose:
+      - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    env_file:
+      - ./.env
+    volumes:
+      - ./datadump:/docker-entrypoint-initdb.d
+      - ./datadir:/var/lib/mysql
+    stdin_open: true
+    tty: true
+
+  app:
+    container_name: weight-app
+    env_file:
+      - ./.env
+    build: .
+    ports:
+      - "5050:5000"
+    command: flask run
+    links:
+      - "db"
