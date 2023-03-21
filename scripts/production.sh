@@ -7,9 +7,9 @@ GIT_REPO=Blueteam
 branch=$1
 pusher=$2
 
-if ["$branch" = "billing"]; then
+if [ "$branch" = "billing" ]; then
 	sec_branch="weight"
-elif ["$branch" = "weight"]; then
+elif [ "$branch" = "weight" ]; then
 	sec_branch="billing"
 fi
 

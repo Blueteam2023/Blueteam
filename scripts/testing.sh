@@ -11,9 +11,9 @@ weight_port=8088
 url=$3
 GITHUB_TOKEN=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
 
-if ["$branch" = "billing"]; then
+if [ "$branch" = "billing" ]; then
 	sec_branch="weight"
-elif ["$branch" = "weight"]; then
+elif [ "$branch" = "weight" ]; then
 	sec_branch="billing"
 fi
 
@@ -89,15 +89,6 @@ Test(){
 #        "body": "LGTM"
 #      }'
 # }
-
-init_testing(){
-	Clone
-	if ["$branch" = "billing"]; then
-		sec_branch="weight"
-	elif ["$branch" = "weight"]; then
-		sec_branch="weight"
-	cp -r /app/
-}
 
 Terminate_testing(){
 	echo "Terminating test envoirment"
