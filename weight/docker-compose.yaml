@@ -8,22 +8,20 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     env_file:
-      - .env
+      - ./.env
     volumes:
       - ./datadump:/docker-entrypoint-initdb.d
       - ./datadir:/var/lib/mysql
     stdin_open: true
     tty: true
+
   app:
     container_name: weight-app
+    env_file:
+      - ./.env
     build: .
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_DB_NAME: ${MYSQL_DB_NAME}
     ports:
-      - "80:5000"
+      - "5050:5000"
     command: flask run
     links:
       - "db"
