@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ci:
-    build: hello-world:latest
+    image: hello-world:latest
     expose:
       - "8080"
     networks:
