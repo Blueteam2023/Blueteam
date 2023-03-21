@@ -20,11 +20,11 @@ deploy(){
 	cd testenv/$branch
 	deleteDirectory
 	git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git'
-	cd $GIT_REPO
 }
 
 # Docker-compose
 build(){
+	cd testenv/$branch/$GIT_REPO/$branch
 	echo "Building $branch images"
 	docker-compose up 
 	return $?
