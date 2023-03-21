@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  ci:
+    build: .
+    expose:
+      - "8080"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
