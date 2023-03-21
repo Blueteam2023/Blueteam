@@ -23,12 +23,14 @@ def trigger():
                 subprocess.run(['./scripts/build.sh', branch])
 
             return jsonify({"action": "", "pusher": pusher, "repository.branches_url": branch})
-        
+          
         elif event_type == 'pull_request':
             action = payload['action']
             if action == 'closed' and payload['pull_request']['merged'] and payload['pull_request']['base']['ref'] == 'main':
-            #    subprocess.run(['./scripts/production.sh', branch])
-               print("Bulding production")
+                source_branch = payload['pull_request']['head']['ref']
+                print(source_branch)
+            #    subprocess.run(['./scripts/production.sh', source_branch])
+                print("Bulding production")
             
         else:
             # handle other event types
