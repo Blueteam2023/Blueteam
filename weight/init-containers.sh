@@ -18,5 +18,7 @@ function parse_yaml {
 }
 
 export MYSQL_ROOT_PASSWORD=$(parse_yaml ./config.yaml | grep "database_password" | cut -d"=" -f2 | sed "s/\"//g")
-echo $MYSQL_ROOT_PASSWORD
+export MYSQL_HOST=$(parse_yaml ./config.yaml | grep "database_host" | cut -d"=" -f2 | sed "s/\"//g")
+export MYSQL_DB_NAME=$(parse_yaml ./config.yaml | grep "database_database" | cut -d"=" -f2 | sed "s/\"//g")
+export MYSQL_USER=$(parse_yaml ./config.yaml | grep "database_user" | cut -d"=" -f2 | sed "s/\"//g")
 docker compose up -d

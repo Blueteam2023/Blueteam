@@ -1,2 +1,5 @@
 database:
   password: temp
+  host: weight-database
+  database: weight
+  user: root
