@@ -45,13 +45,16 @@ def insert_transaction(values: dict[str, Any]):
 # For Carmen
 def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str, directions: list[str]):
     cnx = connect(**config)
+    directions_query = f"direction == '{directions[0]}'"
+    if len(directions) > 1:
+        for direction in directions:
+            directions_query += f"OR direction == '{direction}'"
+    query = f"SELECT * FROM transactions WHERE datetime >= '{start_date}' AND datetime <= '{end_date}' AND ({directions_query})"
     if cnx.is_connected():
         try:
             cursor = cnx.cursor(dictionary=True)
-            query = (f"FROM transactions SELECT * WHERE truck_id = '{truck_id}'"
-                     "ORDER BY id DESC")
             cursor.execute(query)
-            return cursor.fetchone()
+            return cursor.fetchall()
         except:
             print("err")
             # TODO: handle errors
