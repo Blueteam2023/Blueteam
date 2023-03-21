@@ -2,15 +2,21 @@ services:
  pythonapp:
   build: ./python/
   command: sh -c "sleep 15s ; python3 ./app.py"
+  env_file:
+   - ./sql.env
   depends_on:
-  - mysql
+   - billing-mysql
   ports:
-  - "5000:80"
- mysql:
+   - "8082:80"
+ billing-mysql:
   build: ./mysql/
   restart: always
+  volumes:
+   - ./mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
   environment:
-   MYSQL_DATABASE: "db"
+   MYSQL_DATABASE: "billingdb"
    MYSQL_ROOT_PASSWORD: "root"
+  env_file:
+   - ./sql.env
   ports:
-   - "3306:3306"
+   - "8081:3306"
