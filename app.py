@@ -27,7 +27,7 @@ def trigger():
         elif event_type == 'pull_request':
             action = payload['action']
             if action == 'closed' and payload['pull_request']['merged'] and payload['pull_request']['base']['ref'] == 'main':
-               subprocess.run(['./scripts/production.sh', branch])
+            #    subprocess.run(['./scripts/production.sh', branch])
                print("Bulding production")
             
         else:
