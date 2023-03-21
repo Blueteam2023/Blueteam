@@ -15,13 +15,11 @@ deleteDirectory() {
 }
 
 clearExists(){
-	if docker ps -a | grep $branch-app-test > /dev/null; then
-	
-	
+	if docker ps -a | grep test-$branch-app > /dev/null; then
+		docker rm -f test-$branch-app
 	fi
-	if docker ps -a | grep $branch-db-test > /dev/null; then
-	
-	
+	if docker ps -a | grep test-$branch-db > /dev/null; then
+		docker rm -f test-$branch-db
 	fi
 }
 
