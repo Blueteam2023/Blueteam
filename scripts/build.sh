@@ -35,8 +35,8 @@ deploy(){
 build(){
 	echo "Building $branch images"
 	cd /app/testenv/$branch/$GIT_REPO/$branch/
-	sed -i "s/container_name: $branch-app/container_name: test-$branch-app/" docker-compose.yml
-	sed -i "s/container_name: $branch-db/container_name: test-$branch-db/" docker-compose.yml
+	sed -i "s/container_name: $branch-app/container_name: test-$branch-app/" docker-compose.*
+	sed -i "s/container_name: $branch-db/container_name: test-$branch-db/" docker-compose.*
 	docker-compose -f "/app/testenv/$branch/$GIT_REPO/$branch/docker-compose.yml" -p test up 
 	return $?
 }
