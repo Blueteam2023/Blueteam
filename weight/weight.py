@@ -6,11 +6,6 @@ from os import environ
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = environ['MYSQL_HOST']
-app.config['MYSQL_USER'] = environ['MYSQL_USER']
-app.config['MYSQL_ROOT_PASSWORD'] = environ['MYSQL_ROOT_PASSWORD']
-app.config['MYSQL_DB_NAME'] = environ['MYSQL_DB_NAME']
-
 
 @app.route("/", methods=["GET"])
 def index():
