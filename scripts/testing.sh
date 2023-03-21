@@ -50,7 +50,7 @@ Modify_files(){
 
 
 # Docker-compose
-build(){
+Build(){
 	echo "Building testing containers"
 	cd /app/testenv/$branch
 	Modify_files $branch
