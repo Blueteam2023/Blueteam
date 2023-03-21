@@ -30,7 +30,7 @@ def get_last_transaction_by_truck(truck_id: str):
                 cnx.close()
 
 
-def change_transaction(id: int, values: dict[str, Any]):
+def change_transaction(values: dict[str, Any]):
     raise NotImplementedError
 
 
