@@ -48,7 +48,7 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
     directions_query = f"direction == '{directions[0]}'"
     if len(directions) > 1:
         for direction in directions:
-            directions_query += f"OR direction == '{direction}'"
+            directions_query += f" OR direction == '{direction}'"
     query = f"SELECT * FROM transactions WHERE datetime >= '{start_date}' AND datetime <= '{end_date}' AND ({directions_query})"
     if cnx.is_connected():
         try:
