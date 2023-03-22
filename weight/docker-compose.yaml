@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  db:
+    container_name: weight-database
+    image: mysql:5.7
+    networks:
+      - BlueTeam
+    expose:
+      - 3306
+    env_file:
+      - ./.env
+    volumes:
+      - ./datadump:/docker-entrypoint-initdb.d
+      - ./datadir:/var/lib/mysql
+    stdin_open: true
+    tty: true
+
+  app:
+    container_name: weight-app
+    env_file:
+      - ./.env
+    build: .
+    networks:
+      - BlueTeam
+    ports:
+      - "8083:5000"
+    command: flask run
+    links:
+      - "db"
+
+networks:
+  BlueTeam:
+    name: BlueTeam
+
