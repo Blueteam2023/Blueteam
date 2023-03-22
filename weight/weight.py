@@ -1,5 +1,4 @@
 from flask import Flask, render_template,request
-<<<<<<< HEAD
 from mysql.connector import connect
 from http import HTTPStatus
 import datetime
@@ -110,7 +109,7 @@ def weight():
             if last_transaction == NOT_EXIST:
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
-                return retr_val   
+                return json.dump(retr_val)   
             
             match last_transaction["direction"]:
                 
@@ -118,13 +117,13 @@ def weight():
                     if force == True:
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
-                        return retr_val
+                        return json.dump(retr_val)
                     return "ERROR: 404 truck cannot get in while inside to override last transaction change force to true."
                 
                 case "out":        
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
-                    return retr_val
+                    return json.dump(retr_val)
                 
                 case "none":
                     return "ERROR: 404 Truck id recognized as registered container id"
@@ -144,13 +143,13 @@ def weight():
                 case "in":
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
-                    return retr_val
+                    return json.dump(retr_val)
                 
                 case "out":
                     if force == True:
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
-                        return retr_val
+                        return json.dump(retr_val)
                     return "ERROR: 404 truck cannot get out if not inside to override last transaction change force to true."
                 
                 case "none":
@@ -161,10 +160,13 @@ def weight():
                     id = sqlQueries.insert_transaction(weight_data)
                     sqlQueries.register_container()
                     retr_val["id"] = id
-                    return retr_val
+                    return json.dump(retr_val)
+                
                 elif last_transaction["direction"] == "none" and force == True:
                     sqlQueries.change_transaction(weight_data)
-                    
+                    #sqlQueries.change_container(weight_data)
+                    return json.dump(retr_val)
+                
                 else:
                     return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
 @app.route("/batch-weight",methods=["POST"])
