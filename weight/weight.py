@@ -10,58 +10,77 @@ DIRECTION_CHECK = ""
 NOT_EXIST = 0
 app = Flask(__name__)
 
-def calculateNeto(bruto,containers_weight1,containers_weight2,truckTara,unit):
-    if containers_weight1 == "na" or containers_weight2 == "na" or truckTara == "na":
+def calculateNeto(bruto,containers_weight,truckTara,unit):
+    if containers_weight == "na" or truckTara == "na":
         return "na"
-    elif unit == "kg":
-        if containers_weight1[1] == "lbs":
-            containers_weight1[0] *= 2.2
-        if containers_weight2[1] == "lbs":
-            containers_weight2[0] *= 2.2
-    elif unit == "lbs":
-        if containers_weight1[1] == "kg":
-            containers_weight1[0] /= 2.2
-        if containers_weight2[1] == "kg":
-            containers_weight2[0] /= 2.2
-
-    neto = bruto - containers_weight1 - containers_weight2 - truckTara
+    
+    neto = bruto - containers_weight - truckTara
     return neto
 
+
+
+
+def sumContainerWeight(cont1,cont2,cont3,cont4,unit1,unit2,unit3):
+    if unit1 == "lbs":
+        cont1 *= 2.2
+    if unit2 == "lbs":
+        cont2 *= 2.2
+    if unit3 == "lbs":
+        cont3 *= 2.2
+    
+    sum = cont1+cont2+cont3+cont4
+    return sum
+
 def getWeightContainers(containers):
-    with open(r'in/containers1.csv','r') as f1, open(r"in/containers2.csv",'r') as f2,open(r'in/containers3.json','r') as f3:
-        unit1 = f1.readline().split(",")[1]
-        unit2 = f2.readline().split(",")[1]
-        
-        data1=csv.reader(f1)
-        data2=csv.reader(f2)
-        data3=json.load(f3)
-
-        containers_weight1 = 0
-        containers_weight2 = 0
-        containers_weight3 = 0
-
-        unfound_containers = containers
-        for container1,container2,container3 in zip(data1,data2,data3):
-            if container1[0] in containers:
-                containers_weight1 += container1[1]
-                unfound_containers.remove(container1[0])
-           
-            if container2[0] in containers:
-                containers_weight2 += container2[1]
-                unfound_containers.remove(container2[0])
-            
-            if container3["id"] in containers:
-                containers_weight3 += container3["weight"]
-                unfound_containers.remove(container3["id"])
+    unfound_containers = containers
+    containers_weight4 = 0
+    db_containers = sqlQueries.get_containers_by_id(unfound_containers)
+    if db_containers:
+            for cont in db_containers:
+                w = cont["weight"]
+                if cont["unit"] == "lbs":
+                    w *= 2.2 
+                containers_weight4 += w
+                unfound_containers.remove(cont["container_id"])
     
     if unfound_containers:
-        return sqlQueries.get_containers_by_id()
+        with open(r'in/containers1.csv','r') as f1, open(r"in/containers2.csv",'r') as f2,open(r'in/containers3.json','r') as f3:
+            unit1 = f1.readline().split(",")[1]
+            unit2 = f2.readline().split(",")[1]
+        
+
+            data1=csv.reader(f1)
+            data2=csv.reader(f2)
+            data3=json.load(f3)
+
+            unit3 = data3[0]["unit"]
+
+            containers_weight1 = 0
+            containers_weight2 = 0
+            containers_weight3 = 0
+
+            for container1,container2,container3 in zip(data1,data2,data3):
+                if container1[0] in containers:
+                    containers_weight1 += container1[1]
+                    unfound_containers.remove(container1[0])
+
+                if container2[0] in containers:
+                    containers_weight2 += container2[1]
+                    unfound_containers.remove(container2[0])
+
+                if container3["id"] in containers:
+                    containers_weight3 += container3["weight"]
+                    unfound_containers.remove(container3["id"])
+        
+        if unfound_containers:
+            return "na"
+        else:
+            cont_sum = sumContainerWeight(containers_weight1,containers_weight2,containers_weight3,containers_weight4,unit1,unit2,unit3)
+            return cont_sum
     else:
-        return [containers_weight1,unit1],[containers_weight2,unit2]
+        return containers_weight4
+            
 
-
-def getWeightContainers(containers):
-  
 
 @app.route("/",methods=["GET"])
 def index():
@@ -81,7 +100,7 @@ def weight():
     produce = request.args.get('produce')
     
     
-    weight_data = {"datetime":timestamp,"direction":direction,"truck":truck,"containers":containers,"bruto":weight,"truckTara":truckTara,"neto":"na","produce":produce}
+    weight_data = {"datetime":timestamp,"direction":direction,"truck":truck,"containers":containers,"bruto":weight,"truckTara":"na","neto":"na","produce":produce}
     
     retr_val = {"id":id,"truck":truck,"bruto":weight}
     last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
@@ -98,7 +117,7 @@ def weight():
                 
                 case "in":
                     if force == True:
-                        id = sqlQueries.change_transaction(weight_data)
+                        sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
                         return retr_val
                     return "ERROR: 404 truck cannot get in while inside to override last transaction change force to true."
@@ -117,9 +136,8 @@ def weight():
                 return "ERROR: 404 Truck not exist"
             
             truckTara = weight
-            containers_weight1,containers_weight2 = getWeightContainersCsv(containers)
-            containers_weight3 = getWeightContainersJson(containers)
-            neto = calculateNeto(last_transaction["bruto"],containers_weight1,containers_weight2,truckTara,unit)
+            containers_weight = getWeightContainers(containers)
+            neto = calculateNeto(last_transaction["bruto"],containers_weight,truckTara,unit)
             retr_val += {"truckTara":truckTara,"neto":neto}
 
             match last_transaction["direction"]:
@@ -131,7 +149,7 @@ def weight():
                 
                 case "out":
                     if force == True:
-                        id = sqlQueries.change_transaction(weight_data)
+                        sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
                         return retr_val
                     return "ERROR: 404 truck cannot get out if not inside to override last transaction change force to true."
@@ -142,10 +160,13 @@ def weight():
         case "none":
                 if last_transaction == NOT_EXIST:
                     id = sqlQueries.insert_transaction(weight_data)
-                    #sqlQueries.register_container()
+                    sqlQueries.register_container()
                     retr_val["id"] = id
                     return retr_val
-                else:
+                elif last_transaction["direction"] == "none" and force == True:
+                    sqlQueries.change_transaction(weight_data)
+
+                    else:
                     return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
 
 
