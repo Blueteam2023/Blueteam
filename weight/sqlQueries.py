@@ -15,8 +15,8 @@ config = {
 def get_last_transaction_by_truck(truck_id: str):
     cnx = connect(**config)
     if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
         try:
-            cursor = cnx.cursor(dictionary=True)
             query = (f"FROM transactions SELECT * WHERE truck_id = '{truck_id}'"
                      "ORDER BY id DESC")
             cursor.execute(query)
@@ -40,6 +40,26 @@ def get_containers_by_id(id: list[str]):
 
 def insert_transaction(values: dict[str, Any]):
     raise NotImplementedError
+
+
+def get_containers_by_id(ids: list[str]):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
+        result = []
+        try:
+            for id in ids:
+                cursor.execute(
+                    f"SELECT * FROM containers_registered WHERE container_id == '{id}'")
+                result.append(cursor.fetchone())
+            return result
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
 
 
 def register_container(id: str, weight, int, unit: str):
