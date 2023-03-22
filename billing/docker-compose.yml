@@ -2,6 +2,8 @@ services:
  pythonapp:
   build: ./python/
   command: sh -c "sleep 15s ; python3 ./app.py"
+  volumes:
+   - ./mysql/in/:/in/ 
   env_file:
    - ./sql.env
   depends_on:

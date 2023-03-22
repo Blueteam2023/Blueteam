@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Upload/Download Excel</title>
+</head>
+<body>
+    <h1>Upload/Download Excel</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="radio" id="upload" name="option" value="upload" checked>
+        <label for="upload">Upload</label>
+        <br>
+        <input type="radio" id="download" name="option" value="download">
+        <label for="download">Download</label>
+        <br>
+        <input type="file" id="file" name="file"
+            accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
