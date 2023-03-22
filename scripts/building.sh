@@ -40,7 +40,7 @@ Modify_files(){
     fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
-    sed -i "s/Blueteam/test_network/g" docker-compose.yaml
+    sed -i "s/BlueTeam/test_network/g" docker-compose.yaml
 }
 
 # Build testing containers
@@ -149,7 +149,6 @@ Production_init(){
 Testing_init(){
     if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
         Clone
-        Modify_files
         Build_testing
         health=$(Health_check testing)
         if ! $health ; then
