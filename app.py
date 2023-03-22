@@ -2,8 +2,9 @@ from flask import Flask, request, jsonify
 import re
 import subprocess
 
-
 app = Flask(__name__)
+
+
 
 
 @app.route("/trigger", methods=['POST'])
@@ -17,21 +18,22 @@ def trigger():
             branch = payload['pull_request']['head']['ref']
             pusher = payload['pull_request']['user']['login']
             url = payload['pull_request']['url']
-            if action == 'opened':
-                #email = payload['head_commit']['committer']['email']
-                if branch == "billing" or branch=="weight" or branch=="devops": # remove devops
+            if action == 'closed' and payload['pull_request']['merged_at'] is not None: #if pull request approved
+                if branch == "billing" or branch=="weight":
                     print("Starting testing process")
-                    subprocess.run(['./scripts/testing.sh', branch, pusher, url])
+                    subprocess.run(['./scripts/building.sh', branch, pusher, url])
                     return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
+                elif branch == "reverted_main":
+                    print("Deleting reverted branch")
+                    #deleting reverted branch and pulling reverted main
+                    subprocess.run(['git', 'branch', '-D', 'reverted_main', '&&',
+                                    'git', 'push', 'origin', '--delete', 'reverted_main', '&&',
+                                    'git', 'checkout', 'main', '&&', 'git', 'pull'])
+                    return "Revert succeeded", 200
                 else:
                     return "Invalid branch", 400
-                #subprocess.run(['./scripts/production.sh', source_branch.group(1)])
-            elif action == 'closed' and payload['pull_request']['merged_at'] is not None:
-                print(f"Deploing to production from {branch}")
-                subprocess.run(['./scripts/production.sh', branch, pusher])
-                return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
             else:
-                print(f"Unkown action: {action}")
+                print(f"Unkown action: {action}") #optional send mail notification
                 return "Invalid request" ,400
         else:
             return 'Unknown event', 400  
@@ -46,6 +48,9 @@ def trigger():
 def health_check():
     return "OK", 200
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
+    # Running production in first init
+    subprocess.run(['./scripts/deploy.sh'])
 
