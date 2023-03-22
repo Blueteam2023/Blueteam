@@ -1,3 +1,6 @@
+networks:
+ BlueTeam:
+  name: BlueTeam
 services:
  
  
@@ -7,6 +10,8 @@ services:
   networks:
    - BlueTeam
   command: sh -c "sleep 15s ; python3 ./app.py"
+  volumes:
+   - '/etc/localtime:/etc/localtime:ro'
   env_file:
    - ./sql.env
   depends_on:
@@ -31,6 +36,4 @@ services:
   ports:
    - "8081:3306"
    
- networks:
-  BlueTeam:
-   name: BlueTeam
+
