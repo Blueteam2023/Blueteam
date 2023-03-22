@@ -157,8 +157,8 @@ def weight():
                 
         case "none":
             if not last_transaction:
-                id = sqlQueries.insert_transaction(weight_data)
-                sqlQueries.register_container(retr_val)
+                # id = sqlQueries.insert_transaction(weight_data)
+                sqlQueries.register_container(id,weight,unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 

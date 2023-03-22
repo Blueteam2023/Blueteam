@@ -126,7 +126,7 @@ def get_containers_by_id(ids: list[str]):
                 cnx.close()
 
 
-def register_container(id: str, weight, int, unit: str):
+def register_container(id: str, weight: int, unit: str):
     cnx = connect(**config)
     if cnx.is_connected():
         cursor = cnx.cursor()
