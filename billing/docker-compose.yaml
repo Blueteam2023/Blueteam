@@ -1,7 +1,11 @@
 services:
+ 
+ 
  pythonapp:
   container_name: billing-app
   build: ./python/
+  networks:
+   - BlueTeam
   command: sh -c "sleep 15s ; python3 ./app.py"
   env_file:
    - ./sql.env
@@ -9,9 +13,13 @@ services:
    - billing-mysql
   ports:
    - "8082:80"
+   
+  
  billing-mysql:
   container_name: billing-database
   build: ./mysql/
+  networks:
+   - BlueTeam
   restart: always
   volumes:
    - ./mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
@@ -23,4 +31,6 @@ services:
   ports:
    - "8081:3306"
    
-
+ networks:
+  BlueTeam:
+   name: BlueTeam
