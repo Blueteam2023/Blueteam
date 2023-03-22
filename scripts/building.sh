@@ -33,6 +33,7 @@ Modify_files(){
     if [ "$b" = "billing" ]; then
 	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
         sed -i "s/8082/8088/g" docker-compose.yaml
+        sed -i "s/8081/8087/g" docker-compose.yaml
     elif [ "$b" = "weight" ]; then
         sed -i "s/DB_HOST=.*/DB_HOST=test-$b-db/" .env
         sed -i "s/8083/8089/g" docker-compose.yaml
