@@ -5,8 +5,6 @@ services:
     image: mysql:5.7
     expose:
       - 3306
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     env_file:
       - ./.env
     volumes:
