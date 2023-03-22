@@ -81,7 +81,6 @@ def getWeightContainers(containers):
     else:
         return containers_weight4
 
- mysql = MySQL(app)
 
 @app.route("/weight",methods=["POST"])
 def weight():
@@ -206,7 +205,7 @@ def Gweight( start , end , direct):
         
           
     get_weight = sqlQueries.get_transactions_range_by_date_and_directions(start_date, end_date, directions)
-    response = jsonify(get_weight)
+    response = json.dumps(get_weight)
     #response.status_code = 200
     return response
 
