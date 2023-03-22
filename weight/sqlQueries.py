@@ -18,7 +18,7 @@ def get_last_transaction_by_truck(truck_id: str):
     if cnx.is_connected():
         cursor = cnx.cursor(dictionary=True)
         try:
-            query = (f"FROM transactions SELECT * WHERE truck_id = '{truck_id}'"
+            query = (f"SELECT * FROM transactions WHERE truck_id = '{truck_id}'"
                      "ORDER BY id DESC")
             cursor.execute(query)
             return cursor.fetchone()
