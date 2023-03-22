@@ -31,11 +31,11 @@ Clone(){
 Modify_files(){
 	b=$1
     if [ "$b" = "billing" ]; then
-	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
+	    #sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
         sed -i "s/8082/8088/g" docker-compose.yaml
         sed -i "s/8081/8087/g" docker-compose.yaml
     elif [ "$b" = "weight" ]; then
-        sed -i "s/DB_HOST=.*/DB_HOST=test-$b-db/" .env
+        #sed -i "s/DB_HOST=.*/DB_HOST=test-$b-db/" .env
         sed -i "s/8083/8089/g" docker-compose.yaml
     fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
@@ -58,6 +58,7 @@ Build_testing(){
 
 # Health check
 Health_check(){
+    echo "Checking health"
     if [ $1 = "testing" ]; then
         check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8088/health)
         check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8089/health)
