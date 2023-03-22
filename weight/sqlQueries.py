@@ -31,11 +31,40 @@ def get_last_transaction_by_truck(truck_id: str):
 
 
 def change_transaction(values: dict[str, Any]):
-    raise NotImplementedError
-
-
-def get_containers_by_id(id: list[str]):
-    raise NotImplementedError
+    query = ("UPDATE transactions"
+             "SET")
+    if "datetime" in values:
+        query += f", datetime = '{values['datetime']}'"
+    if "bruto" in values:
+        query += f", bruto = {values['bruto']}"
+    if "truck_tara" in values:
+        query += f", bruto = {values['truck_tara']}"
+    if "neto" in values:
+        query += f", bruto = {values['neto']}"
+    if "truck" in values:
+        if "containers" in values:
+            query += " conainers = "
+            for container in values["containers"]:
+                query += f" '{container}'"
+        query += (f", truck == {values['truck']}"
+                  " ORDER BY id DESC"
+                  " LIMIT 1")
+    else:
+        query += (f", containers = {values['containers[0]']}"
+                  " ORDER BY id DESC"
+                  " LIMIT 1")
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(query)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
 
 
 def insert_transaction(values: dict[str, Any]):
@@ -88,8 +117,8 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
             directions_query += f" OR direction == '{direction}'"
     query = f"SELECT * FROM transactions WHERE datetime >= '{start_date}' AND datetime <= '{end_date}' AND ({directions_query})"
     if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
         try:
-            cursor = cnx.cursor(dictionary=True)
             cursor.execute(query)
             return cursor.fetchall()
         except:
