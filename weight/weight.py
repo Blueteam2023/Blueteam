@@ -1,10 +1,12 @@
 from flask import Flask, render_template,request
+<<<<<<< HEAD
 from mysql.connector import connect
 from http import HTTPStatus
 import datetime
 import sqlQueries
 import json
 import csv
+import re
 UNIT_CHECK=""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
@@ -16,9 +18,6 @@ def calculateNeto(bruto,containers_weight,truckTara,unit):
     
     neto = bruto - containers_weight - truckTara
     return neto
-
-
-
 
 def sumContainerWeight(cont1,cont2,cont3,cont4,unit1,unit2,unit3):
     if unit1 == "lbs":
@@ -168,27 +167,55 @@ def weight():
 
                     else:
                     return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
-
-
 @app.route("/batch-weight",methods=["POST"])
 def batchWeight():
     raise NotImplementedError
 
 @app.route("/unknown",methods=["GET"])
 def unknown():
-    raise NotImplementedError
+    return True
 
-@app.route("/weight",methods=["GET"])
-def Pweight():
-    return render_template("index.html")
+@app.route("/weight/<start>/<end>/<directed>",methods=["GET"])
+def Gweight( start , end , direct):
+    
+    pattern = r"\d{14}"
+    if re.match(pattern, start) and re.match(pattern ,end):
+        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")): 
+            start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
+            end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
+    else:
+        print("error with the dates provided, will show all results of the current day ")
+        start_date = datetime.datetime.strftime("%Y-%m-%d 00:00:00")
+        end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    are_directions=0
+    directions=["in","out","none"]
+    if not "in" in direct:
+        directions.remove("in")
+        are_directions +=1
+    if not "out" in direct:
+        directions.remove("out")
+        are_directions +=1
+    if not "none" in direct:
+        directions.remove("none")
+        are_directions +=1
+    if (not directions) or (are_directions ==3): 
+        directions=["in","out","none"]
+        
+          
+    get_weight = sqlQueries.get_transactions_range_by_date_and_directions(start_date, end_date, directions)
+    response = jsonify(get_weight)
+    #response.status_code = 200
+    return response
+
+    
 
 @app.route("/item/<id>",methods=["GET"])
 def item():
-    raise NotImplementedError
+    return True
 
 @app.route("/session/<id>",methods=["GET"])
 def session():
-    raise NotImplementedError
+    return True
 
 @app.route("/health",methods=["GET"])
 def health():
