@@ -49,8 +49,8 @@ Build_testing(){
 	Modify_files $team1
 	cd /app/testenv/$team2
 	Modify_files $team2
-	docker-compose -f /app/testenv/$team1/docker-compose.yaml up -d
-	docker-compose -f /app/testenv/$team2/docker-compose.yaml up -d
+	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing up
+	docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing up
 }
 
 # Health check

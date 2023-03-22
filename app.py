@@ -12,7 +12,6 @@ def trigger():
     if request.method == 'POST':
         event_type = request.headers.get('X-GitHub-Event')
         payload = request.get_json()
-        print(event_type)
         if event_type == 'pull_request':
             action = payload['action']
             branch = payload['pull_request']['head']['ref']
