@@ -42,6 +42,23 @@ def insert_transaction(values: dict[str, Any]):
     raise NotImplementedError
 
 
+def register_container(id: str, weight, int, unit: str):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        query = ("INSERT INTO containers_registered (container_id, weight, unit)"
+                 f"VALUES ('{id}', {weight}, '{unit}')")
+        try:
+            cursor.execute(query)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+
+
 # For Carmen
 def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str, directions: list[str]):
     cnx = connect(**config)
