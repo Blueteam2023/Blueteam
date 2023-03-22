@@ -145,6 +145,7 @@ Production_init(){
 Testing_init(){
     if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
         Clone
+        Modify_files
         Build_testing
         health=$(Health_check testing)
         if ! $health ; then
