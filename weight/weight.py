@@ -185,26 +185,32 @@ def unknown():
     return True
 
 
-@app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
-def Gweight(start, end, direct):
-
+@app.route("/weight/<start>/<end>/<directed>",methods=["GET"])
+def Gweight( start , end , direct):
+    
     pattern = r"\d{14}"
-    if re.match(pattern, start) and re.match(pattern, end):
-        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
+    if re.match(pattern, start) and re.match(pattern ,end):
+        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")): 
             start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
             end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
+        else:
+            print("error with the dates provided, will show all results of the current day ")
+            start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
+            end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     else:
         print("error with the dates provided, will show all results of the current day ")
-        start_date = datetime.datetime.strftime("%Y-%m-%d 00:00:00")
+        start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
         end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    are_directions = 0
-    directions = ["in", "out", "none"]
+
+
+    are_directions=0
+    directions=["in","out","none"]
     if not "in" in direct:
         directions.remove("in")
-        are_directions += 1
+        are_directions +=1
     if not "out" in direct:
         directions.remove("out")
-        are_directions += 1
+        are_directions +=1
     if not "none" in direct:
         directions.remove("none")
         are_directions +=1
