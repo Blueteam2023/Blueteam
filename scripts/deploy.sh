@@ -1,4 +1,7 @@
 #!/bin/sh
+team1="billing"
+team2="weight"
+
 
 if [ -z $(docker ps | grep "weight-app") ] && [ -z $(docker ps | grep "billing-app") ]; then
     echo "Running Production Envoirment"
