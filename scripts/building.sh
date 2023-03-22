@@ -11,38 +11,22 @@ weight_port=8088
 url=$3
 GITHUB_TOKEN=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
 DEVOPS_MAIL="blueteamdevops2023@gmail.com"
-
-. ./ssmtp.conf
-
-if [ "$branch" = "billing" ]; then
-	sec_branch="weight"
-elif [ "$branch" = "weight" ]; then
-	sec_branch="billing"
-fi
-
-
-clearExists(){
-	if docker ps -a | grep test-$branch-app > /dev/null; then
-		docker rm -f test-$branch-app
-	fi
-	if docker ps -a | grep test-$branch-db > /dev/null; then
-		docker rm -f test-$branch-db
-	fi
-}
+team1= "billing"
+team2- "weight"
 
 # Clone
 Clone(){
-	echo "Cloning repo from $branch"
+	echo "Cloning repo with last commit"
 	if [ -d "/app/testenv" ]; then
 		cd /app/testenv
 	else
 		mkdir /app/testenv
 		cd /app/testenv
 	fi
-	git clone -b $branch 'https://github.com/Blueteam2023/Blueteam.git' .
-	
+	git clone 'https://github.com/Blueteam2023/Blueteam.git' .
 }
 
+# Modify files for testing envoirment
 Modify_files(){
 	b=$1
 	sed -i "s/DB_HOST=*/DB_HOST=test-$b-db/" .env
@@ -51,16 +35,15 @@ Modify_files(){
 	#add network and ports
 }
 
-
 # Docker-compose
 Build(){
 	echo "Building testing containers"
-	cd /app/testenv/$branch
-	Modify_files $branch
-	cd /app/testenv/$sec_branch
-	Modify_files $sec_branch
-	docker-compose -f /app/testenv/$branch/docker-compose.* up
-	docker-compose -f /app/testenv/$sec_branch/docker-compose.* up
+	cd /app/testenv/$team1
+	Modify_files $team1
+	cd /app/testenv/$team2
+	Modify_files $team2
+	docker-compose -f /app/testenv/$team1/docker-compose.* up
+	docker-compose -f /app/testenv/$team2/docker-compose.* up
 }
 
 # Health check
@@ -82,16 +65,17 @@ health_check(){
 	fi
 }
 
-# Run tests
+# Run E2E tests
 Test(){
 	echo "running E2E tests"
 	return 0
 }
 
-Sent_mail(){
-	to_email="brylov@gmail.com"
-	subject="Test email"
-	body="This is a test email."
+# Sending mails function
+Send_mail(){
+	to_email=$(grep "^$pusher " email.txt | awk '{print $2}')
+	subject="Gan Shmuel Alert: $1"
+	body="$2"
 	message="From: $from_email\nTo: $to_email\nSubject: $subject\n\n$body"
 	echo "$message" | sendmail $to_email
 	if [ $? -eq 0 ]; then
@@ -101,17 +85,7 @@ Sent_mail(){
 	fi
 }
 
-# Approve(){
-# 	curl --request POST \
-#      --url "$url/reviews" \
-#      --header "Authorization: Bearer $GITHUB_TOKEN" \
-#      --header "Content-Type: application/json" \
-#      --data '{
-#        "event": "APPROVE",
-#        "body": "LGTM"
-#      }'
-# }
-
+# Terminate testing enovirment
 Terminate_testing(){
 	echo "Terminating test envoirment"
 	docker-compose -f /app/testenv/$branch/docker-compose.yml down --rmi all
@@ -119,20 +93,30 @@ Terminate_testing(){
 	rm -r /app/testenv/*
 }
 
-# if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
-# 	Clone
-# 	cp -r /app/$sec_branch /app/testenv
-# 	Build
-# 	result=$(Test)
-# 	if Test; then
-# 		echo "Test passed, approving request"
-# 		#send mail to devops team
-# 	else
-# 		echo "Test failed"
-# 		#send mail to devs
-# 	fi
-# 	Terminate_testing	
-# fi
+Revert_main(){
+    git revert HEAD
+    git push origin main
+}
 
+Production_init(){
 
-Sent_mail
+}
+
+Testing_init(){
+    if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
+        Clone
+        Build
+        #health_check
+        if Test; then
+            echo "Test passed, approving request"
+            Production_init
+            Send_mail "Test Passed, Waiting for approve" "You'll get alert once the merged to productin."
+        else
+            echo "Test failed"
+            Revert_main
+            Send_mail "Test Failed, Please review errors" "Contact devops team for more details."
+        fi
+        Terminate_testing	
+    fi
+}
+
