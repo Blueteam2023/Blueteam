@@ -39,7 +39,7 @@ services:
 <<<<<<< HEAD
 
 networks:
-  default:
+  BlueTeam:
     name: BlueTeam
 =======
 networks:
