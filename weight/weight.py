@@ -81,15 +81,10 @@ def getWeightContainers(containers):
     else:
         return containers_weight4
 
+ mysql = MySQL(app)
 
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("index.html")
-
-
-@app.route("/weight", methods=["POST"])
+@app.route("/weight",methods=["POST"])
 def weight():
-
     id = 0
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     direction = request.args.get('direction')
@@ -179,11 +174,41 @@ def weight():
 def batchWeight():
     raise NotImplementedError
 
-
-@app.route("/unknown", methods=["GET"])
+@app.route("/unknown",methods=["GET"])
 def unknown():
     return True
 
+@app.route("/weight/<start>/<end>/<directed>",methods=["GET"])
+def Gweight( start , end , direct):
+    
+    pattern = r"\d{14}"
+    if re.match(pattern, start) and re.match(pattern ,end):
+        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")): 
+            start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
+            end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
+    else:
+        print("error with the dates provided, will show all results of the current day ")
+        start_date = datetime.datetime.strftime("%Y-%m-%d 00:00:00")
+        end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    are_directions=0
+    directions=["in","out","none"]
+    if not "in" in direct:
+        directions.remove("in")
+        are_directions +=1
+    if not "out" in direct:
+        directions.remove("out")
+        are_directions +=1
+    if not "none" in direct:
+        directions.remove("none")
+        are_directions +=1
+    if (not directions) or (are_directions ==3): 
+        directions=["in","out","none"]
+        
+          
+    get_weight = sqlQueries.get_transactions_range_by_date_and_directions(start_date, end_date, directions)
+    response = jsonify(get_weight)
+    #response.status_code = 200
+    return response
 
 @app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
 def Gweight(start, end, direct):
@@ -223,18 +248,15 @@ def Gweight(start, end, direct):
     # response.status_code = 200
     return response
 
-
-@app.route("/item/<id>", methods=["GET"])
+@app.route("/item/<id>",methods=["GET"])
 def item():
     return True
 
-
-@app.route("/session/<id>", methods=["GET"])
+@app.route("/session/<id>",methods=["GET"])
 def session():
     return True
 
-
-@app.route("/health", methods=["GET"])
+@app.route("/health",methods=["GET"])
 def health():
     return "OK"
 
