@@ -165,8 +165,8 @@ def weight():
                     return retr_val
                 elif last_transaction["direction"] == "none" and force == True:
                     sqlQueries.change_transaction(weight_data)
-
-                    else:
+                    
+                else:
                     return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
 
 
