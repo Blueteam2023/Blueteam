@@ -31,18 +31,36 @@ def get_last_transaction_by_truck(truck_id: str):
 
 
 def change_transaction(values: dict[str, Any]):
+    first_entry = True
     query = ("UPDATE transactions"
              "SET")
     if "datetime" in values:
-        query += f", datetime = '{values['datetime']}'"
+        query += f" datetime = '{values['datetime']}'"
+        first_entry = False
     if "bruto" in values:
-        query += f", bruto = {values['bruto']}"
+        if not first_entry:
+            query += ","
+        else:
+            first_entry = False
+        query += f" bruto = {values['bruto']}"
     if "truck_tara" in values:
+        if not first_entry:
+            query += ","
+        else:
+            first_entry = False
         query += f", bruto = {values['truck_tara']}"
     if "neto" in values:
+        if not first_entry:
+            query += ","
+        else:
+            first_entry = False
         query += f", bruto = {values['neto']}"
     if "truck" in values:
         if "containers" in values:
+            if not first_entry:
+                query += ","
+            else:
+                first_entry = False
             query += " conainers = "
             for container in values["containers"]:
                 query += f" '{container}'"
