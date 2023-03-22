@@ -113,9 +113,12 @@ def weight():
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
 <<<<<<< HEAD
+<<<<<<< HEAD
                 return json.dump(retr_val)
 
 =======
+=======
+>>>>>>> 69a30cb (dump to dumps)
                 return json.dumps(retr_val)   
             
 >>>>>>> 69a30cb (dump to dumps)
@@ -132,9 +135,12 @@ def weight():
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
 <<<<<<< HEAD
+<<<<<<< HEAD
                     return json.dump(retr_val)
 
 =======
+=======
+>>>>>>> 69a30cb (dump to dumps)
                     return json.dumps(retr_val)
                 
 >>>>>>> 69a30cb (dump to dumps)
@@ -158,9 +164,12 @@ def weight():
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
 <<<<<<< HEAD
+<<<<<<< HEAD
                     return json.dump(retr_val)
 
 =======
+=======
+>>>>>>> 69a30cb (dump to dumps)
                     return json.dumps(retr_val)
                 
 >>>>>>> 69a30cb (dump to dumps)

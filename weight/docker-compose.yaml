@@ -1,13 +1,7 @@
 version: '3.9'
-<<<<<<< HEAD
-=======
 
-
->>>>>>> 69a30cb (dump to dumps)
 services:
   db:
-    networks:
-      - BlueTeam
     container_name: weight-database
     image: mysql:5.7
     networks:
@@ -23,8 +17,6 @@ services:
     tty: true
 
   app:
-    networks:
-      - BlueTeam
     container_name: weight-app
     env_file:
       - ./.env
@@ -36,15 +28,7 @@ services:
     command: flask run
     links:
       - "db"
-<<<<<<< HEAD
 
-networks:
-  default:
-    name: BlueTeam
-=======
 networks:
   BlueTeam:
     name: BlueTeam
-
-    
->>>>>>> 69a30cb (dump to dumps)
