@@ -28,35 +28,40 @@ def calculateNeto(bruto,containers_weight1,containers_weight2,truckTara,unit):
     return neto
 
 def getWeightContainers(containers):
-    with open(r'in/containers1.json','r') as f1, open(r"in/containers2.json",'r') as f2:
+    with open(r'in/containers1.csv','r') as f1, open(r"in/containers2.csv",'r') as f2,open(r'in/containers3.json','r') as f3:
         unit1 = f1.readline().split(",")[1]
         unit2 = f2.readline().split(",")[1]
+        
         data1=csv.reader(f1)
         data2=csv.reader(f2)
+        data3=json.load(f3)
+
         containers_weight1 = 0
         containers_weight2 = 0
-        cont_num = len(containers)
-        check = 0
-        for container1,container2 in zip(data1,data2):
+        containers_weight3 = 0
+
+        unfound_containers = containers
+        for container1,container2,container3 in zip(data1,data2,data3):
             if container1[0] in containers:
                 containers_weight1 += container1[1]
-                check_len += 1
+                unfound_containers.remove(container1[0])
+           
             if container2[0] in containers:
                 containers_weight2 += container2[1]
-                check_len += 1
-    if check == cont_num:
-        return [containers_weight1,unit1],[containers_weight2,unit2]
+                unfound_containers.remove(container2[0])
+            
+            if container3["id"] in containers:
+                containers_weight3 += container3["weight"]
+                unfound_containers.remove(container3["id"])
+    
+    if unfound_containers:
+        return sqlQueries.get_containers_by_id()
     else:
-        return "na","na"
+        return [containers_weight1,unit1],[containers_weight2,unit2]
 
 
-def getTaraTruck(truckid):
-  with open(r'in/containers3.json','r') as f:
-    data=json.load(f) 
-    for truck in data.values():
-        if truckid == truck["id"]:
-            return truck["weight"]
-    return "na"
+def getWeightContainers(containers):
+  
 
 @app.route("/",methods=["GET"])
 def index():
@@ -75,8 +80,7 @@ def weight():
     force = request.args.get('force')
     produce = request.args.get('produce')
     
-    #or truck weight on out
-    truckTara = getTaraTruck(truck)
+    
     weight_data = {"datetime":timestamp,"direction":direction,"truck":truck,"containers":containers,"bruto":weight,"truckTara":truckTara,"neto":"na","produce":produce}
     
     retr_val = {"id":id,"truck":truck,"bruto":weight}
@@ -112,7 +116,9 @@ def weight():
             if last_transaction == NOT_EXIST:
                 return "ERROR: 404 Truck not exist"
             
-            containers_weight1,containers_weight2 = getWeightContainers(containers)
+            truckTara = weight
+            containers_weight1,containers_weight2 = getWeightContainersCsv(containers)
+            containers_weight3 = getWeightContainersJson(containers)
             neto = calculateNeto(last_transaction["bruto"],containers_weight1,containers_weight2,truckTara,unit)
             retr_val += {"truckTara":truckTara,"neto":neto}
 
@@ -136,7 +142,7 @@ def weight():
         case "none":
                 if last_transaction == NOT_EXIST:
                     id = sqlQueries.insert_transaction(weight_data)
-                    #id = sqlQueries.register_container()
+                    #sqlQueries.register_container()
                     retr_val["id"] = id
                     return retr_val
                 else:
