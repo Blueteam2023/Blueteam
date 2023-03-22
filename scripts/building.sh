@@ -50,8 +50,10 @@ Build_testing(){
 	Modify_files $team1
 	cd /app/testenv/$team2
 	Modify_files $team2
-	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing up
-	docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing up
+    echo "Building $team1 containers"
+	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing up -d
+    echo "Building $team2 containers"
+	docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing up -d
 }
 
 # Health check
