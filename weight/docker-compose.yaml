@@ -1,8 +1,8 @@
 version: '3.9'
-networks:
-  - BlueTeam
 services:
   db:
+    networks:
+      - BlueTeam
     container_name: weight-database
     image: mysql:5.7
     expose:
@@ -16,6 +16,8 @@ services:
     tty: true
 
   app:
+    networks:
+      - BlueTeam
     container_name: weight-app
     env_file:
       - ./.env
@@ -25,3 +27,7 @@ services:
     command: flask run
     links:
       - "db"
+
+networks:
+  default:
+    name: BlueTeam
