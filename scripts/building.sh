@@ -31,14 +31,14 @@ Clone(){
 Modify_files(){
 	b=$1
     if [ "$b" = "billing" ]; then
-	    sed -i "s/ENV_HOST=*/ENV_HOST=test-$b-db/" sql.env
+	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
         sed -i "s/8082/8088/g" docker-compose.yaml
-    elif [ "$b" = "weight" ]
-        sed -i "s/DB_HOST=*/DB_HOST=test-$b-db/" .env
+    elif [ "$b" = "weight" ]; then
+        sed -i "s/DB_HOST=.*/DB_HOST=test-$b-db/" .env
         sed -i "s/8083/8089/g" docker-compose.yaml
     fi
-	sed -i "s//container_name: $b-app: container_name: test-$b-app/" docker-compose.yaml
-	sed -i "s//container_name: $b-database: container_name: test-$b-database/" docker-compose.yaml
+	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
+	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
     sed -i "s/Blueteam/test_network/g" docker-compose.yaml
 }
 
@@ -49,8 +49,8 @@ Build_testing(){
 	Modify_files $team1
 	cd /app/testenv/$team2
 	Modify_files $team2
-	docker-compose -f /app/testenv/$team1/docker-compose.yaml up
-	docker-compose -f /app/testenv/$team2/docker-compose.yaml up
+	docker-compose -f /app/testenv/$team1/docker-compose.yaml up -d
+	docker-compose -f /app/testenv/$team2/docker-compose.yaml up -d
 }
 
 # Health check
@@ -94,8 +94,8 @@ Send_mail(){
 # Terminate testing enovirment
 Terminate_testing(){
 	echo "Terminating test envoirment"
-	docker-compose -f /app/testenv/$branch/docker-compose.yml down --rmi all
-	docker-compose -f /app/testenv/$sec_branch/docker-compose.yml down --rmi all
+	docker-compose -f /app/testenv/$branch/docker-compose.yaml down --rmi all
+	docker-compose -f /app/testenv/$sec_branch/docker-compose.yaml down --rmi all
 	rm -r /app/testenv/*
 }
 
@@ -130,7 +130,7 @@ Build_production(){
 Production_init(){
     Stop_production
     Build_production
-    health=$(health_check production)
+    health=$(Health_check production)
     if ! $health ; then
         echo "Health failed in production"
         Revert_main
@@ -146,7 +146,7 @@ Testing_init(){
     if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
         Clone
         Build_testing
-        health=$(health_check testing)
+        health=$(Health_check testing)
         if ! $health ; then
             echo "Health failed"
             Revert_main
