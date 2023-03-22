@@ -1,4 +1,6 @@
 version: '3.9'
+networks:
+  - BlueTeam
 services:
   db:
     container_name: weight-database
