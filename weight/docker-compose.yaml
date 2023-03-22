@@ -1,10 +1,17 @@
 version: '3.9'
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 69a30cb (dump to dumps)
 services:
   db:
     networks:
       - BlueTeam
     container_name: weight-database
     image: mysql:5.7
+    networks:
+      - BlueTeam
     expose:
       - 3306
     env_file:
@@ -22,12 +29,22 @@ services:
     env_file:
       - ./.env
     build: .
+    networks:
+      - BlueTeam
     ports:
       - "5050:5000"
     command: flask run
     links:
       - "db"
+<<<<<<< HEAD
 
 networks:
   default:
     name: BlueTeam
+=======
+networks:
+  BlueTeam:
+    name: BlueTeam
+
+    
+>>>>>>> 69a30cb (dump to dumps)
