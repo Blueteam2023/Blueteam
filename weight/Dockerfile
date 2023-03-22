@@ -2,6 +2,7 @@ FROM python:3.10-alpine
 
 WORKDIR /code
 ENV FLASK_APP=weight.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
 RUN apk add --no-cache gcc musl-dev linux-headers
 COPY requirements.txt ./

@@ -87,7 +87,23 @@ def change_transaction(values: dict[str, Any]):
 
 
 def insert_transaction(values: dict[str, Any]):
-    raise NotImplementedError
+    query = ("INSERT INTO transactions (datetime, direction, truck, containers, bruto, truckTara, neto, produce)"
+             f" VALUES ('{values['datetime']}', '{values['direction']}', '{values['truck']}', '{values['containers']}',"
+             f" {values['bruto']}, {values['bruto']}, {values['truckTara']}, {values['neto']}, '{values['produce']}')")
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(query)
+            cursor.execute(f"SELECT id FROM transactions ORDER BY id DESC")
+            return cursor.fetchone()
+        except:
+            print("err")
+            # TODO: error handling
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
 
 
 def get_containers_by_id(ids: list[str]):
