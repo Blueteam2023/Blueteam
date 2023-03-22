@@ -50,7 +50,8 @@ def health_check():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
     # Running production in first init
     subprocess.run(['./scripts/deploy.sh'])
+    app.run(host='0.0.0.0', port=8080)
+
 
