@@ -31,6 +31,6 @@ services:
   ports:
    - "8081:3306"
    
- networks:
+networks:
   BlueTeam:
    name: BlueTeam
