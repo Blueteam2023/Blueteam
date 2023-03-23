@@ -164,14 +164,17 @@ def update_truck_license_plate(id):
     cursor.execute("SELECT id FROM Provider where id=(%s)",(int(data["provider_id"]),))
     PROVIDER_ID = cursor.fetchall()
     if len(PROVIDER_ID) == 0:
+        connection.close()
         return { 'message' : f'There is no provider id {data["provider_id"]}'}, 400
     else:
         cursor.execute("SELECT id FROM Trucks where id=(%s)", (id,))
         TRUCK_ID = cursor.fetchall()
         if len(TRUCK_ID) == 0:
+            connection.close()
             return { 'message' : f'There is no truck id {id}'}, 400
         else:
             cursor.execute("UPDATE Trucks SET provider_id = (%s) where id=(%s)", (int((data["provider_id"])), id))
+            connection.close()
             return { 'message' : f'Truck with license plate {TRUCK_ID[0][0]} has been updated to provider {PROVIDER_ID[0][0]}'}, 200
 
  # ----  Liste of truck with id -------------
@@ -180,9 +183,7 @@ def update_truck_license_plate(id):
 @app.route('/trucklist')
 def trucklist():
     try:
-        connection = mysql.connector.connect(
-            user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port="3306", database=MYSQL_DB_NAME)
-
+        connection = mysql.connector.connect(user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port="3306", database=MYSQL_DB_NAME)
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM Trucks;')
         DB_PROV_LIST = cursor.fetchall()
