@@ -8,11 +8,13 @@ services:
       - BlueTeam
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    command: /bin/sh -c "./scripts/deploy.sh && gunicorn app:app --bind 0.0.0.0:8080"
     expose:
       - "8080"
 
   nginx:
     image: nginx:stable-alpine
+    command: /bin/sh -c "sleep 30 && exec nginx -g 'daemon off;'"
     ports:
       - "8080:8080"
       - "8082:8082"

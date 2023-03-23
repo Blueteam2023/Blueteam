@@ -79,8 +79,6 @@ def monitor():
     return render_template('monitor.html', statuses=statuses)
 
 if __name__ == "__main__":
-    # Running production in first init
-    subprocess.run(['./scripts/deploy.sh'])
     app.run(host='0.0.0.0', port=8080)
 
 
