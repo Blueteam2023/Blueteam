@@ -19,7 +19,25 @@ def get_last_transaction_by_truck(truck_id: str):
         cursor = cnx.cursor(dictionary=True)
         try:
             query = (f"SELECT * FROM transactions WHERE truck_id = '{truck_id}'"
-                     "ORDER BY id DESC")
+                     "AND direction = 'in' ORDER BY id DESC LIMIT 1")
+            cursor.execute(query)
+            return cursor.fetchone()
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+
+
+def get_last_transaction_by_container(container_id: str):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
+        try:
+            query = (f"SELECT * FROM transactions WHERE containers = '{container_id}'"
+                     "AND direction = 'none' ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             return cursor.fetchone()
         except:
@@ -96,7 +114,7 @@ def insert_transaction(values: dict[str, Any]):
         try:
             cursor.execute(query)
             cursor.execute(
-                "SELECT id FROM transactions ORDER BY id DESC TAKE 1")
+                "SELECT id FROM transactions ORDER BY id DESC LIMIT 1")
             result = cursor.fetchone()
             return result['id']
         except:
