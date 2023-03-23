@@ -5,19 +5,32 @@ from datetime import datetime
 import json
 import csv
 import re
-<<<<<<< HEAD
-UNIT_CHECK = ""
-DIRECTION_CHECK = ""
-NOT_EXIST = 0
-IS_TRUCK = r"^\d+\-\d+\-\d+$"
-=======
 import os
 from werkzeug.utils import secure_filename
 
 
-IS_TRUCK = "^\d+\-\d+\-\d+"
->>>>>>> c683da3 (started working on batch weight)
+UPLOAD_FOLDER = 'in'
+IS_TRUCK = r"^\d+\-\d+\-\d+$"
+CHECK_JSON_FILE = r'{"id":"\w\-\d+","weight":\d+,"unit":"\w+"},\n'
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
+def allowed_file(file):
+    check_line = file.readline()
+    if file.mimetype == 'text/csv':
+        if check_line != '"id","kg"':
+            return "containers1.csv"
+        if check_line != '"id","lbs"':
+            return "containers2.csv"
+        
+    if file.mimetype == 'application/json':
+        check_line = file.readline().decode()
+        if re.search(CHECK_JSON_FILE,check_line):
+           return "containers3.json"
+    
+    return False 
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
@@ -26,7 +39,6 @@ def calculateNeto(bruto, containers_weight, truckTara, unit):
     if unit == "lbs":
         neto *= 2.2
     return neto
-
 
 def sumContainerWeight(cont1, cont2, cont3, cont4, unit1, unit2, unit3):
     if unit1 == "lbs":
@@ -223,9 +235,19 @@ def post_weight():
 
 @app.route("/batch-weight", methods=["POST"])
 def post_batch_weight():
-    batch_file = request.files
-    print(batch_file[0][0][1])
-    raise NotImplementedError
+    batch_file = request.files['file']
+    if batch_file.filename == '':
+            body = "No selected file"
+            return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    if batch_file and allowed_file(batch_file):    
+        filename = secure_filename(allowed_file(batch_file))
+        batch_file.seek(0,0)
+        batch_file.save(os.path.join(app.config["UPLOAD_FOLDER"],filename))
+        body = f"File uploaded succefuly. replaced {filename}"
+    else:
+        body = 'File must be csv or json file.\nFile formats accepted: csv (id,kg), csv (id,lbs), json ([{"id":..,"weight":..,"unit":..},...])'
+        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    return Response(response=body,status=HTTPStatus.OK)
 
 
 @app.route("/unknown", methods=["GET"])
