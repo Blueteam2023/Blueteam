@@ -15,6 +15,7 @@ DEVOPS_MAIL="blueteamdevops2023@gmail.com"
 team1="billing"
 team2="weight"
 lockfile=/tmp/building.lock
+number=$4
 
 # Clone
 Clone(){
@@ -65,11 +66,11 @@ Build_testing(){
 Health_check(){
     echo "Checking health"
     if [ $1 = "testing" ]; then
-        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8088/health)
-        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8089/health)
+        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8088/health) #change ip
+        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8089/health) #change ip
     elif [ $1 = "production" ]; then
-        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$billing_port/health)
-        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$weight_port/health)
+        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://billing-app/health)
+        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://weight-app/health)
     fi
 	if [ "$check_billing" -eq 200 ] && [ "$check_weight" -eq 200 ]; then
     	return 0
@@ -87,12 +88,19 @@ Test(){
 
 # Sending mails function
 Send_mail(){
-	#to_email=$(grep "^$pusher " email.txt | awk '{print $2}')
-    to_email="blueteamdevops2023@gmail.com"
+
+    devops_email="blueteamdevops2023@gmail.com"
 	subject="Gan Shmuel Alert: $1"
 	body="$2"
-	message="From: $from_email\nTo: $to_email\nSubject: $subject\n\n$body"
-	echo "$message" | sendmail $to_email
+    message="From: $from_email\nTo: $to_email\nSubject: $subject\n\n$body"
+    if [ $3 = "dev" ]; then
+        to_email=$(grep "^$pusher " email.txt | awk '{print $2}')
+        echo "$message" | sendmail "$to_email,$devops_email"
+    else
+        echo "$message" | sendmail $devops_email
+    fi
+	
+	
 	if [ $? -eq 0 ]; then
     	echo "Email sent successfully."
 	else
@@ -106,21 +114,6 @@ Terminate_testing(){
 	docker-compose -f /app/testenv/$branch/docker-compose.yaml down --rmi all
 	docker-compose -f /app/testenv/$sec_branch/docker-compose.yaml down --rmi all
 	rm -r /app/testenv/*
-}
-
-Revert_main(){
-    echo "Reverting to last known stable version"
-    git checkout -b reverted_main
-    git revert HEAD --no-edit
-    git add .
-    git commit -m "reverted version"
-    git push origin reverted_main
-    base_url=$(echo $url | sed 's/\([0-9]\+\)$//')
-    # Create new pull request for reverted
-    curl -H "Authorization: token $GITHUB_TOKEN" \
-     -X POST \
-     -d "{\"title\": \"reverted main\", \"body\": \"reverted version\", \"head\": \"reverted_main\", \"base\": \"main\"}" \
-     "$base_url"
 }
 
 Stop_production(){
@@ -141,13 +134,16 @@ Production_init(){
     Build_production
     health=$(Health_check production)
     if ! $health ; then
-        echo "Health failed in production"
-        Revert_main
-        Send_mail "Health check Failed during production build" "Contact devops team for more details."
-        Production_init
+        Send_mail "Health check failed during production build" "revert pull request $number"
+        echo "Health failed in production, reverting to last commit"
+        git reset --hard HEAD~1
+        ./deploy.sh
     else
         echo "Building production finished"
-        Send_mail "Updating completed" "New update in on the air"
+        tag="Stable $TIMESTAMP"
+        git tag $tag
+        git push origin $tag
+        Send_mail "Update completed" "New update in on the air"
     fi
 }
 
@@ -157,17 +153,16 @@ Testing_init(){
         Build_testing
         health=$(Health_check testing)
         if ! $health ; then
-            echo "Health failed"
-            Revert_main
-            Send_mail "Health check Failed during testing" "Contact devops team for more details."
+            Send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
+            echo "Health failed, Reverting to last commit"
+            git reset --hard HEAD~1
         else
             if Test; then
-                echo "Test passed, approving request"
+                echo "Test passed, Starting production update"
                 Production_init
             else
                 echo "Test failed"
-                Revert_main
-                Send_mail "Test Failed, Please review errors" "Contact devops team for more details."
+                Send_mail "Test Failed, revert pull request" "Contact devops team for more details."
             fi
         fi
         Terminate_testing	
