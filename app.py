@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import re
 import subprocess
+import requests
 
 app = Flask(__name__)
 
@@ -47,6 +48,41 @@ def trigger():
 def health_check():
     return "OK", 200
 
+
+ENVIRONMENTS = {
+    "production": {
+        "billing": "http://localhost:8082/health",
+        "weight": "http://localhost:8083/health"
+    },
+    "testing": {
+        "billing": "http://localhost:8088/health",
+        "weight": "http://localhost:8089/health"
+    }
+}
+
+def check_health(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return "OK"
+        else:
+            return f"Error {response.status_code}"
+    except requests.exceptions.RequestException as e:
+        return f"Error: {e}"
+    
+
+@app.route('/monitoring')
+def monitoring():
+    health_checks = {}
+    for env, services in ENVIRONMENTS.items():
+        health_checks[env] = {}
+        for service, url in services.items():
+            health_checks[env][service] = {
+                "url": url,
+                "status": check_health(url)
+            }
+
+    return render_template('monitoring.html', health_checks=health_checks)
 
 if __name__ == "__main__":
     # Running production in first init

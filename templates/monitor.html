@@ -1,0 +1,48 @@
+<!-- monitoring.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Page</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monitoring Page</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Environment</th>
+                <th>Service</th>
+                <th>URL</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for env, services in health_checks.items() %}
+                {% for service, data in services.items() %}
+                    <tr>
+                        <td>{{ env }}</td>
+                        <td>{{ service }}</td>
+                        <td>{{ data.url }}</td>
+                        <td>{{ data.status }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

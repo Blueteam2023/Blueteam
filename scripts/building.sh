@@ -1,5 +1,6 @@
 #!/bin/sh
 
+set -x #debugging 
 set -e #exit if a command fails
 
 GIT_REPO=Blueteam
@@ -25,11 +26,13 @@ Clone(){
 		cd /app/testenv
 	fi
 	git clone 'https://github.com/Blueteam2023/Blueteam.git' .
+    echo "Finished cloning from repo"
 }
 
 # Modify files for testing envoirment
 Modify_files(){
 	b=$1
+    echo "Modifying $b files for testing envoirment"
     if [ "$b" = "billing" ]; then
 	    #sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
         sed -i "s/8082/8088/g" docker-compose.yaml
@@ -41,6 +44,7 @@ Modify_files(){
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
     sed -i "s/BlueTeam/test_network/g" docker-compose.yaml
+    echo "Finished modifying $b files for testing envoirment"
 }
 
 # Build testing containers
@@ -54,6 +58,7 @@ Build_testing(){
 	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing up -d
     echo "Building $team2 containers"
 	docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing up -d
+    echo "Finished building testing containers"
 }
 
 # Health check
