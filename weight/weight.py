@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 from mysql.connector import connect
 from http import HTTPStatus
 import datetime
@@ -232,7 +232,7 @@ def session():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return "OK"
+    return Response(status=HTTPStatus.OK)
 
 
 if __name__ == "__main__":
