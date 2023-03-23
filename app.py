@@ -71,7 +71,7 @@ def check_health(url):
         return f"Error: {e}"
     
 
-@app.route('/monitoring')
+@app.route('/monitor')
 def monitoring():
     health_checks = {}
     for env, services in ENVIRONMENTS.items():
@@ -82,7 +82,7 @@ def monitoring():
                 "status": check_health(url)
             }
 
-    return render_template('monitoring.html', health_checks=health_checks)
+    return render_template('monitor.html', health_checks=health_checks)
 
 if __name__ == "__main__":
     # Running production in first init
