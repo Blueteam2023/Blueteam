@@ -4,16 +4,16 @@ from os import environ
 
 config = {
 
-    "host": environ['MYSQL_HOST'],
-    "user": "root",
-    "password": environ['MYSQL_ROOT_PASSWORD'],
-    "database": environ['MYSQL_DB_NAME'],
-    "port": 3306
-    # "host":'localhost',
-    # "user":'root',
-    # "password":'12345',
-    # "database":'weight',
-    # "port":3306
+    # "host": environ['MYSQL_HOST'],
+    # "user": "root",
+    # "password": environ['MYSQL_ROOT_PASSWORD'],
+    # "database": environ['MYSQL_DB_NAME'],
+    # "port": 3306
+    "host":'localhost',
+    "user":'root',
+    "password":'12345',
+    "database":'weight',
+    "port":3306
 }
 # For Yuval
 
@@ -24,7 +24,7 @@ def get_last_transaction_by_truck(truck_id: str):
         cursor = cnx.cursor(dictionary=True)
         try:
             query = (f"SELECT * FROM transactions WHERE truck = '{truck_id}'"
-                     " AND direction = 'in' ORDER BY id DESC LIMIT 1")
+                     " ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             return cursor.fetchone()
         except:
@@ -57,7 +57,7 @@ def get_last_transaction_by_container(container_id: str):
 
 def change_transaction(values: dict[str, Any]):
     query = ("UPDATE transactions"
-             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truck_tara']}"
+             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truckTara']}"
              f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'")
     if values['truck'] != "-":
         query += (f" WHERE truck == {values['truck']}"
