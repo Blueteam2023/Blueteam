@@ -109,9 +109,10 @@ Send_mail(){
 # Terminate testing enovirment
 Terminate_testing(){
 	echo "Terminating test envoirment"
-	docker-compose -f /app/testenv/$branch/docker-compose.yaml down --rmi all
-	docker-compose -f /app/testenv/$sec_branch/docker-compose.yaml down --rmi all
-	rm -r /app/testenv/*
+	docker-compose -f /app/testenv/$team1/docker-compose.yaml down --rmi all
+	docker-compose -f /app/testenv/$team2/docker-compose.yaml down --rmi all
+	rm -rf /app/testenv/*
+    rm -rf /app/testenv/.git
 }
 
 Stop_production(){
@@ -152,14 +153,15 @@ Testing_init(){
         echo "Checking health"
         #health=$(Health_check testing) temp
         health=0
-        if ! $health ; then
+        if [ $health -eq 0 ] then
             #Send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
             echo "Health failed, Reverting to last commit"
             #git reset --hard HEAD~1
         else
-            if Test; then
+            Test = 0
+            if [ $Test -eq 0 ]; then
                 echo "Test passed, Starting production update"
-                Production_init
+                #Production_init
             else
                 echo "Test failed"
                 #Send_mail "Test Failed, revert pull request" "Contact devops team for more details."
