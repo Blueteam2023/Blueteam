@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, Response
 from mysql.connector import connect
+import sqlQueries
 from http import HTTPStatus
-import datetime
+from datetime import datetime
 import json
 import csv
 import re
@@ -82,11 +83,15 @@ def getWeightContainers(containers):
         return containers_weight4
 
 
-@app.route("/weight", methods=["POST"])
+@app.route("/weight", methods=["POST", "GET"])
 def post_weight():
-
+    if request.method == "GET":
+        start = request.args.get("start")
+        end = request.args.get("end")
+        direct = request.args.get("direct")
+        return get_weight(start, end, direct)
     id = 0
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     direction = request.args.get('direction')
     truck = request.args.get('truck')
     containers = request.args.get('containers').split(",")
@@ -180,43 +185,37 @@ def get_unknown():
     raise NotImplementedError
 
 
-@app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
 def get_weight(start, end, direct):
+    start_date = None
+    end_date = None
+    try:
+        parsed_start = datetime.strptime(start, "%Y%m%d%H%M%S")
+        parsed_end = datetime.strptime(end, "%Y%m%d%H%M%S")
+        if parsed_end > parsed_start:
+            start_date = str(parsed_start)
+            end_date = str(parsed_end)
+    finally:
+        if not start_date:
+            start_date = str(datetime.today().strftime("%Y-%m-%d 00:00:00"))
+        if not end_date:
+            end_date = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    pattern = r"\d{14}"
-    if re.match(pattern, start) and re.match(pattern, end):
-        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
-            start_date = start #datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
-            end_date = end #datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
-        else:
-            print(
-                "error with the dates provided, will show all results of the current day ")
-            start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
-            end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    else:
-        print("error with the dates provided, will show all results of the current day ")
-        start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
-        end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if not direct:
+            direct = ""
+        directions_list = direct.split(',')
+        directions_used = []
+        if "in" in directions_list:
+            directions_used.append("in")
+        if "out" in directions_list:
+            directions_used.append("out")
+        if "none" in directions_list:
+            directions_used.append("none")
+        if not directions_used:
+            directions_used = ["in", "out", "none"]
 
-    are_directions = 0
-    directions = ["in", "out", "none"]
-    if not "in" in direct:
-        directions.remove("in")
-        are_directions += 1
-    if not "out" in direct:
-        directions.remove("out")
-        are_directions += 1
-    if not "none" in direct:
-        directions.remove("none")
-        are_directions += 1
-    if (not directions) or (are_directions == 3):
-        directions = ["in", "out", "none"]
-
-    get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(
-        start_date, end_date, directions)
-    response = json.dumps(get_weight)
-    # response.status_code = 200
-    return response
+        result = sqlQueries.get_transaction_range_by_dates_and_directions(
+            start_date, end_date, directions_used)
+        return Response(response=json.dumps(result), status=HTTPStatus.OK)
 
 
 @app.route("/item/<id>", methods=["GET"])
@@ -235,4 +234,4 @@ def get_health():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0")
