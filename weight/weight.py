@@ -272,16 +272,16 @@ def get_item():
             end_date = str(parsed_end)
     finally:
         if is_truck:
-            if not sqlQueries.is_truck_in_db(id):
-                return Response(status=HTTPStatus.NOT_FOUND)
             transactions = sqlQueries.get_truck_transactions_by_id_and_dates(
                 start_date, end_date, id)
+            if not transactions:
+                return Response(status=HTTPStatus.NOT_FOUND)
             return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
 
-        if not sqlQueries.is_container_in_db(id):
-            return Response(status=HTTPStatus.NOT_FOUND)
         transactions = sqlQueries.get_crate_transactions_by_id_and_dates(
             start_date, end_date, id)
+        if not transactions:
+            return Response(status=HTTPStatus.NOT_FOUND)
         return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
 
 
