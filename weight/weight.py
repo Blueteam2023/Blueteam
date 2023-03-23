@@ -122,7 +122,7 @@ def post_weight():
     force = force.lower()
     unit = unit.lower()
     weight = int(weight)
-    
+
     weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
                    "containers": containers, "bruto": weight, "truckTara": -1, "neto": -1, "produce": produce}
     retr_val = {"id": id, "truck": truck, "bruto": weight}
@@ -160,8 +160,10 @@ def post_weight():
                 body = "Truck must be empty while getting out"
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             truckTara = weight
-            containers_weight = get_weight_containers(last_transaction["containers"].split(","))
-            neto = calculateNeto(last_transaction["bruto"], containers_weight, truckTara, unit)
+            containers_weight = get_weight_containers(
+                last_transaction["containers"].split(","))
+            neto = calculateNeto(
+                last_transaction["bruto"], containers_weight, truckTara, unit)
             if neto < 0:
                 body = "Neto weight can not be negative."
                 Response(response=body, status=HTTPStatus.BAD_REQUEST)
@@ -190,11 +192,11 @@ def post_weight():
             weight_data["produce"] = "-"
             containers = containers.split(",")
             if len(containers) > 1:
-                    body = "While registering container only one container is allowed"
-                    return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+                body = "While registering container only one container is allowed"
+                return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             container_id = " ".join(containers)
             last_container = sqlQueries.get_containers_by_id(containers)
-            
+
             if not last_container:
                 id = sqlQueries.insert_transaction(weight_data)
                 sqlQueries.register_container(container_id, weight, unit)
@@ -203,7 +205,7 @@ def post_weight():
 
             elif force == 'true':
                 sqlQueries.change_transaction(weight_data)
-                sqlQueries.update_container(id,weight,unit)
+                sqlQueries.update_container(id, weight, unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
