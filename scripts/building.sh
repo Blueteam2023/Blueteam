@@ -109,9 +109,9 @@ Send_mail(){
 # Terminate testing enovirment
 Terminate_testing(){
 	echo "Terminating test envoirment"
-    docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing stop --timeout 60
+    docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing stop
     docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing rm -f
-    docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing stop --timeout 60
+    docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing stop
     docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing rm -f
 	rm -rf /app/testenv/*
     rm -rf /app/testenv/.git
