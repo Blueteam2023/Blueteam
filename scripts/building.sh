@@ -119,9 +119,10 @@ Terminate_testing(){
 
 Stop_production(){
     echo "Stopping production for update"
-    docker stop $team1-app && docker stop $team2-app
-    docker rm $team1-app && docker rm $team2-app
-    docker rm -f $team1-db && docker rm -f $team2-db    
+    docker-compose -f /app/$team1/docker-compose.yaml stop
+    docker-compose -f /app/$team1/docker-compose.yaml rm -f
+    docker-compose -f /app/$team2/docker-compose.yaml stop
+    docker-compose -f /app/$team2/docker-compose.yaml rm -f   
 }
 
 Build_production(){
@@ -132,12 +133,15 @@ Build_production(){
 
 Production_init(){
     Stop_production
+    echo "Pulling new version"
+    git pull
     Build_production
-    health=$(Health_check production)
-    if ! $health ; then
+    #health=$(Health_check production)
+    health=1
+    if [ $health -eq 1 ]; then
         #Send_mail "Health check failed during production build" "revert pull request $number"
         echo "Health failed in production, reverting to last commit"
-        git reset --hard HEAD~1
+        #git reset --hard HEAD~1
         ./deploy.sh
     else
         echo "Building production finished"
