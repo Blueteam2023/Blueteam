@@ -204,6 +204,9 @@ def get_session_by_id(id: int):
         try:
             cursor.execute(session_start_query)
             session_start = cursor.fetchone()
+            if not session_start:
+                return False
+
             is_truck = session_start["truck"] != "-"
             result = {"id": session_start["id"],
                       "truck": "na",

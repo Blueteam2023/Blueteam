@@ -88,7 +88,7 @@ def post_weight():
         end = request.args.get("end")
         direct = request.args.get("direct")
         return get_weight(start, end, direct)
-    
+
     id = 0
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     body = ''
@@ -99,24 +99,23 @@ def post_weight():
     unit = request.args.get('unit')
     force = request.args.get('force')
     produce = request.args.get('produce')
-      
-    
+
     # handle wrong insertions
     if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
         body = "Direction must be in/out/none\n"
     if not weight.isdigit():
         body += "Weight must be positive integer.\n"
-    if not isinstance(unit,str) or unit.lower() != "kg" and unit.lower() != "lbs":
+    if not isinstance(unit, str) or unit.lower() != "kg" and unit.lower() != "lbs":
         body += "Unit value must be Kg/Lbs\n"
-    if not isinstance(force,str) or force.lower() != 'true' and force.lower() != 'false':
+    if not isinstance(force, str) or force.lower() != 'true' and force.lower() != 'false':
         body += "Force value must be True/False\n"
-    if not isinstance(produce,str):
+    if not isinstance(produce, str):
         body += "Produce must be letters string\n"
     if body != '':
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
     force = force.lower()
     unit = unit.lower()
-    
+
     weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
                    "containers": containers, "bruto": weight, "truckTara": -1, "neto": -1, "produce": produce}
     retr_val = {"id": id, "truck": truck, "bruto": weight}
@@ -239,8 +238,15 @@ def get_item():
 
 
 @app.route("/session/<id>", methods=["GET"])
-def get_session():
-    raise NotImplementedError
+def get_session(id: str):
+    try:
+        id_int = int(id)
+        result = sqlQueries.get_session_by_id(id_int)
+        if not result:
+            return Response(response="Id given is not a valid session id", status=HTTPStatus.BAD_REQUEST)
+        return Response(response=json.dumps(result), status=HTTPStatus.OK)
+    except:
+        return Response(response="Id given is not a valid session id", status=HTTPStatus.BAD_REQUEST)
 
 
 @app.route("/health", methods=["GET"])
