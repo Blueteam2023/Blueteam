@@ -138,12 +138,11 @@ Production_init(){
     git pull # do safety
     Build_production
     #health=$(Health_check production)
-    health=1
+    health=0
     if [ $health -eq 1 ]; then
         #Send_mail "Health check failed during production build" "revert pull request $number"
         echo "Health failed in production, reverting to last commit"
         #git reset --hard HEAD~1
-        exec ./deploy.sh
     else
         echo "Building production finished"
         tag="Stable $TIMESTAMP"
