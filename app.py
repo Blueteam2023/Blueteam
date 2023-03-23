@@ -17,7 +17,7 @@ def trigger():
             action = payload['action']
             branch = payload['pull_request']['head']['ref']
             pusher = payload['pull_request']['user']['login']
-            number = payload['number']
+            number = str(payload['number'])
             url = payload['pull_request']['url']
             if action == 'closed' and payload['pull_request']['merged_at'] is not None: #if pull request approved
                 if branch == "billing" or branch=="weight":
