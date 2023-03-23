@@ -109,8 +109,8 @@ Send_mail(){
 # Terminate testing enovirment
 Terminate_testing(){
 	echo "Terminating test envoirment"
-	docker-compose -f /app/testenv/$team1/docker-compose.yaml down --rmi all
-	docker-compose -f /app/testenv/$team2/docker-compose.yaml down --rmi all
+	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing down --rmi all &&\
+    docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing down --rmi all
 	rm -rf /app/testenv/*
     rm -rf /app/testenv/.git
 }
