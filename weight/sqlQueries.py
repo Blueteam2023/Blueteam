@@ -291,3 +291,38 @@ def get_container_ids_without_weight():
                 cursor.close()
                 cnx.close()
             return result
+
+
+def get_truck_transactions_by_id_and_dates(start_date: str, end_date: str, id: str):
+    # get session ids
+    session_query = f"SELECT id FROM transactions WHERE truck = '{id}'"
+    tara_query = (f"SELECT truckTara FROM transactions WHERE truck = '{id}'"
+                  f" AND direction = 'out' ORDER BY id DESC LIMIT 1")
+    cnx = connect(**config)
+    result = {}
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(session_query)
+            for session in cursor:
+                if "sessions" not in result:
+                    result["sessions"] = []
+                result["sessions"].append(session)
+
+            cursor.execute(tara_query)
+            if not cursor:
+                result["tara"] = "na"
+                result["id"] = id
+                return result
+            for tara in cursor:
+                result["tara"] = tara
+            result["id"] = "id"
+            return result
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+            return result
