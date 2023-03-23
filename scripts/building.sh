@@ -163,7 +163,7 @@ Testing_init(){
             Tester=0
             if [ $Tester -eq 0 ]; then
                 echo "Test passed, Starting production update"
-                #Production_init
+                Production_init
             else
                 echo "Test failed"
                 #Send_mail "Test Failed, revert pull request" "Contact devops team for more details."
