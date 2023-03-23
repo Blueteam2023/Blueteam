@@ -17,19 +17,13 @@ def trigger():
             action = payload['action']
             branch = payload['pull_request']['head']['ref']
             pusher = payload['pull_request']['user']['login']
+            number = payload['number']
             url = payload['pull_request']['url']
             if action == 'closed' and payload['pull_request']['merged_at'] is not None: #if pull request approved
                 if branch == "billing" or branch=="weight":
                     print("Starting testing process")
-                    subprocess.run(['./scripts/building.sh', branch, pusher, url])
+                    subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
                     return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
-                elif branch == "reverted_main":
-                    print("Deleting reverted branch")
-                    #deleting reverted branch and pulling reverted main
-                    subprocess.run(['git', 'branch', '-D', 'reverted_main', '&&',
-                                    'git', 'push', 'origin', '--delete', 'reverted_main', '&&',
-                                    'git', 'checkout', 'main', '&&', 'git', 'pull'])
-                    return "Revert succeeded", 200
                 else:
                     return "Invalid branch", 400
             else:
