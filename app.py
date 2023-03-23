@@ -23,7 +23,7 @@ def trigger():
             if action == 'closed' and payload['pull_request']['merged_at'] is not None: #if pull request approved
                 if branch == "billing" or branch=="weight":
                     print("Starting testing process")
-                    #subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
+                    subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
                     return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
                 elif "revert" in branch:
                     return "Reverted branch, doing nothing", 200
