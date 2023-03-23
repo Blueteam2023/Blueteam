@@ -147,7 +147,7 @@ Production_init(){
         echo "Building production finished"
         tag="Stable-$TIMESTAMP"
         git tag $tag
-        git push origin $tag
+        curl -H "Authorization: token $GITHUB_TOKEN" --data "{\"ref\":\"refs/tags/$tag\"}" "https://api.github.com/repos/Blueteam2023/Blueteam/git/refs"
         #Send_mail "Update completed" "New update in on the air"
     fi
 }
