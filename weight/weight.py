@@ -6,6 +6,7 @@ import sqlQueries
 import json
 import csv
 import re
+
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
@@ -82,11 +83,6 @@ def getWeightContainers(containers):
         return containers_weight4
 
 
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("index.html")
-
-
 @app.route("/weight", methods=["POST"])
 def weight():
 
@@ -104,15 +100,15 @@ def weight():
                    "containers": containers, "bruto": weight, "truckTara": "na", "neto": "na", "produce": produce}
 
     retr_val = {"id": id, "truck": truck, "bruto": weight}
-    last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
 
+    last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
     match direction:
 
         case "in":
-            if last_transaction == NOT_EXIST:
+            if not last_transaction:
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
-                return json.dumps(retr_val)   
+                return json.dumps(retr_val)
 
             match last_transaction["direction"]:
 
@@ -127,13 +123,13 @@ def weight():
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
                     return json.dumps(retr_val)
-                
+
                 case "none":
                     return "ERROR: 404 Truck id recognized as registered container id"
 
         case "out":
 
-            if last_transaction == NOT_EXIST:
+            if not last_transaction:
                 return "ERROR: 404 Truck not exist"
 
             truckTara = weight
@@ -160,41 +156,42 @@ def weight():
                     return "ERROR: 404 container id recognized, containers can not have in/out directions"
 
         case "none":
-                if last_transaction == NOT_EXIST:
-                    id = sqlQueries.insert_transaction(weight_data)
-                    sqlQueries.register_container()
-                    retr_val["id"] = id
-                    return json.dumps(retr_val)
-                
-                elif last_transaction["direction"] == "none" and force == True:
-                    sqlQueries.change_transaction(weight_data)
-                    #sqlQueries.change_container(weight_data)
-                    return json.dumps(retr_val)
-                
-                else:
-                    return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
+            if not last_transaction:
+                # id = sqlQueries.insert_transaction(weight_data)
+                sqlQueries.register_container(id, weight, unit)
+                retr_val["id"] = id
+                return json.dumps(retr_val)
+
+            elif last_transaction["direction"] == "none" and force == True:
+                sqlQueries.change_transaction(weight_data)
+                # sqlQueries.change_container(weight_data)
+                return json.dumps(retr_val)
+
+            else:
+                return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
 
 
-@app.route("/batch-weight",methods=["POST"])
+@app.route("/batch-weight", methods=["POST"])
 def batchWeight():
     raise NotImplementedError
 
 
 @app.route("/unknown", methods=["GET"])
 def unknown():
-    return True
+    raise NotImplementedError
 
 
-@app.route("/weight/<start>/<end>/<directed>",methods=["GET"])
-def Gweight( start , end , direct):
-    
+@app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
+def Gweight(start, end, direct):
+
     pattern = r"\d{14}"
-    if re.match(pattern, start) and re.match(pattern ,end):
-        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")): 
+    if re.match(pattern, start) and re.match(pattern, end):
+        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
             start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
             end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
         else:
-            print("error with the dates provided, will show all results of the current day ")
+            print(
+                "error with the dates provided, will show all results of the current day ")
             start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
             end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     else:
@@ -202,43 +199,41 @@ def Gweight( start , end , direct):
         start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
         end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
-    are_directions=0
-    directions=["in","out","none"]
+    are_directions = 0
+    directions = ["in", "out", "none"]
     if not "in" in direct:
         directions.remove("in")
-        are_directions +=1
+        are_directions += 1
     if not "out" in direct:
         directions.remove("out")
-        are_directions +=1
+        are_directions += 1
     if not "none" in direct:
         directions.remove("none")
-        are_directions +=1
-    if (not directions) or (are_directions ==3): 
-        directions=["in","out","none"]
-        
-          
-    get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(start_date, end_date, directions)
+        are_directions += 1
+    if (not directions) or (are_directions == 3):
+        directions = ["in", "out", "none"]
+
+    get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(
+        start_date, end_date, directions)
     response = json.dumps(get_weight)
-    #response.status_code = 200
+    # response.status_code = 200
     return response
 
 
 @app.route("/item/<id>", methods=["GET"])
 def item():
-    return True
+    raise NotImplementedError
 
 
 @app.route("/session/<id>", methods=["GET"])
 def session():
-    return True
+    raise NotImplementedError
 
 
 @app.route("/health", methods=["GET"])
 def health():
-    raise NotImplementedError
+    return "OK"
 
 
 if __name__ == "__main__":
-
-    app.run(debug=True)
+    app.run()

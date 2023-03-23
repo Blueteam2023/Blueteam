@@ -18,8 +18,26 @@ def get_last_transaction_by_truck(truck_id: str):
     if cnx.is_connected():
         cursor = cnx.cursor(dictionary=True)
         try:
-            query = (f"FROM transactions SELECT * WHERE truck_id = '{truck_id}'"
-                     "ORDER BY id DESC")
+            query = (f"SELECT * FROM transactions WHERE truck_id = '{truck_id}'"
+                     "AND direction = 'in' ORDER BY id DESC LIMIT 1")
+            cursor.execute(query)
+            return cursor.fetchone()
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+
+
+def get_last_transaction_by_container(container_id: str):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
+        try:
+            query = (f"SELECT * FROM transactions WHERE containers = '{container_id}'"
+                     "AND direction = 'none' ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             return cursor.fetchone()
         except:
@@ -87,7 +105,25 @@ def change_transaction(values: dict[str, Any]):
 
 
 def insert_transaction(values: dict[str, Any]):
-    raise NotImplementedError
+    query = ("INSERT INTO transactions (datetime, direction, truck, containers, bruto, truckTara, neto, produce)"
+             f" VALUES ('{values['datetime']}', '{values['direction']}', '{values['truck']}', '{values['containers']}',"
+             f" {values['bruto']}, {values['truckTara']}, {values['neto']}, '{values['produce']}')")
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
+        try:
+            cursor.execute(query)
+            cursor.execute(
+                "SELECT id FROM transactions ORDER BY id DESC LIMIT 1")
+            result = cursor.fetchone()
+            return result['id']
+        except:
+            print("err")
+            # TODO: error handling
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
 
 
 def get_containers_by_id(ids: list[str]):
@@ -110,7 +146,7 @@ def get_containers_by_id(ids: list[str]):
                 cnx.close()
 
 
-def register_container(id: str, weight, int, unit: str):
+def register_container(id: str, weight: int, unit: str):
     cnx = connect(**config)
     if cnx.is_connected():
         cursor = cnx.cursor()
@@ -134,7 +170,8 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
     if len(directions) > 1:
         for direction in directions:
             directions_query += f" OR direction = '{direction}'"
-    query = f"SELECT * FROM transactions WHERE datetime >= '{start_date}' AND datetime <= '{end_date}' AND ({directions_query})"
+    query = (f"SELECT * FROM transactions WHERE datetime >= '{start_date}' AND"
+             f" datetime <= '{end_date}' AND direction = {directions_query}")
     if cnx.is_connected():
         cursor = cnx.cursor(dictionary=True)
         try:
