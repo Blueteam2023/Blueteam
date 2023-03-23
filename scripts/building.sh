@@ -142,7 +142,7 @@ Production_init(){
         #Send_mail "Health check failed during production build" "revert pull request $number"
         echo "Health failed in production, reverting to last commit"
         #git reset --hard HEAD~1
-        ./deploy.sh
+        exec ./deploy.sh
     else
         echo "Building production finished"
         tag="Stable $TIMESTAMP"
