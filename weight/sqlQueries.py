@@ -326,3 +326,27 @@ def get_truck_transactions_by_id_and_dates(start_date: str, end_date: str, id: s
                 cursor.close()
                 cnx.close()
             return result
+
+
+def get_container_transactions_by_id_and_dates(start_date: str, end_date: str, id: str):
+    session_query = f"SELECT id FROM transactions WHERE containers = '{id}' AND truck = '-'"
+    result = {}
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(session_query)
+            for session in cursor:
+                if "sessions" not in result:
+                    result["sessions"] = []
+                result["sessions"].append(session)
+            result["id"] = id
+            result["tara"] = "na"
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+            return result

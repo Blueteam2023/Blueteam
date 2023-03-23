@@ -278,7 +278,7 @@ def get_item():
                 return Response(status=HTTPStatus.NOT_FOUND)
             return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
 
-        transactions = sqlQueries.get_crate_transactions_by_id_and_dates(
+        transactions = sqlQueries.get_container_transactions_by_id_and_dates(
             start_date, end_date, id)
         if not transactions:
             return Response(status=HTTPStatus.NOT_FOUND)
