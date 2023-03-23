@@ -64,7 +64,6 @@ Build_testing(){
 
 # Health check
 Health_check(){
-    echo "Checking health"
     if [ $1 = "testing" ]; then
         check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://test-$team1-app/health)
         check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://test-$team2-app/health)
@@ -75,7 +74,6 @@ Health_check(){
 	if [ "$check_billing" -eq 200 ] && [ "$check_weight" -eq 200 ]; then
     	return 0
 	else
-        echo "Billing status: $check_billing, Weight status: $check_weight"
 		return 1
 	fi
 }
@@ -151,11 +149,12 @@ Testing_init(){
     if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
         Clone
         Build_testing
+        echo "Checking health"f
         health=$(Health_check testing)
         if ! $health ; then
             Send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
             echo "Health failed, Reverting to last commit"
-            git reset --hard HEAD~1
+            #git reset --hard HEAD~1
         else
             if Test; then
                 echo "Test passed, Starting production update"
