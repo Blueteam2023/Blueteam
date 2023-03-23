@@ -85,7 +85,7 @@ def getWeightContainers(containers):
 
 @app.route("/weight", methods=["POST"])
 def weight():
-    
+
     id = 0
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     direction = request.args.get('direction')
@@ -98,10 +98,10 @@ def weight():
 
     weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
                    "containers": containers, "bruto": weight, "truckTara": "na", "neto": "na", "produce": produce}
-    
+
     retr_val = {"id": id, "truck": truck, "bruto": weight}
 
-    last_transaction = sqlQueries.get_last_transaction_by_truck(truck)    
+    last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
     match direction:
 
         case "in":
@@ -154,11 +154,11 @@ def weight():
 
                 case "none":
                     return "ERROR: 404 container id recognized, containers can not have in/out directions"
-                
+
         case "none":
             if not last_transaction:
                 # id = sqlQueries.insert_transaction(weight_data)
-                sqlQueries.register_container(id,weight,unit)
+                sqlQueries.register_container(id, weight, unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
@@ -181,43 +181,43 @@ def unknown():
     raise NotImplementedError
 
 
-# @app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
-# def Gweight(start, end, direct):
+@app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
+def Gweight(start, end, direct):
 
-#     pattern = r"\d{14}"
-#     if re.match(pattern, start) and re.match(pattern, end):
-#         if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
-#             start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
-#             end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
-#         else:
-#             print(
-#                 "error with the dates provided, will show all results of the current day ")
-#             start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
-#             end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#     else:
-#         print("error with the dates provided, will show all results of the current day ")
-#         start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
-#         end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    pattern = r"\d{14}"
+    if re.match(pattern, start) and re.match(pattern, end):
+        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
+            start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
+            end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
+        else:
+            print(
+                "error with the dates provided, will show all results of the current day ")
+            start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
+            end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        print("error with the dates provided, will show all results of the current day ")
+        start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
+        end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-#     are_directions = 0
-#     directions = ["in", "out", "none"]
-#     if not "in" in direct:
-#         directions.remove("in")
-#         are_directions += 1
-#     if not "out" in direct:
-#         directions.remove("out")
-#         are_directions += 1
-#     if not "none" in direct:
-#         directions.remove("none")
-#         are_directions += 1
-#     if (not directions) or (are_directions == 3):
-#         directions = ["in", "out", "none"]
+    are_directions = 0
+    directions = ["in", "out", "none"]
+    if not "in" in direct:
+        directions.remove("in")
+        are_directions += 1
+    if not "out" in direct:
+        directions.remove("out")
+        are_directions += 1
+    if not "none" in direct:
+        directions.remove("none")
+        are_directions += 1
+    if (not directions) or (are_directions == 3):
+        directions = ["in", "out", "none"]
 
-#     get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(
-#         start_date, end_date, directions)
-#     response = json.dumps(get_weight)
-#     # response.status_code = 200
-#     return response
+    get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(
+        start_date, end_date, directions)
+    response = json.dumps(get_weight)
+    # response.status_code = 200
+    return response
 
 
 @app.route("/item/<id>", methods=["GET"])
@@ -233,6 +233,7 @@ def session():
 @app.route("/health", methods=["GET"])
 def health():
     return "OK"
+
 
 if __name__ == "__main__":
     app.run()
