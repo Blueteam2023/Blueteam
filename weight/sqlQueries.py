@@ -18,8 +18,8 @@ def get_last_transaction_by_truck(truck_id: str):
     if cnx.is_connected():
         cursor = cnx.cursor(dictionary=True)
         try:
-            query = (f"SELECT * FROM transactions WHERE truck_id = '{truck_id}'"
-                     "AND direction = 'in' ORDER BY id DESC LIMIT 1")
+            query = (f"SELECT * FROM transactions WHERE truck = '{truck_id}'"
+                     " AND direction = 'in' ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             return cursor.fetchone()
         except:
