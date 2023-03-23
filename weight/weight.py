@@ -2,14 +2,13 @@ from flask import Flask, render_template, request, Response
 from mysql.connector import connect
 from http import HTTPStatus
 import datetime
-import sqlQueries
 import json
 import csv
 import re
-
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
+
 app = Flask(__name__)
 
 
@@ -187,8 +186,8 @@ def get_weight(start, end, direct):
     pattern = r"\d{14}"
     if re.match(pattern, start) and re.match(pattern, end):
         if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
-            start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
-            end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
+            start_date = start #datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
+            end_date = end #datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
         else:
             print(
                 "error with the dates provided, will show all results of the current day ")
