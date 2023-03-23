@@ -2,10 +2,14 @@ from flask import Flask, request, jsonify, render_template
 import re
 import subprocess
 import requests
+import threading
+
 
 app = Flask(__name__)
 
 
+def run_script(branch, pusher, url, number):
+    subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
 
 
 @app.route("/trigger", methods=['POST'])
@@ -23,7 +27,8 @@ def trigger():
             if action == 'closed' and payload['pull_request']['merged_at'] is not None: #if pull request approved
                 if branch == "billing" or branch=="weight":
                     print("Starting testing process")
-                    subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
+                    t = threading.Thread(target=run_script, args=(branch, pusher, url, number))
+                    t.start()
                     return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch}), 200
                 elif "revert" in branch:
                     return "Reverted branch, doing nothing", 200

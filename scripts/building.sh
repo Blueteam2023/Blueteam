@@ -145,7 +145,7 @@ Production_init(){
         #git reset --hard HEAD~1
     else
         echo "Building production finished"
-        tag="Stable $TIMESTAMP"
+        tag="Stable-$TIMESTAMP"
         git tag $tag
         git push origin $tag
         #Send_mail "Update completed" "New update in on the air"
