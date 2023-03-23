@@ -248,3 +248,26 @@ def get_session_by_id(id: int):
             if cnx.is_connected():
                 cursor.close()
                 cnx.close()
+
+
+def get_container_ids_without_weight():
+    result = []
+    query = f"SELECT id FROM containers_registered WHERE weight = -1"
+
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(query)
+            ids = cursor.fetchall()
+            if ids:
+                for id in ids:
+                    result.append(id)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+            return result
