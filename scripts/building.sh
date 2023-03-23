@@ -145,10 +145,10 @@ Production_init(){
         #git reset --hard HEAD~1
     else
         echo "Building production finished"
-        tag="Stable-$TIMESTAMP"
-        git tag $tag
-        curl -H "Authorization: Bearer $GITHUB_TOKEN" --data "{\"ref\":\"refs/tags/$tag\"}" "https://api.github.com/repos/Blueteam2023/Blueteam/git/refs"
-        #Send_mail "Update completed" "New update in on the air"
+        # tag="Stable-$TIMESTAMP"
+        # git tag $tag
+        # curl -H "Authorization: Bearer $GITHUB_TOKEN" --data "{\"ref\":\"refs/tags/$tag\"}" "https://api.github.com/repos/Blueteam2023/Blueteam/git/refs"
+        # #Send_mail "Update completed" "New update in on the air"
     fi
 }
 
