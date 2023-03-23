@@ -1,21 +1,19 @@
-from flask import Flask, render_template, request
-from mysql.connector import connect
-from http import HTTPStatus
-import datetime
+from flask import Flask, request, Response
 import sqlQueries
+from http import HTTPStatus
+from datetime import datetime
 import json
 import csv
-import re
-
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
+
 app = Flask(__name__)
 
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
-        return "na"
+        return 0
 
     neto = bruto - containers_weight - truckTara
     return neto
@@ -33,7 +31,7 @@ def sumContainerWeight(cont1, cont2, cont3, cont4, unit1, unit2, unit3):
     return sum
 
 
-def getWeightContainers(containers):
+def get_weight_containers(containers):
     unfound_containers = containers
     containers_weight4 = 0
     db_containers = sqlQueries.get_containers_by_id(unfound_containers)
@@ -47,8 +45,8 @@ def getWeightContainers(containers):
 
     if unfound_containers:
         with open(r'in/containers1.csv', 'r') as f1, open(r"in/containers2.csv", 'r') as f2, open(r'in/containers3.json', 'r') as f3:
-            unit1 = f1.readline().split(",")[1]
-            unit2 = f2.readline().split(",")[1]
+            unit1 = f1.readline().split(",")[1].strip("\n").strip("\'")
+            unit2 = f2.readline().split(",")[1].strip("\n").strip("\'")
 
             data1 = csv.reader(f1)
             data2 = csv.reader(f2)
@@ -62,15 +60,15 @@ def getWeightContainers(containers):
 
             for container1, container2, container3 in zip(data1, data2, data3):
                 if container1[0] in containers:
-                    containers_weight1 += container1[1]
+                    containers_weight1 += int(container1[1])
                     unfound_containers.remove(container1[0])
 
                 if container2[0] in containers:
-                    containers_weight2 += container2[1]
+                    containers_weight2 += int(container2[1])
                     unfound_containers.remove(container2[0])
 
                 if container3["id"] in containers:
-                    containers_weight3 += container3["weight"]
+                    containers_weight3 += int(container3["weight"])
                     unfound_containers.remove(container3["id"])
 
         if unfound_containers:
@@ -83,22 +81,43 @@ def getWeightContainers(containers):
         return containers_weight4
 
 
-@app.route("/weight", methods=["POST"])
-def weight():
+@app.route("/weight", methods=["POST", "GET"])
+def post_weight():
+    if request.method == "GET":
+        start = request.args.get("start")
+        end = request.args.get("end")
+        direct = request.args.get("direct")
+        return get_weight(start, end, direct)
 
     id = 0
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    body = ''
     direction = request.args.get('direction')
-    truck = request.args.get('truck')
-    containers = request.args.get('containers').split(",")
+    truck = str(request.args.get('truck'))
+    containers = str(request.args.get('containers'))
     weight = request.args.get('weight')
     unit = request.args.get('unit')
     force = request.args.get('force')
     produce = request.args.get('produce')
 
-    weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
-                   "containers": containers, "bruto": weight, "truckTara": "na", "neto": "na", "produce": produce}
+    # handle wrong insertions
+    if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
+        body = "Direction must be in/out/none\n"
+    if not weight.isdigit():
+        body += "Weight must be positive integer.\n"
+    if not isinstance(unit, str) or unit.lower() != "kg" and unit.lower() != "lbs":
+        body += "Unit value must be Kg/Lbs\n"
+    if not isinstance(force, str) or force.lower() != 'true' and force.lower() != 'false':
+        body += "Force value must be True/False\n"
+    if not isinstance(produce, str):
+        body += "Produce must be letters string\n"
+    if body != '':
+        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    force = force.lower()
+    unit = unit.lower()
 
+    weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
+                   "containers": containers, "bruto": weight, "truckTara": -1, "neto": -1, "produce": produce}
     retr_val = {"id": id, "truck": truck, "bruto": weight}
 
     last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
@@ -108,35 +127,36 @@ def weight():
             if not last_transaction:
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
-                return json.dumps(retr_val)
+                return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
 
             match last_transaction["direction"]:
 
                 case "in":
-                    if force == True:
+                    if force == 'true':
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
-                        return json.dumps(retr_val)
-                    return "ERROR: 404 truck cannot get in while inside to override last transaction change force to true."
+                        return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
+                    body = "Truck already in. To override current 'in', request with force=True"
+                    return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
                 case "out":
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
-                    return json.dumps(retr_val)
-
-                case "none":
-                    return "ERROR: 404 Truck id recognized as registered container id"
+                    return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
 
         case "out":
 
             if not last_transaction:
-                return "ERROR: 404 Truck not exist"
-
+                body = "Truck has not been weighed yet"
+                return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+            if containers or produce:
+                body = "Truck must be empty while getting out"
+                return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             truckTara = weight
-            containers_weight = getWeightContainers(containers)
-            neto = calculateNeto(
-                last_transaction["bruto"], containers_weight, truckTara, unit)
-            retr_val += {"truckTara": truckTara, "neto": neto}
+            containers_weight = get_weight_containers(last_transaction["containers"].split(","))
+            neto = calculateNeto(last_transaction["bruto"], containers_weight, truckTara, unit)
+            retr_val["truckTara"] = truckTara
+            retr_val["neto"] = neto
 
             match last_transaction["direction"]:
 
@@ -146,7 +166,7 @@ def weight():
                     return json.dumps(retr_val)
 
                 case "out":
-                    if force == True:
+                    if force == 'true':
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
                         return json.dumps(retr_val)
@@ -158,11 +178,15 @@ def weight():
         case "none":
             if not last_transaction:
                 # id = sqlQueries.insert_transaction(weight_data)
+                if len(containers.split(",")) > 1:
+                    body = "While registering container only one container is allowed"
+                    return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+                id = str(containers)
                 sqlQueries.register_container(id, weight, unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
-            elif last_transaction["direction"] == "none" and force == True:
+            elif last_transaction["direction"] == "none" and force == 'true':
                 sqlQueries.change_transaction(weight_data)
                 # sqlQueries.change_container(weight_data)
                 return json.dumps(retr_val)
@@ -172,68 +196,69 @@ def weight():
 
 
 @app.route("/batch-weight", methods=["POST"])
-def batchWeight():
+def post_batch_weight():
     raise NotImplementedError
 
 
 @app.route("/unknown", methods=["GET"])
-def unknown():
+def get_unknown():
     raise NotImplementedError
 
 
-@app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
-def Gweight(start, end, direct):
+def get_weight(start, end, direct):
+    start_date = None
+    end_date = None
+    try:
+        parsed_start = datetime.strptime(start, "%Y%m%d%H%M%S")
+        parsed_end = datetime.strptime(end, "%Y%m%d%H%M%S")
+        if parsed_end > parsed_start:
+            start_date = str(parsed_start)
+            end_date = str(parsed_end)
+    finally:
+        if not start_date:
+            start_date = str(datetime.today().strftime("%Y-%m-%d 00:00:00"))
+        if not end_date:
+            end_date = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    pattern = r"\d{14}"
-    if re.match(pattern, start) and re.match(pattern, end):
-        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
-            start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
-            end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
-        else:
-            print(
-                "error with the dates provided, will show all results of the current day ")
-            start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
-            end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    else:
-        print("error with the dates provided, will show all results of the current day ")
-        start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
-        end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if not direct:
+            direct = ""
+        directions_list = direct.split(',')
+        directions_used = []
+        if "in" in directions_list:
+            directions_used.append("in")
+        if "out" in directions_list:
+            directions_used.append("out")
+        if "none" in directions_list:
+            directions_used.append("none")
+        if not directions_used:
+            directions_used = ["in", "out", "none"]
 
-    are_directions = 0
-    directions = ["in", "out", "none"]
-    if not "in" in direct:
-        directions.remove("in")
-        are_directions += 1
-    if not "out" in direct:
-        directions.remove("out")
-        are_directions += 1
-    if not "none" in direct:
-        directions.remove("none")
-        are_directions += 1
-    if (not directions) or (are_directions == 3):
-        directions = ["in", "out", "none"]
-
-    get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(
-        start_date, end_date, directions)
-    response = json.dumps(get_weight)
-    # response.status_code = 200
-    return response
+        result = sqlQueries.get_transaction_range_by_dates_and_directions(
+            start_date, end_date, directions_used)
+        return Response(response=json.dumps(result), status=HTTPStatus.OK)
 
 
 @app.route("/item/<id>", methods=["GET"])
-def item():
+def get_item():
     raise NotImplementedError
 
 
 @app.route("/session/<id>", methods=["GET"])
-def session():
-    raise NotImplementedError
+def get_session(id: str):
+    try:
+        id_int = int(id)
+        result = sqlQueries.get_session_by_id(id_int)
+        if not result:
+            return Response(response="Id given is not a valid session id", status=HTTPStatus.BAD_REQUEST)
+        return Response(response=json.dumps(result), status=HTTPStatus.OK)
+    except:
+        return Response(response="Id given is not a valid session id", status=HTTPStatus.BAD_REQUEST)
 
 
 @app.route("/health", methods=["GET"])
-def health():
-    return "OK"
+def get_health():
+    return Response(status=HTTPStatus.OK)
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
