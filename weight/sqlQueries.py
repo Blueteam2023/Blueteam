@@ -9,11 +9,11 @@ config = {
     "password": environ['MYSQL_ROOT_PASSWORD'],
     "database": environ['MYSQL_DB_NAME'],
     "port": 3306
-# "host":'localhost',
-# "user":'root',
-# "password":'12345',
-# "database":'weight',
-# "port":3306
+    # "host":'localhost',
+    # "user":'root',
+    # "password":'12345',
+    # "database":'weight',
+    # "port":3306
 }
 # For Yuval
 
@@ -58,42 +58,14 @@ def get_last_transaction_by_container(container_id: str):
 def change_transaction(values: dict[str, Any]):
     first_entry = True
     query = ("UPDATE transactions"
-             "SET")
-    if "datetime" in values:
-        query += f" datetime = '{values['datetime']}'"
-        first_entry = False
-    if "bruto" in values:
-        if not first_entry:
-            query += ","
-        else:
-            first_entry = False
-        query += f" bruto = {values['bruto']}"
-    if "truck_tara" in values:
-        if not first_entry:
-            query += ","
-        else:
-            first_entry = False
-        query += f", bruto = {values['truck_tara']}"
-    if "neto" in values:
-        if not first_entry:
-            query += ","
-        else:
-            first_entry = False
-        query += f", bruto = {values['neto']}"
-    if "truck" in values:
-        if "containers" in values:
-            if not first_entry:
-                query += ","
-            else:
-                first_entry = False
-            query += " conainers = "
-            for container in values["containers"]:
-                query += f" '{container}'"
-        query += (f", truck == {values['truck']}"
+             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truck_tara']}"
+             f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'")
+    if values['truck'] != "-":
+        query += (f" WHERE truck == {values['truck']}"
                   " ORDER BY id DESC"
                   " LIMIT 1")
     else:
-        query += (f", containers = {values['containers[0]']}"
+        query += (f" WHERE containers = {values['containers[0]']}"
                   " ORDER BY id DESC"
                   " LIMIT 1")
     cnx = connect(**config)
