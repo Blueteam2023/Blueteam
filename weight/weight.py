@@ -89,8 +89,12 @@ def post_weight():
         direct = request.args.get("direct")
         return get_weight(start, end, direct)
     id = 0
+<<<<<<< HEAD
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+=======
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+>>>>>>> 4c210a5 (third debug post weight)
     direction = request.args.get('direction')
     truck = request.args.get('truck')
     containers = request.args.get('containers')
@@ -98,9 +102,16 @@ def post_weight():
     unit = request.args.get('unit')
     force = request.args.get('force')
     produce = request.args.get('produce')
+<<<<<<< HEAD
     # handle wrong insertions
     weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
                    "containers": containers, "bruto": weight, "truckTara": 0, "neto": 0, "produce": produce}
+=======
+    #handle wrong insertions
+    weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
+                   "containers": containers, "bruto": weight, "truckTara": 0, "neto": 0, "produce": produce}
+    
+>>>>>>> 4c210a5 (third debug post weight)
     retr_val = {"id": id, "truck": truck, "bruto": weight}
 
     last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
@@ -133,8 +144,12 @@ def post_weight():
                 return Response(response="Truck has not been weighed yet", status=HTTPStatus.BAD_REQUEST)
 
             truckTara = weight
+<<<<<<< HEAD
             containers_weight = get_weight_containers(
                 last_transaction["containers"].split(","))
+=======
+            containers_weight = getWeightContainers(containers.split(","))
+>>>>>>> 4c210a5 (third debug post weight)
             neto = calculateNeto(
                 last_transaction["bruto"], containers_weight, truckTara, unit)
             retr_val += {"truckTara": truckTara, "neto": neto}
@@ -178,6 +193,7 @@ def post_batch_weight():
 
 
 @app.route("/unknown", methods=["GET"])
+<<<<<<< HEAD
 def get_unknown():
     raise NotImplementedError
 
@@ -213,9 +229,52 @@ def get_weight(start, end, direct):
         result = sqlQueries.get_transaction_range_by_dates_and_directions(
             start_date, end_date, directions_used)
         return Response(response=json.dumps(result), status=HTTPStatus.OK)
+=======
+def unknown():
+    return True
 
+
+@app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
+def Gweight(start, end, direct):
+
+    pattern = r"\d{14}"
+    if re.match(pattern, start) and re.match(pattern, end):
+        if (datetime.datetime.strptime(end, "%Y%m%d%H%M%S")) > (datetime.datetime.strptime(start, "%Y%m%d%H%M%S")):
+            start_date = datetime.datetime.strftime(start, "%Y-%m-%d %H:%M:%S")
+            end_date = datetime.datetime.strftime(end, "%Y-%m-%d %H:%M:%S")
+        else:
+            print(
+                "error with the dates provided, will show all results of the current day ")
+            start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
+            end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        print("error with the dates provided, will show all results of the current day ")
+        start_date = datetime.datetime.today().strftime("%Y-%m-%d 00:00:00")
+        end_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    are_directions = 0
+    directions = ["in", "out", "none"]
+    if not "in" in direct:
+        directions.remove("in")
+        are_directions += 1
+    if not "out" in direct:
+        directions.remove("out")
+        are_directions += 1
+    if not "none" in direct:
+        directions.remove("none")
+        are_directions += 1
+    if (not directions) or (are_directions == 3):
+        directions = ["in", "out", "none"]
+>>>>>>> 4c210a5 (third debug post weight)
+
+    get_weight = sqlQueries.get_transaction_range_by_dates_and_directions(
+        start_date, end_date, directions)
+    response = json.dumps(get_weight)
+    # response.status_code = 200
+    return response
 
 @app.route("/item/<id>", methods=["GET"])
+<<<<<<< HEAD
 def get_item():
     raise NotImplementedError
 
@@ -223,6 +282,15 @@ def get_item():
 @app.route("/session/<id>", methods=["GET"])
 def get_session():
     raise NotImplementedError
+=======
+def item():
+    return True
+
+
+@app.route("/session/<id>", methods=["GET"])
+def session():
+    return True
+>>>>>>> 4c210a5 (third debug post weight)
 
 
 @app.route("/health", methods=["GET"])
@@ -231,4 +299,4 @@ def get_health():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
