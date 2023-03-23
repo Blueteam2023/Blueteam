@@ -231,6 +231,8 @@ def get_weight(start, end, direct):
         result = sqlQueries.get_transaction_range_by_dates_and_directions(
             start_date, end_date, directions_used)
         return Response(response=json.dumps(result), status=HTTPStatus.OK)
+
+
 @app.route("/item/<id>", methods=["GET"])
 def get_item():
     raise NotImplementedError
