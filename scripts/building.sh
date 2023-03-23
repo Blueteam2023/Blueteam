@@ -109,7 +109,7 @@ Send_mail(){
 # Terminate testing enovirment
 Terminate_testing(){
 	echo "Terminating test envoirment"
-	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing down --rmi all &&\
+	docker-compose -f /app/testenv/$team1/docker-compose.yaml --project-name testing down --rmi all
     docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing down --rmi all
 	rm -rf /app/testenv/*
     rm -rf /app/testenv/.git
@@ -158,8 +158,8 @@ Testing_init(){
             echo "Health failed, Reverting to last commit"
             #git reset --hard HEAD~1
         else
-            Test = 0
-            if [ $Test -eq 0 ]; then
+            Tester=0
+            if [ $Tester -eq 0 ]; then
                 echo "Test passed, Starting production update"
                 #Production_init
             else
