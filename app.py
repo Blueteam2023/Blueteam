@@ -53,8 +53,8 @@ def monitor():
             'weight': 'http://weight-app/health'
         },
         'testing': {
-            'billing': 'http://127.0.0.1:8088/health',
-            'weight': 'http://127.0.0.1:8089/health'
+            'billing': 'http://test-billing-app/health',
+            'weight': 'http://test-weight-app/health'
         }
     }
 

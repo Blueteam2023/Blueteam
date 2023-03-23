@@ -66,8 +66,8 @@ Build_testing(){
 Health_check(){
     echo "Checking health"
     if [ $1 = "testing" ]; then
-        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8088/health) #change ip
-        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8089/health) #change ip
+        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://test-$team1-app/health)
+        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://test-$team2-app/health)
     elif [ $1 = "production" ]; then
         check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://billing-app/health)
         check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://weight-app/health)

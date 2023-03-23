@@ -6,6 +6,7 @@ services:
     build: .
     networks:
       - BlueTeam
+      - Testing
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: /bin/sh -c "./scripts/deploy.sh && gunicorn app:app --bind 0.0.0.0:8080"
@@ -29,3 +30,5 @@ services:
 networks:
   BlueTeam:
     name: BlueTeam
+  Testing:
+    name: Testing
