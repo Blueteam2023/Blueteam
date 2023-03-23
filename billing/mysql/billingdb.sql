@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `Rates` (
 ) ENGINE=MyISAM ;
 
 CREATE TABLE IF NOT EXISTS `Trucks` (
-  `id` varchar(10) NOT NULL,
+  `id` varchar(10) NOT NULL,  
   `provider_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`provider_id`) REFERENCES `Provider`(`id`)
