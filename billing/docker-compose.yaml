@@ -16,8 +16,7 @@ services:
    - ./sql.env
   depends_on:
    - billing-mysql
-  ports:
-   - "8082:80"
+
    
   
  billing-mysql:
@@ -33,7 +32,6 @@ services:
    MYSQL_ROOT_PASSWORD: "root"
   env_file:
    - ./sql.env
-  ports:
-   - "8081:3306"
+
    
 
