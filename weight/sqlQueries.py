@@ -3,19 +3,19 @@ from mysql.connector import connect
 from os import environ
 
 config = {
-
-    # "host": environ['MYSQL_HOST'],
-    # "user": "root",
-    # "password": environ['MYSQL_ROOT_PASSWORD'],
-    # "database": environ['MYSQL_DB_NAME'],
-    # "port": 3306
-    "host": 'localhost',
-    "user": 'root',
-    "password": '12345',
-    "database": 'weight',
+    "host": environ['MYSQL_HOST'],
+    "user": "root",
+    "password": environ['MYSQL_ROOT_PASSWORD'],
+    "database": environ['MYSQL_DB_NAME'],
     "port": 3306
+    # "host": 'localhost',
+    # "user": 'root',
+    # "password": '12345',
+    # "database": 'weight',
+    # "port": 3306
 }
 # For Yuval
+
 
 def health():
     cnx = connect(**config)
@@ -24,9 +24,10 @@ def health():
         try:
             query = ("SELECT 1")
             cursor.execute(query)
-            return "OK,200"
+            return "OK", 200
         except:
-            return "500,DB NOT CONNECTED"
+            return "ERROR", 500
+
 
 def get_last_transaction_by_truck(truck_id: str):
     cnx = connect(**config)

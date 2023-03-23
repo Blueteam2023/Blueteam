@@ -216,7 +216,10 @@ def post_weight():
 
 @app.route("/batch-weight", methods=["POST"])
 def post_batch_weight():
-    raise NotImplementedError
+    id = request.args.get('id')
+    start = request.args.get('from')
+    input_file_names = request.files
+    print("")
 
 
 @app.route("/unknown", methods=["GET"])
@@ -258,7 +261,7 @@ def get_weight(start, end, direct):
         return Response(response=json.dumps(result), status=HTTPStatus.OK)
 
 
-@app.route("/item/<id>", methods=["GET"])
+@app.route("/item", methods=["GET"])
 def get_item():
     raise NotImplementedError
 
