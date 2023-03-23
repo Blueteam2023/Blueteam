@@ -3,7 +3,7 @@ from mysql.connector import connect
 from os import environ
 
 config = {
-<<<<<<< HEAD
+
     "host": environ['MYSQL_HOST'],
     "user": "root",
     "password": environ['MYSQL_ROOT_PASSWORD'],
@@ -14,20 +14,7 @@ config = {
 # "password":'12345',
 # "database":'weight',
 # "port":3306
-=======
-    # "host": environ['MYSQL_HOST'],
-    # "user": "root",
-    # "password": environ['MYSQL_ROOT_PASSWORD'],
-    # "database": environ['MYSQL_DB_NAME'],
-    # "port": 3306
-"host":'localhost',
-"user":'root',
-"password":'12345',
-"database":'weight',
-"port":3306
->>>>>>> 4c210a5 (third debug post weight)
 }
-
 # For Yuval
 
 
@@ -37,7 +24,6 @@ def get_last_transaction_by_truck(truck_id: str):
         cursor = cnx.cursor(dictionary=True)
         try:
             query = (f"SELECT * FROM transactions WHERE truck = '{truck_id}'"
-<<<<<<< HEAD
                      " AND direction = 'in' ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             return cursor.fetchone()
@@ -57,9 +43,7 @@ def get_last_transaction_by_container(container_id: str):
         try:
             query = (f"SELECT * FROM transactions WHERE containers = '{container_id}'"
                      "AND direction = 'none' ORDER BY id DESC LIMIT 1")
-=======
-                     "ORDER BY id DESC")
->>>>>>> 4c210a5 (third debug post weight)
+
             cursor.execute(query)
             return cursor.fetchone()
         except:
