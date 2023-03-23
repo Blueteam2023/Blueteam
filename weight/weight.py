@@ -88,19 +88,37 @@ def post_weight():
         end = request.args.get("end")
         direct = request.args.get("direct")
         return get_weight(start, end, direct)
+    
     id = 0
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    body = ''
     direction = request.args.get('direction')
-    truck = request.args.get('truck')
-    containers = request.args.get('containers')
+    truck = str(request.args.get('truck'))
+    containers = str(request.args.get('containers'))
     weight = request.args.get('weight')
     unit = request.args.get('unit')
     force = request.args.get('force')
     produce = request.args.get('produce')
+      
+    
     # handle wrong insertions
+    if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
+        body = "Direction must be in/out/none\n"
+    if not weight.isdigit():
+        body += "Weight must be positive integer.\n"
+    if not isinstance(unit,str) or unit.lower() != "kg" and unit.lower() != "lbs":
+        body += "Unit value must be Kg/Lbs\n"
+    if not isinstance(force,str) or force.lower() != 'true' and force.lower() != 'false':
+        body += "Force value must be True/False\n"
+    if not isinstance(produce,str):
+        body += "Produce must be letters string\n"
+    if body != '':
+        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    force = force.lower()
+    unit = unit.lower()
+    
     weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
-                   "containers": containers, "bruto": weight, "truckTara": 0, "neto": 0, "produce": produce}
+                   "containers": containers, "bruto": weight, "truckTara": -1, "neto": -1, "produce": produce}
     retr_val = {"id": id, "truck": truck, "bruto": weight}
 
     last_transaction = sqlQueries.get_last_transaction_by_truck(truck)
@@ -115,11 +133,11 @@ def post_weight():
             match last_transaction["direction"]:
 
                 case "in":
-                    if force == True:
+                    if force == 'true':
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
                         return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
-                    body = "Truck already in get in. To override current 'in', request with force=True"
+                    body = "Truck already in. To override current 'in', request with force=True"
                     return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
                 case "out":
@@ -147,7 +165,7 @@ def post_weight():
                     return json.dumps(retr_val)
 
                 case "out":
-                    if force == True:
+                    if force == 'true':
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
                         return json.dumps(retr_val)
@@ -163,7 +181,7 @@ def post_weight():
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
-            elif last_transaction["direction"] == "none" and force == True:
+            elif last_transaction["direction"] == "none" and force == 'true':
                 sqlQueries.change_transaction(weight_data)
                 # sqlQueries.change_container(weight_data)
                 return json.dumps(retr_val)
