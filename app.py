@@ -55,12 +55,12 @@ def health_check():
 def monitor():
     services = {
         'production': {
-            'billing': 'http://billing-app/health',
-            'weight': 'http://weight-app/health'
+            'billing': 'http://billing-app:80/health',
+            'weight': 'http://weight-app:5000/health'
         },
         'testing': {
-            'billing': 'http://test-billing-app/health',
-            'weight': 'http://test-weight-app/health'
+            'billing': 'http://test-billing-app:80/health',
+            'weight': 'http://test-weight-app:5000/health'
         }
     }
 
