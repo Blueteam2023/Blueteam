@@ -174,9 +174,9 @@ if [ -f "$lockfile" ]; then
     while [ -f "$lockfile" ]; do
         sleep 30
     done
-else
-    touch "$lockfile"
-    Testing_init
-    rm "$lockfile"
 fi
+touch "$lockfile"
+Testing_init
+rm "$lockfile"
+
 

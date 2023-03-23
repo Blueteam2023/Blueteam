@@ -15,7 +15,7 @@ services:
 
   nginx:
     image: nginx:stable-alpine
-    command: /bin/sh -c "sleep 30 && exec nginx -g 'daemon off;'"
+    command: /bin/sh -c "/scripts/entrypoint.sh"
     ports:
       - "8080:8080"
       - "8082:8082"
