@@ -134,7 +134,8 @@ Build_production(){
 Production_init(){
     Stop_production
     echo "Pulling new version"
-    git pull
+    cd /app
+    git pull # do safety
     Build_production
     #health=$(Health_check production)
     health=1
