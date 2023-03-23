@@ -275,7 +275,7 @@ def get_session(id: str):
 
 @app.route("/health", methods=["GET"])
 def get_health():
-    return Response(status=HTTPStatus.OK)
+    return sqlQueries.health()
 
 
 if __name__ == "__main__":
