@@ -24,6 +24,8 @@ def trigger():
                     print("Starting testing process")
                     subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
                     return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
+                elif "revert" in branch:
+                    return "Reverted branch, doing nothing", 200
                 else:
                     return "Invalid branch", 400
             else:
