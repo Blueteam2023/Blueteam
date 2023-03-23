@@ -17,6 +17,16 @@ config = {
 }
 # For Yuval
 
+def health():
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            query = ("SELECT 1")
+            cursor.execute(query)
+            return "OK,200"
+        except:
+            return "500,DB NOT CONNECTED"
 
 def get_last_transaction_by_truck(truck_id: str):
     cnx = connect(**config)
