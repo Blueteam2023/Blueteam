@@ -4,10 +4,11 @@ from http import HTTPStatus
 from datetime import datetime
 import json
 import csv
+import re
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
-
+IS_TRUCK = "^\d+\-\d+\-\d+"
 app = Flask(__name__)
 
 
@@ -104,6 +105,8 @@ def post_weight():
     produce = request.args.get('produce')
 
     # handle wrong insertions
+    if not re.compile(IS_TRUCK).match(truck):
+        body = "truck lisence must be in numbers divided by dashes"
     if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
         body = "Direction must be in/out/none\n"
     if not weight.isdigit():
@@ -183,19 +186,24 @@ def post_weight():
                     return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
         case "none":
+            weight_data["truck"] = "-"
+            weight_data["produce"] = "-"
             containers = containers.split(",")
             if len(containers) > 1:
                     body = "While registering container only one container is allowed"
                     return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-            id = " ".join(containers)
+            container_id = " ".join(containers)
             last_container = sqlQueries.get_containers_by_id(containers)
+            
             if not last_container:
-                sqlQueries.register_container(id, weight, unit)
+                id = sqlQueries.insert_transaction(weight_data)
+                sqlQueries.register_container(container_id, weight, unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
             elif force == 'true':
-                sqlQueries.update_transaction(id,weight,unit)
+                sqlQueries.change_transaction(weight_data)
+                sqlQueries.update_container(id,weight,unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
