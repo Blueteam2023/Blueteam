@@ -202,7 +202,8 @@ def post_batch_weight():
 
 @app.route("/unknown", methods=["GET"])
 def get_unknown():
-    raise NotImplementedError
+    result = sqlQueries.get_container_ids_without_weight()
+    return Response(response=json.dumps(result), status=HTTPStatus.OK)
 
 
 def get_weight(start, end, direct):
