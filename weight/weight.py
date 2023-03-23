@@ -84,7 +84,7 @@ def getWeightContainers(containers):
 
 
 @app.route("/weight", methods=["POST"])
-def weight():
+def post_weight():
 
     id = 0
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -172,17 +172,17 @@ def weight():
 
 
 @app.route("/batch-weight", methods=["POST"])
-def batchWeight():
+def post_batch_weight():
     raise NotImplementedError
 
 
 @app.route("/unknown", methods=["GET"])
-def unknown():
+def get_unknown():
     raise NotImplementedError
 
 
 @app.route("/weight/<start>/<end>/<directed>", methods=["GET"])
-def Gweight(start, end, direct):
+def get_weight(start, end, direct):
 
     pattern = r"\d{14}"
     if re.match(pattern, start) and re.match(pattern, end):
@@ -221,17 +221,17 @@ def Gweight(start, end, direct):
 
 
 @app.route("/item/<id>", methods=["GET"])
-def item():
+def get_item():
     raise NotImplementedError
 
 
 @app.route("/session/<id>", methods=["GET"])
-def session():
+def get_session():
     raise NotImplementedError
 
 
 @app.route("/health", methods=["GET"])
-def health():
+def get_health():
     return Response(status=HTTPStatus.OK)
 
 
