@@ -4,18 +4,20 @@ from http import HTTPStatus
 from datetime import datetime
 import json
 import csv
+import re
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
-
+IS_TRUCK = "^\d+\-\d+\-\d+"
 app = Flask(__name__)
 
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
         return 0
-
     neto = bruto - containers_weight - truckTara
+    if unit == "lbs":
+        neto *= 2.2
     return neto
 
 
@@ -45,8 +47,8 @@ def get_weight_containers(containers):
 
     if unfound_containers:
         with open(r'in/containers1.csv', 'r') as f1, open(r"in/containers2.csv", 'r') as f2, open(r'in/containers3.json', 'r') as f3:
-            unit1 = f1.readline().split(",")[1].strip("\n").strip("\'")
-            unit2 = f2.readline().split(",")[1].strip("\n").strip("\'")
+            unit1 = f1.readline().split(",")[1].strip("\n").strip('"')
+            unit2 = f2.readline().split(",")[1].strip("\n").strip('"')
 
             data1 = csv.reader(f1)
             data2 = csv.reader(f2)
@@ -59,18 +61,20 @@ def get_weight_containers(containers):
             containers_weight3 = 0
 
             for container1, container2, container3 in zip(data1, data2, data3):
-                if container1[0] in containers:
-                    containers_weight1 += int(container1[1])
-                    unfound_containers.remove(container1[0])
+                if unfound_containers:
+                    if container1[0] in containers:
+                        containers_weight1 += int(container1[1])
+                        unfound_containers.remove(container1[0])
 
-                if container2[0] in containers:
-                    containers_weight2 += int(container2[1])
-                    unfound_containers.remove(container2[0])
+                    if container2[0] in containers:
+                        containers_weight2 += int(container2[1])
+                        unfound_containers.remove(container2[0])
 
-                if container3["id"] in containers:
-                    containers_weight3 += int(container3["weight"])
-                    unfound_containers.remove(container3["id"])
-
+                    if container3["id"] in containers:
+                        containers_weight3 += int(container3["weight"])
+                        unfound_containers.remove(container3["id"])
+                else:
+                    break
         if unfound_containers:
             return "na"
         else:
@@ -101,6 +105,8 @@ def post_weight():
     produce = request.args.get('produce')
 
     # handle wrong insertions
+    if not re.compile(IS_TRUCK).match(truck):
+        body = "truck lisence must be in numbers divided by dashes"
     if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
         body = "Direction must be in/out/none\n"
     if not weight.isdigit():
@@ -115,7 +121,8 @@ def post_weight():
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
     force = force.lower()
     unit = unit.lower()
-
+    weight = int(weight)
+    
     weight_data = {"datetime": timestamp, "direction": direction, "truck": truck,
                    "containers": containers, "bruto": weight, "truckTara": -1, "neto": -1, "produce": produce}
     retr_val = {"id": id, "truck": truck, "bruto": weight}
@@ -155,6 +162,11 @@ def post_weight():
             truckTara = weight
             containers_weight = get_weight_containers(last_transaction["containers"].split(","))
             neto = calculateNeto(last_transaction["bruto"], containers_weight, truckTara, unit)
+            if neto < 0:
+                body = "Neto weight can not be negative."
+                Response(response=body, status=HTTPStatus.BAD_REQUEST)
+            weight_data["truckTara"] = truckTara
+            weight_data["neto"] = neto
             retr_val["truckTara"] = truckTara
             retr_val["neto"] = neto
 
@@ -170,29 +182,34 @@ def post_weight():
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
                         return json.dumps(retr_val)
-                    return "ERROR: 404 truck cannot get out if not inside to override last transaction change force to true."
-
-                case "none":
-                    return "ERROR: 404 container id recognized, containers can not have in/out directions"
+                    body = "Truck cannot get out if not inside to override last transaction change force to true."
+                    return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
         case "none":
-            if not last_transaction:
-                # id = sqlQueries.insert_transaction(weight_data)
-                if len(containers.split(",")) > 1:
+            weight_data["truck"] = "-"
+            weight_data["produce"] = "-"
+            containers = containers.split(",")
+            if len(containers) > 1:
                     body = "While registering container only one container is allowed"
                     return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-                id = str(containers)
-                sqlQueries.register_container(id, weight, unit)
+            container_id = " ".join(containers)
+            last_container = sqlQueries.get_containers_by_id(containers)
+            
+            if not last_container:
+                id = sqlQueries.insert_transaction(weight_data)
+                sqlQueries.register_container(container_id, weight, unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
-            elif last_transaction["direction"] == "none" and force == 'true':
+            elif force == 'true':
                 sqlQueries.change_transaction(weight_data)
-                # sqlQueries.change_container(weight_data)
+                sqlQueries.update_container(id,weight,unit)
+                retr_val["id"] = id
                 return json.dumps(retr_val)
 
             else:
-                return "Error: 404 container already registerd OR truck id was entered, trucks direction cannot be none"
+                body = "Container already registerd. In order to over write container weight request force = True."
+                return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
 
 @app.route("/batch-weight", methods=["POST"])
@@ -202,7 +219,8 @@ def post_batch_weight():
 
 @app.route("/unknown", methods=["GET"])
 def get_unknown():
-    raise NotImplementedError
+    result = sqlQueries.get_container_ids_without_weight()
+    return Response(response=json.dumps(result), status=HTTPStatus.OK)
 
 
 def get_weight(start, end, direct):

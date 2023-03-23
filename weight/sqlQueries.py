@@ -4,16 +4,16 @@ from os import environ
 
 config = {
 
-    "host": environ['MYSQL_HOST'],
-    "user": "root",
-    "password": environ['MYSQL_ROOT_PASSWORD'],
-    "database": environ['MYSQL_DB_NAME'],
+    # "host": environ['MYSQL_HOST'],
+    # "user": "root",
+    # "password": environ['MYSQL_ROOT_PASSWORD'],
+    # "database": environ['MYSQL_DB_NAME'],
+    # "port": 3306
+    "host": 'localhost',
+    "user": 'root',
+    "password": '12345',
+    "database": 'weight',
     "port": 3306
-    # "host":'localhost',
-    # "user":'root',
-    # "password":'12345',
-    # "database":'weight',
-    # "port":3306
 }
 # For Yuval
 
@@ -24,7 +24,7 @@ def get_last_transaction_by_truck(truck_id: str):
         cursor = cnx.cursor(dictionary=True)
         try:
             query = (f"SELECT * FROM transactions WHERE truck = '{truck_id}'"
-                     " AND direction = 'in' ORDER BY id DESC LIMIT 1")
+                     " ORDER BY id DESC LIMIT 1")
             cursor.execute(query)
             return cursor.fetchone()
         except:
@@ -56,22 +56,31 @@ def get_last_transaction_by_container(container_id: str):
 
 
 def change_transaction(values: dict[str, Any]):
-    query = ("UPDATE transactions"
-             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truck_tara']}"
-             f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'")
-    if values['truck'] != "-":
-        query += (f" WHERE truck == {values['truck']}"
-                  " ORDER BY id DESC"
-                  " LIMIT 1")
+    # two cases; case 1 - force an update on a container session
+    # case 2 - force an update on a truck session
+    # in the first case - truck = '-'
+    # in the second case - truck != '-'
+    query_start: str
+    if values['truck'] == "-":
+        query_start = (f"SELECT id FROM transactions WHERE truck = '-' AND containers = '{values['containers']}'"
+                       " ORDER BY id DESC"
+                       " LIMIT 1")
     else:
-        query += (f" WHERE containers = {values['containers[0]']}"
-                  " ORDER BY id DESC"
-                  " LIMIT 1")
+        query_start = (f"SELECT id FROM transactions WHERE truck = '{values['truck']}'"
+                       " ORDER BY id DESC"
+                       " LIMIT 1")
+
     cnx = connect(**config)
     if cnx.is_connected():
         cursor = cnx.cursor()
         try:
-            cursor.execute(query)
+            cursor.execute(query_start)
+            query_id = int(cursor.fetchone())
+            update_query = ("UPDATE transactions"
+                            f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truckTara']},"
+                            f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'"
+                            f" WHERE id = {query_id}")
+            cursor.execute(update_query)
         except:
             print("err")
             # TODO: handle errors
@@ -248,3 +257,26 @@ def get_session_by_id(id: int):
             if cnx.is_connected():
                 cursor.close()
                 cnx.close()
+
+
+def get_container_ids_without_weight():
+    result = []
+    query = f"SELECT id FROM containers_registered WHERE weight = -1"
+
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(query)
+            ids = cursor.fetchall()
+            if ids:
+                for id in ids:
+                    result.append(id)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+            return result
