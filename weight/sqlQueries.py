@@ -8,6 +8,11 @@ config = {
     "password": environ['MYSQL_ROOT_PASSWORD'],
     "database": environ['MYSQL_DB_NAME'],
     "port": 3306
+# "host":'localhost',
+# "user":'root',
+# "password":'12345',
+# "database":'weight',
+# "port":3306
 }
 
 # For Yuval
