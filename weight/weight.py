@@ -45,8 +45,8 @@ def get_weight_containers(containers):
 
     if unfound_containers:
         with open(r'in/containers1.csv', 'r') as f1, open(r"in/containers2.csv", 'r') as f2, open(r'in/containers3.json', 'r') as f3:
-            unit1 = f1.readline().split(",")[1]
-            unit2 = f2.readline().split(",")[1]
+            unit1 = f1.readline().split(",")[1].strip("\n").strip("\'")
+            unit2 = f2.readline().split(",")[1].strip("\n").strip("\'")
 
             data1 = csv.reader(f1)
             data2 = csv.reader(f2)
@@ -60,15 +60,15 @@ def get_weight_containers(containers):
 
             for container1, container2, container3 in zip(data1, data2, data3):
                 if container1[0] in containers:
-                    containers_weight1 += container1[1]
+                    containers_weight1 += int(container1[1])
                     unfound_containers.remove(container1[0])
 
                 if container2[0] in containers:
-                    containers_weight2 += container2[1]
+                    containers_weight2 += int(container2[1])
                     unfound_containers.remove(container2[0])
 
                 if container3["id"] in containers:
-                    containers_weight3 += container3["weight"]
+                    containers_weight3 += int(container3["weight"])
                     unfound_containers.remove(container3["id"])
 
         if unfound_containers:
@@ -147,14 +147,16 @@ def post_weight():
         case "out":
 
             if not last_transaction:
-                return Response(response="Truck has not been weighed yet", status=HTTPStatus.BAD_REQUEST)
-
+                body = "Truck has not been weighed yet"
+                return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+            if containers or produce:
+                body = "Truck must be empty while getting out"
+                return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             truckTara = weight
-            containers_weight = get_weight_containers(
-                last_transaction["containers"].split(","))
-            neto = calculateNeto(
-                last_transaction["bruto"], containers_weight, truckTara, unit)
-            retr_val += {"truckTara": truckTara, "neto": neto}
+            containers_weight = get_weight_containers(last_transaction["containers"].split(","))
+            neto = calculateNeto(last_transaction["bruto"], containers_weight, truckTara, unit)
+            retr_val["truckTara"] = truckTara
+            retr_val["neto"] = neto
 
             match last_transaction["direction"]:
 
@@ -176,6 +178,10 @@ def post_weight():
         case "none":
             if not last_transaction:
                 # id = sqlQueries.insert_transaction(weight_data)
+                if len(containers.split(",")) > 1:
+                    body = "While registering container only one container is allowed"
+                    return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+                id = str(containers)
                 sqlQueries.register_container(id, weight, unit)
                 retr_val["id"] = id
                 return json.dumps(retr_val)

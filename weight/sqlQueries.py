@@ -115,6 +115,7 @@ def get_containers_by_id(ids: list[str]):
                 container = cursor.fetchone()
                 if container:
                     result.append(container)
+
             return result
         except:
             print("err")
