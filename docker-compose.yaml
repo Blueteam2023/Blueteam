@@ -15,14 +15,14 @@ services:
 
   nginx:
     image: nginx:stable-alpine
-    command: /bin/sh -c "/tmp/entrypoint.sh"
+    command: /bin/sh -c "/entrypoint.sh"
     ports:
       - "8080:8080"
       - "8082:8082"
       - "8083:8083"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./scripts/entrypoint.sh:/tmp/entrypoint.sh
+      - ./scripts/entrypoint.sh:/entrypoint.sh
     depends_on:
       - ci
     networks:
