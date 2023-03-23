@@ -165,9 +165,6 @@ def register_container(id: str, weight: int, unit: str):
 
 # For Carmen
 def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str, directions: list[str]):
-    print(f"{start_date},{ end_date},{ directions}")
-    return ["ok"]
-
     cnx = connect(**config)
     directions_query = f"direction = '{directions[0]}'"
     if len(directions) > 1:
