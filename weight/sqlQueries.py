@@ -116,9 +116,7 @@ def insert_transaction(values: dict[str, Any]):
             cursor.execute(
                 "SELECT id FROM transactions ORDER BY id DESC LIMIT 1")
             result = cursor.fetchone()
-            if result:
-                return result['id']  # type: ignore
-            return None
+            return result['id']
         except:
             print("err")
             # TODO: error handling
@@ -148,12 +146,12 @@ def get_containers_by_id(ids: list[str]):
                 cnx.close()
 
 
-def register_container(weight: int, unit: str):
+def register_container(id: str, weight: int, unit: str):
     cnx = connect(**config)
     if cnx.is_connected():
         cursor = cnx.cursor()
-        query = ("INSERT INTO containers_registered (weight, unit)"
-                 f"VALUES ({weight}, '{unit}')")
+        query = ("INSERT INTO containers_registered (container_id, weight, unit)"
+                 f"VALUES ('{id}', {weight}, '{unit}')")
         try:
             cursor.execute(query)
         except:
