@@ -1,11 +1,9 @@
-from flask import Flask, render_template, request, Response
-from mysql.connector import connect
+from flask import Flask, request, Response
 import sqlQueries
 from http import HTTPStatus
 from datetime import datetime
 import json
 import csv
-import re
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
@@ -33,7 +31,7 @@ def sumContainerWeight(cont1, cont2, cont3, cont4, unit1, unit2, unit3):
     return sum
 
 
-def getWeightContainers(containers):
+def get_weight_containers(containers):
     unfound_containers = containers
     containers_weight4 = 0
     db_containers = sqlQueries.get_containers_by_id(unfound_containers)
@@ -112,7 +110,7 @@ def post_weight():
             if not last_transaction:
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
-                return json.dumps(retr_val)
+                return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
 
             match last_transaction["direction"]:
 
@@ -120,24 +118,23 @@ def post_weight():
                     if force == True:
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
-                        return json.dumps(retr_val)
-                    return "ERROR: 404 truck cannot get in while inside to override last transaction change force to true."
+                        return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
+                    body = "Truck already in get in. To override current 'in', request with force=True"
+                    return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
                 case "out":
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
-                    return json.dumps(retr_val)
-
-                case "none":
-                    return "ERROR: 404 Truck id recognized as registered container id"
+                    return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
 
         case "out":
 
             if not last_transaction:
-                return "ERROR: 404 Truck not exist"
+                return Response(response="Truck has not been weighed yet", status=HTTPStatus.BAD_REQUEST)
 
             truckTara = weight
-            containers_weight = getWeightContainers(containers.split(","))
+            containers_weight = get_weight_containers(
+                last_transaction["containers"].split(","))
             neto = calculateNeto(
                 last_transaction["bruto"], containers_weight, truckTara, unit)
             retr_val += {"truckTara": truckTara, "neto": neto}
