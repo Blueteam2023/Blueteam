@@ -56,7 +56,6 @@ def get_last_transaction_by_container(container_id: str):
 
 
 def change_transaction(values: dict[str, Any]):
-    first_entry = True
     query = ("UPDATE transactions"
              f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truck_tara']}"
              f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'")
@@ -132,6 +131,24 @@ def register_container(id: str, weight: int, unit: str):
         cursor = cnx.cursor()
         query = ("INSERT INTO containers_registered (container_id, weight, unit)"
                  f"VALUES ('{id}', {weight}, '{unit}')")
+        try:
+            cursor.execute(query)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+
+
+def update_container(id: str, weight: int, unit: str):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        query = ("UPDATE containers_registered"
+                 f" SET weight = {weight}, unit = '{unit}'"
+                 f" WHERE container_id = '{id}'")
         try:
             cursor.execute(query)
         except:
