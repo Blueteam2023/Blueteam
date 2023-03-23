@@ -86,10 +86,10 @@ def change_transaction(values: dict[str, Any]):
         cursor = cnx.cursor()
         try:
             cursor.execute(query_start)
-            query_id = int(cursor.fetchone())
+            query_id = int(''.join(map(str, cursor.fetchone())))
             update_query = ("UPDATE transactions"
                             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truckTara']},"
-                            f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'"
+                            f" neto = {values['neto']}, truck = '{values['truck']}', containers = '{values['containers']}'"
                             f" WHERE id = {query_id}")
             cursor.execute(update_query)
         except:

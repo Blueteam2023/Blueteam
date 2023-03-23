@@ -5,12 +5,19 @@ from datetime import datetime
 import json
 import csv
 import re
+<<<<<<< HEAD
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
 IS_TRUCK = r"^\d+\-\d+\-\d+$"
-app = Flask(__name__)
+=======
+import os
+from werkzeug.utils import secure_filename
 
+
+IS_TRUCK = "^\d+\-\d+\-\d+"
+>>>>>>> c683da3 (started working on batch weight)
+app = Flask(__name__)
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
@@ -106,7 +113,7 @@ def post_weight():
 
     # handle wrong insertions
     if not re.compile(IS_TRUCK).match(truck):
-        body = "truck lisence must be in numbers divided by dashes"
+        body = "Truck lisence must be in numbers divided by dashes"
     if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
         body = "Direction must be in/out/none\n"
     if not weight.isdigit():
@@ -216,6 +223,8 @@ def post_weight():
 
 @app.route("/batch-weight", methods=["POST"])
 def post_batch_weight():
+    batch_file = request.files
+    print(batch_file[0][0][1])
     raise NotImplementedError
 
 
