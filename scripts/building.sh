@@ -153,7 +153,7 @@ Testing_init(){
         echo "Checking health"
         #health=$(Health_check testing) temp
         health=0
-        if [ $health -eq 0 ]; then
+        if [ $health -eq 1 ]; then
             #Send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
             echo "Health failed, Reverting to last commit"
             #git reset --hard HEAD~1
