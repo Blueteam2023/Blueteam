@@ -20,7 +20,7 @@ services:
     ports:
       - "8080:8080"
       - "8082:8082"
-      - "8083:8083"
+      - "8084:8084"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
