@@ -18,16 +18,20 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 def allowed_file(file):
-    check_line = file.readline()
+    check_line = file.readline().decode().strip("\n")
+    file.seek(0,0)
     if file.mimetype == 'text/csv':
-        if check_line != '"id","kg"':
+        if check_line == '"id","kg"':
             return "containers1.csv"
-        if check_line != '"id","lbs"':
+        if check_line == '"id","lbs"':
             return "containers2.csv"
         
     if file.mimetype == 'application/json':
+        check_line = file.readline()
         check_line = file.readline().decode()
+        file.seek(0,0)
         if re.search(CHECK_JSON_FILE,check_line):
+           
            return "containers3.json"
     
     return False 
@@ -241,7 +245,6 @@ def post_batch_weight():
             return Response(response=body, status=HTTPStatus.BAD_REQUEST)
     if batch_file and allowed_file(batch_file):    
         filename = secure_filename(allowed_file(batch_file))
-        batch_file.seek(0,0)
         batch_file.save(os.path.join(app.config["UPLOAD_FOLDER"],filename))
         body = f"File uploaded succefuly. replaced {filename}"
     else:
