@@ -132,7 +132,7 @@ Production_init(){
     Build_production
     health=$(Health_check production)
     if ! $health ; then
-        Send_mail "Health check failed during production build" "revert pull request $number"
+        #Send_mail "Health check failed during production build" "revert pull request $number"
         echo "Health failed in production, reverting to last commit"
         git reset --hard HEAD~1
         ./deploy.sh
@@ -141,7 +141,7 @@ Production_init(){
         tag="Stable $TIMESTAMP"
         git tag $tag
         git push origin $tag
-        Send_mail "Update completed" "New update in on the air"
+        #Send_mail "Update completed" "New update in on the air"
     fi
 }
 
@@ -153,7 +153,7 @@ Testing_init(){
         #health=$(Health_check testing) temp
         health=0
         if ! $health ; then
-            Send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
+            #Send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
             echo "Health failed, Reverting to last commit"
             #git reset --hard HEAD~1
         else
@@ -162,7 +162,7 @@ Testing_init(){
                 Production_init
             else
                 echo "Test failed"
-                Send_mail "Test Failed, revert pull request" "Contact devops team for more details."
+                #Send_mail "Test Failed, revert pull request" "Contact devops team for more details."
             fi
         fi
         Terminate_testing	
