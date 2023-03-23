@@ -57,14 +57,14 @@ def get_last_transaction_by_container(container_id: str):
 
 def change_transaction(values: dict[str, Any]):
     query = ("UPDATE transactions"
-             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truckTara']}"
+             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truckTara']},"
              f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'")
     if values['truck'] != "-":
-        query += (f" WHERE truck == {values['truck']}"
+        query += (f" WHERE truck = '{values['truck']}'"
                   " ORDER BY id DESC"
                   " LIMIT 1")
     else:
-        query += (f" WHERE containers = {values['containers[0]']}"
+        query += (f" WHERE containers = '{values['containers[0]']}'"
                   " ORDER BY id DESC"
                   " LIMIT 1")
     cnx = connect(**config)
