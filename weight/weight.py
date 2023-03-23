@@ -8,7 +8,7 @@ import re
 UNIT_CHECK = ""
 DIRECTION_CHECK = ""
 NOT_EXIST = 0
-IS_TRUCK = "^\d+\-\d+\-\d+"
+IS_TRUCK = r"^\d+\-\d+\-\d+$"
 app = Flask(__name__)
 
 
@@ -216,10 +216,7 @@ def post_weight():
 
 @app.route("/batch-weight", methods=["POST"])
 def post_batch_weight():
-    id = request.args.get('id')
-    start = request.args.get('from')
-    input_file_names = request.files
-    print("")
+    raise NotImplementedError
 
 
 @app.route("/unknown", methods=["GET"])
@@ -229,8 +226,8 @@ def get_unknown():
 
 
 def get_weight(start, end, direct):
-    start_date = None
-    end_date = None
+    start_date = str(datetime.today().strftime("%Y-%m-%d 00:00:00"))
+    end_date = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     try:
         parsed_start = datetime.strptime(start, "%Y%m%d%H%M%S")
         parsed_end = datetime.strptime(end, "%Y%m%d%H%M%S")
@@ -238,11 +235,6 @@ def get_weight(start, end, direct):
             start_date = str(parsed_start)
             end_date = str(parsed_end)
     finally:
-        if not start_date:
-            start_date = str(datetime.today().strftime("%Y-%m-%d 00:00:00"))
-        if not end_date:
-            end_date = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
         if not direct:
             direct = ""
         directions_list = direct.split(',')
@@ -263,7 +255,34 @@ def get_weight(start, end, direct):
 
 @app.route("/item", methods=["GET"])
 def get_item():
-    raise NotImplementedError
+    start = request.args.get('from')
+    end = request.args.get('to')
+    id = request.args.get('id')
+    if not id or not start or not end:
+        return Response(response="Missing data", status=HTTPStatus.BAD_REQUEST)
+
+    is_truck = re.match(IS_TRUCK, id)
+    start_date = str(datetime.today().strftime("%Y-%m-%d 00:00:00"))
+    end_date = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    try:
+        parsed_start = datetime.strptime(start, "%Y%m%d%H%M%S")
+        parsed_end = datetime.strptime(end, "%Y%m%d%H%M%S")
+        if parsed_end > parsed_start:
+            start_date = str(parsed_start)
+            end_date = str(parsed_end)
+    finally:
+        if is_truck:
+            if not sqlQueries.is_truck_in_db(id):
+                return Response(status=HTTPStatus.NOT_FOUND)
+            transactions = sqlQueries.get_truck_transactions_by_id_and_dates(
+                start_date, end_date, id)
+            return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
+
+        if not sqlQueries.is_container_in_db(id):
+            return Response(status=HTTPStatus.NOT_FOUND)
+        transactions = sqlQueries.get_crate_transactions_by_id_and_dates(
+            start_date, end_date, id)
+        return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
 
 
 @app.route("/session/<id>", methods=["GET"])
