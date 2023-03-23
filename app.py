@@ -24,7 +24,7 @@ def trigger():
                 if branch == "billing" or branch=="weight":
                     print("Starting testing process")
                     subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
-                    return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch})
+                    return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch}), 200
                 elif "revert" in branch:
                     return "Reverted branch, doing nothing", 200
                 else:
