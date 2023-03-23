@@ -53,12 +53,12 @@ def health_check():
 def monitor():
     services = {
         'production': {
-            'billing': 'http://localhost:8082/health',
-            'weight': 'http://localhost:8083/health'
+            'billing': 'http://billing-app/health',
+            'weight': 'http://weight-app/health'
         },
         'testing': {
-            'billing': 'http://localhost:8088/health',
-            'weight': 'http://localhost:8089/health'
+            'billing': 'http://127.0.0.1:8088/health',
+            'weight': 'http://127.0.0.1:8089/health'
         }
     }
 
@@ -73,8 +73,8 @@ def monitor():
                     statuses[env][service] = "OK"
                 else:
                     statuses[env][service] = f"Error: {response.status_code}"
-            except requests.exceptions.RequestException as e:
-                statuses[env][service] = f"Error: {str(e)}"
+            except requests.exceptions.RequestException:
+                statuses[env][service] = "Down - Service Unreachable"
 
     return render_template('monitor.html', statuses=statuses)
 

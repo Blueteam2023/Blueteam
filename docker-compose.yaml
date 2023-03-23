@@ -1,14 +1,29 @@
-version: '3'
+version: '3.9'
 
 services:
   ci:
-    container_name: test-branch-db2
-    image: hello-world:latest
+    container_name: gan_shmuel_ci
+    build: .
+    networks:
+      - BlueTeam
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     expose:
       - "8080"
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "8080:8080"
+      - "8082:8082"
+      - "8083:8083"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - ci
     networks:
-      - blueteam
+      - BlueTeam
 
 networks:
-  app_network:
-    driver: bridge
+  BlueTeam:
+    name: BlueTeam

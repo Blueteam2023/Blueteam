@@ -1,4 +1,3 @@
-<!-- monitoring.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,43 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Page</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            background-color: #1100ff;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
         }
+
         th, td {
-            border: 1px solid black;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
+            border: 1px solid #dddddd;
         }
+
         th {
             background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .failed {
+        color: red;
+        }
+
+        .ok {
+        color: green;
         }
     </style>
 </head>
 <body>
-    <h1>Monitoring Page</h1>
+    <h1>Gan Shmuel Monitoring Page</h1>
     <table>
-        <thead>
-            <tr>
-                <th>Environment</th>
-                <th>Service</th>
-                <th>URL</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for env, services in health_checks.items() %}
-                {% for service, data in services.items() %}
-                    <tr>
-                        <td>{{ env }}</td>
-                        <td>{{ service }}</td>
-                        <td>{{ data.url }}</td>
-                        <td>{{ data.status }}</td>
-                    </tr>
-                {% endfor %}
+        <tr>
+            <th>Environment</th>
+            <th>Service</th>
+            <th>Status</th>
+        </tr>
+        {% for env, env_statuses in statuses.items() %}
+            {% for service, status in env_statuses.items() %}
+                <tr>
+                    <td>{{ env }}</td>
+                    <td>{{ service }}</td>
+                    <td class="{{ 'failed' if 'error' in status.lower() or 'down' in status.lower() else 'ok' if status.lower() == 'ok' }}">{{ status }}</td>
+                </tr>
             {% endfor %}
-        </tbody>
+        {% endfor %}
     </table>
 </body>
 </html>
