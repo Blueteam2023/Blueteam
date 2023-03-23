@@ -5,25 +5,48 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="Viewport" content="witdth=device-width, initial-scale=1.0">
     <title>Truck</title>
+    <script>
+        async function submitPutRequest(event)
+        {
+            event.preventDefault()
+            const truck_id = document.getElementById("truck_id").value;
+            const provider_id = document.getElementById("provider_id").value;
+            const response = await fetch(`/truck/${truck_id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-type': 'application/json'
+                },
+                body: JSON.stringify({ provider_id })
+              });
+              try{
+                const resData = await response.json();
+                document.getElementById("response").innerHTML = resData.message;
+              }
+              catch(e){
+               console.log('something went wrong')
+              }
+        }
+    </script>
 </head>
 <body>
     <h1>Formulaire Truck </h1>
-    <form action="#" method="POST">
+    <form id="form" action="#" method="POST">
         <p>
             <!-- champ de type text -->
-            <label for="Truck_id">Trucks id :  </label>
-            <input type="text" name="id" required>
+            <label for="Truck_id">License plate :  </label>
+            <input type="text" id="truck_id" name="id" required>
         </p>
         <p>
             <!-- champ de type text -->
             <label for="Provider_id">Provider id :   </label>
-            <input type="number" name="provider_id" required>
+            <input type="number" id="provider_id" name="provider_id" required>
         </p>
         <p>
             <!-- champ d'envoi -->
-            <input  type="submit" value="Send the form">
-            <!--<button type="submit" > send to form </button-->
+            <input type="submit" value="Add">
+            <button onClick="submitPutRequest(event)">update</button>
         </p>
     </form>
+    <div id="response"></div>
 </body>
 </html>
