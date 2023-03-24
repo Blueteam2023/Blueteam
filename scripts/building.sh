@@ -181,8 +181,9 @@ testing_init(){
         echo "Starting health check"
         health_test testing
         if [ $health_result -eq 1 ]; then
-            echo "Health failed, Reverting to last commit and sending mails to devops and dev."
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
+            echo "Health failed, Reverting to last commit and sending mails to devops and dev."
+            return 1
             #git reset --hard HEAD~1
         elif [ $health -eq 0 ]; then
             echo "running E2E tests"
@@ -209,7 +210,8 @@ main(){
         done
     fi
     touch "$lockfile"
-    testing_result=$(testing_init)
+    testing_init
+    testing_result=$?
     if [ $testing_result -eq 0 ]; then
         production_init
     else
