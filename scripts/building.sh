@@ -37,9 +37,9 @@ modify_files(){
 	b=$1
     echo "Modifying $b files for testing environment"
     if [ "$b" = "billing" ]; then
-	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
+	    #sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
     elif [ "$b" = "weight" ]; then
-        sed -i "s/DB_HOST=.*/DB_HOST=test-$b-database/" .env
+        #sed -i "s/DB_HOST=.*/DB_HOST=test-$b-database/" .env
     fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
