@@ -100,10 +100,10 @@ health_test(){
 
 # Run devs E2E tests
 run_e2e_tests(){
-    echo "Running E2E tests"
-    # test_file_path=$(find /app/testenv -name test.py)
-    # if [ -n "$test_file_path" ]; then
-    #     test_result=$(pytest "$test_file_path" 2>&1)
+    b=$1
+    echo "Running E2E tests for $b"
+    # if [ "$b" = "weight" ]; then # Weight app tests
+    #     test_result=$(docker exec -it weight-app pytest tests.py 2>&1)
     #     passed_count=$(echo "$test_result" | grep -o 'passed' | wc -l)
     #     failed_count=$(echo "$test_result" | grep -o 'failed' | wc -l)
     #     echo "Total Passed: $passed_count"
@@ -113,11 +113,10 @@ run_e2e_tests(){
     #     else
     #         return 1
     #     fi
-    # else
-    #     echo "test.py file not found. Aborting E2E tests."
-    #     return 1
+    # elif [ "$b" = "billing" ]; then
+    #     return 0
     # fi
-    return 0
+    return 0 # remove when tests working
 }
 
 # Sending mails function
@@ -125,7 +124,7 @@ send_mail(){
 	subject="Gan Shmuel CI\CD: $1"
 	body="$2"
     if [ "$3" = "dev" ]; then
-        dev_email=$(grep "^$pusher " emails.txt | awk '{print $2}')
+        dev_email=$(grep "^$pusher " ./data/emails.txt | awk '{print $2}')
         message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
         echo -e "$message" | ssmtp $dev_email,$DEVOPS_MAIL
     else
@@ -185,9 +184,11 @@ production_init(){
     else
         echo "Building production finished successfully"
         send_mail "Version update is successfully" "The new version is currently online" dev
-        # tag="Stable-$TIMESTAMP"
-        # git tag $tag
-        # curl -H "Authorization: Bearer $GITHUB_TOKEN" --data "{\"ref\":\"refs/tags/$tag\"}" "https://api.github.com/repos/Blueteam2023/Blueteam/git/refs"
+        tag="Stable-$TIMESTAMP"
+        echo $tag >> ../data/stable_versions.txt
+        git tag $tag
+        git push origin $tag
+        echo "$tag version tagged as stabled"
     fi
 }
 
@@ -199,19 +200,21 @@ testing_init(){
         health_test testing
         if [ $health_result -eq 1 ]; then
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
-            echo "Health failed, Reverting to last commit and sending mails to devops and dev."
+            echo "Health failed, Rolling back to previous version."
             return 1
             #git reset --hard HEAD~1
         elif [ $health_result -eq 0 ]; then
             echo "running E2E tests"
-            run_e2e_tests
-            tester=$?
+            run_e2e_tests weight
+            weight_tester=$?
+            run_e2e_tests billing
+            billing_tester=$?
             if [ $tester -eq 0 ]; then
                 echo "E2E Tests passed successfully, Starting production update"
                 terminate_testing
                 return 0
             elif [ $tester -eq 1 ]; then
-                send_mail "New version deploy failed, E2E test failed during testing" "Request number: $number\nContact devops team for more details" dev
+                send_mail "New version deploy failed, E2E tests failed during testing" "Request number: $number\nContact devops team for more details" dev
                 echo "E2E Tests failed, Stopping update process"
                 terminate_testing
                 return 1
