@@ -8,14 +8,20 @@ services:
       - BlueTeam
     expose:
       - 3306
-    env_file:
-      - ./.env
     volumes:
       - ./datadump:/docker-entrypoint-initdb.d
       - ./datadir:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "weight"
+      MYSQL_ROOT_PASSWORD: "root"
+    env_file:
+      - ./.env
 
   app:
     container_name: weight-app
+    environment:
+      MYSQL_DATABASE: "weight"
+      MYSQL_ROOT_PASSWORD: "root"
     env_file:
       - ./.env
     build: .
@@ -26,8 +32,6 @@ services:
     command: python ./weight.py
     depends_on:
       - db
-    links:
-      - "db"
 
 networks:
   BlueTeam:

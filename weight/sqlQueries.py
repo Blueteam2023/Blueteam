@@ -3,10 +3,10 @@ from mysql.connector import connect
 from os import environ
 
 config = {
-    "host": environ['MYSQL_HOST'],
+    "host": environ['ENV_HOST'],
     "user": environ["ENV_USER"],
-    "password": environ['MYSQL_ROOT_PASSWORD'],
-    "database": environ['MYSQL_DB_NAME'],
+    "password": environ['ENV_ROOT_PASSWORD'],
+    "database": environ['ENV_DB_NAME'],
     "port": 3306
 }
 # For Yuval
