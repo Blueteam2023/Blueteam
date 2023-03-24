@@ -17,7 +17,6 @@ def test_get_health():
 
 def test_get_session():
     reset_database()
-<<<<<<< HEAD
     with app.test_client() as c:
         truck_params = {"direction": "in",
                         "truck": "123-12-123",
@@ -35,7 +34,6 @@ def test_get_session():
                             "produce": "na"}
         c.post("/weight", query_string=truck_params)
         c.post("/weight", query_string=container_params)
-=======
     app.test_client().post("/weight",)
 
 
@@ -47,4 +45,3 @@ def test_post_weight():
         response = c.post("/weight",query_string=test_data)
         assert response.status == HTTPStatus.OK
         assert response.data == {"id":10001,"truck":"12-12-12","bruto":"50","truckTara":-1,"neto":-1}
->>>>>>> 3762857 (debug weight post)
