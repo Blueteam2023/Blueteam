@@ -56,11 +56,11 @@ def monitor():
     services = {
         'production': {
             'billing': 'http://billing-app:80/health',
-            'weight': 'http://weight-app:5000/health'
+            'weight': 'http://weight-app:8000/health'
         },
         'testing': {
             'billing': 'http://test-billing-app:80/health',
-            'weight': 'http://test-weight-app:5000/health'
+            'weight': 'http://test-weight-app:8000/health'
         }
     }
 

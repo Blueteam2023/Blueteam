@@ -78,10 +78,10 @@ health_test(){
     for i in $(seq 1 $attempts); do
         if [ "$1" = "testing" ]; then
             check_billing=$(check_health "test-$team1-app" 80)
-            check_weight=$(check_health "test-$team2-app" 5000)
+            check_weight=$(check_health "test-$team2-app" 8000)
         elif [ "$1" = "production" ]; then
             check_billing=$(check_health "$team1-app" 80)
-            check_weight=$(check_health "$team2-app" 5000)
+            check_weight=$(check_health "$team2-app" 8000)
         fi
         if [ "$check_billing" = "200" ] && [ "$check_weight" = "200" ]; then
             success=true
