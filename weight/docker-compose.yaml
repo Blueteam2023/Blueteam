@@ -8,9 +8,9 @@ services:
       - BlueTeam
     expose:
       - 3306
+    restart: always
     volumes:
-      - ./datadump:/docker-entrypoint-initdb.d
-      - ./datadir:/var/lib/mysql
+      - ./datadump/weightdb.sql:/docker-entrypoint-initdb.d/weightdb.sql
     environment:
       MYSQL_DATABASE: "weight"
       MYSQL_ROOT_PASSWORD: "root"
