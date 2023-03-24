@@ -25,7 +25,7 @@ services:
       - BlueTeam
     # ports:
     #   - "8083:5000"
-    command: flask run
+    command: gunicorn weight:app
     depends_on:
       - db
     links:

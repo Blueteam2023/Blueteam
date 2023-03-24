@@ -4,7 +4,7 @@ from os import environ
 
 config = {
     "host": environ['MYSQL_HOST'],
-    "user": "root",
+    "user": environ["MYSQL_USER"],
     "password": environ['MYSQL_ROOT_PASSWORD'],
     "database": environ['MYSQL_DB_NAME'],
     "port": 3306
