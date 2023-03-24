@@ -15,6 +15,7 @@ DEVOPS_MAIL="blueteamdevops2023@gmail.com"
 team1="billing"
 team2="weight"
 lockfile=/tmp/building.lock
+error_msg=""
 
 
 # Clone to test envoirment
@@ -32,7 +33,7 @@ clone_testing(){
 
 # Modify files for testing envoirment
 modify_files(){
-	local b=$1
+	b=$1
     echo "Modifying $b files for testing environment"
     # if [ "$b" = "billing" ]; then
 	#     #sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
@@ -86,15 +87,15 @@ run_e2e_tests(){
 
 # Sending mails function
 send_mail(){
-    devops_email="blueteamdevops2023@gmail.com"
-	subject="Gan Shmuel Alert: $1"
+	subject="Gan Shmuel CI\CD: $1"
 	body="$2"
-    message="From: $from_email\nTo: $to_email\nSubject: $subject\n\n$body"
-    if [ $3 = "dev" ]; then
-        to_email=$(grep "^$pusher " email.txt | awk '{print $2}')
-        echo "$message" | sendmail "$to_email,$devops_email"
+    if [ "$3" = "dev" ]; then
+        dev_email=$(grep "^$pusher " emails.txt | awk '{print $2}')
+        message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
+        echo -e "$message" | ssmtp $to_email,$DEVOPS_MAIL
     else
-        echo "$message" | sendmail $devops_email
+        message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
+        echo -e "$message" | ssmtp $DEVOPS_MAIL
     fi
     if [ $? -eq 0 ]; then
         echo "Email sent successfully."
@@ -119,33 +120,38 @@ stop_production(){
     docker-compose -f /app/$team1/docker-compose.yaml stop
     docker-compose -f /app/$team1/docker-compose.yaml rm -f
     docker-compose -f /app/$team2/docker-compose.yaml stop
-    docker-compose -f /app/$team2/docker-compose.yaml rm -f   
+    docker-compose -f /app/$team2/docker-compose.yaml rm -f  
+    echo "Production environment is offline" 
 }
 
 build_production(){
     echo "Building new version"
     docker-compose -f /app/$team1/docker-compose.yaml up --build -d
     docker-compose -f /app/$team2/docker-compose.yaml up --build -d
+    echo "New version is builed"
 }
 
 production_init(){
     stop_production
-    echo "Pulling new version"
+    echo "Pulling new version from the remote repo"
     cd /app
-    git pull # do safety
+    git pull
     build_production
-    #health=$(health_check production)
-    health=0 # for testing
+    health=$(health_check production)
+    #health=0 # for testing
     if [ $health -eq 1 ]; then
-        #send_mail "Health check failed during production build" "revert pull request $number"
-        echo "Health failed in production, reverting to last commit"
-        #git reset --hard HEAD~1
+        global error_msg="H"
+        echo "Health failed in production, rerolling to the previous version"
+        stop_production
+        #git reset --hard HEAD~1 # revert last pull
+        echo "Staring the previous version production"
+        $exec ./scripts/deploy.sh # deploy previous version
     else
-        echo "Building production finished"
+        echo "Building production finished successfully"
+        send_mail "Version update is successfully" "The new version is currently online" dev
         # tag="Stable-$TIMESTAMP"
         # git tag $tag
         # curl -H "Authorization: Bearer $GITHUB_TOKEN" --data "{\"ref\":\"refs/tags/$tag\"}" "https://api.github.com/repos/Blueteam2023/Blueteam/git/refs"
-        #send_mail "Update completed" "New update in on the air"
     fi
 }
 
@@ -157,17 +163,17 @@ testing_init(){
         #health=$(health_check testing)
         health=0 #for testing
         if [ $health -eq 1 ]; then
-            #send_mail "Health check failed during testing, revert pull request $number" "Contact devops team for more details."
-            echo "Health failed, Reverting to last commit"
+            echo "Health failed, Reverting to last commit and sending mails to devops and dev."
+            send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
             #git reset --hard HEAD~1
         else
             tester=$(run_e2e_tests)
             if [ $tester -eq 0 ]; then
-                echo "Test passed, Starting production update"
+                echo "E2E Tests passed successfully, Starting production update"
                 terminate_testing
                 return 0
             else
-                echo "Test failed"
+                echo "E2E Tests failed, Stopping update process"
                 terminate_testing
                 return 1
             fi
@@ -187,7 +193,7 @@ main(){
         production_init
     else
         Echo "Testing Failes, Alerting devops and devs."
-        #send_mail "Test Failed, revert pull request" "Contact devops team for more details."
+        send_mail "Test Failed, Revert pull request" "Contact devops team for more details."
     fi
     rm "$lockfile"
 }
