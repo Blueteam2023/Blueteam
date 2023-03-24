@@ -5,6 +5,8 @@ from http import HTTPStatus
 import pytest
 from weight import app, reset_database
 import json
+from datetime import datetime
+
 app.testing = True
 
 
@@ -221,4 +223,37 @@ def test_post_weight():
         assert response.status == BAD_REQUEST
         # check for specific data(assert.data == ?)
 
+
+def test_get_item():
     reset_database()
+    # insert a container and get it
+    with app.test_client() as c:
+        container_params = {"direction": "none",
+                            "truck": "na",
+                            "containers": "C-73281",
+                            "weight": 500,
+                            "unit": "kg",
+                            "force": False,
+                            "produce": "na"}
+        cont_weight_response = c.post("/weight", query_string=container_params)
+        # keep session id
+        container_session = json.loads(cont_weight_response.data)["id"]
+        today = datetime.today()
+        year = today.year
+        # guarantee double digits
+        month = today.month if today.month > 9 else f"0{today.month}"
+        day = today.day if today.day > 9 else f"0{today.day}"
+        start = f"{year}{month}{day}000000"
+
+        hour = today.hour if today.hour > 9 else f"0{today.hour}"
+        minute = today.minute if today.minute > 9 else f"0{today.minute}"
+        second = today.second if today.second > 9 else f"0{today.second}"
+        end = f"{year}{month}{day}{hour}{minute}{second}"
+
+        request_params = {"from": start, "to": end, "id": "C-73281"}
+        result_response = c.get("/item", query_string=request_params)
+        assert result_response.status == OK
+        result_body = json.loads(result_response.data)
+
+        assert result_body["tara"] == "na"
+        assert result_body["sessions"][0] == container_session
