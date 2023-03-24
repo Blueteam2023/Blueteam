@@ -11,7 +11,8 @@ from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'in'
 IS_TRUCK = r"^\d+\-\d+\-\d+$"
-CHECK_JSON_FILE = r'{"id":"\w\-\d+","weight":\d+,"unit":"\w+"},\n'
+IS_PRODUCE = r"^[a-zA-Z]+$"
+CHECK_JSON_FILE = r'{"id":"[a-zA-Z]\-\d+","weight":\d+,"unit":"\w+"},\n'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -130,17 +131,17 @@ def post_weight():
     produce = request.args.get('produce')
 
     # handle wrong insertions
-    if not re.compile(IS_TRUCK).match(truck):
-        body = "Truck lisence must be in numbers divided by dashes"
-    if type(direction) != str or direction.lower() != "in" and direction.lower() != "out" and direction.lower() != "none":
+    if not (re.match(IS_TRUCK, truck) or (truck == "na" and direction.lower() == "none")):
+        body = "Truck lisence must be in numbers divided by dashes\n"
+    if not direction.lower() in "in,out,none":
         body = "Direction must be in/out/none\n"
     if not weight.isdigit():
         body += "Weight must be positive integer.\n"
-    if not isinstance(unit, str) or unit.lower() != "kg" and unit.lower() != "lbs":
+    if not unit.lower() in "kg,lbs":
         body += "Unit value must be Kg/Lbs\n"
-    if not isinstance(force, str) or force.lower() != 'true' and force.lower() != 'false':
+    if not force.lower() in "true,false":
         body += "Force value must be True/False\n"
-    if not isinstance(produce, str):
+    if not re.match(IS_PRODUCE, produce):
         body += "Produce must be letters string\n"
     if body != '':
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
@@ -213,6 +214,10 @@ def post_weight():
                     return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
         case "none":
+            # when a container is registered, we do two things:
+            # 1) create a transaction for it
+            # 2) if the container is not in containers_registered, registers it
+            # otherwise, update the entry
             weight_data["truck"] = "-"
             weight_data["produce"] = "-"
             containers = containers.split(",")
@@ -228,15 +233,14 @@ def post_weight():
                 retr_val["id"] = id
                 return json.dumps(retr_val)
 
-            elif force == 'true':
-                sqlQueries.change_transaction(weight_data)
-                sqlQueries.update_container(id, weight, unit)
-                retr_val["id"] = id
-                return json.dumps(retr_val)
-
-            else:
+            if force != 'true':
                 body = "Container already registerd. In order to over write container weight request force = True."
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+
+            sqlQueries.insert_transaction(weight_data)
+            sqlQueries.update_container(container_id, weight, unit)
+            retr_val["id"] = id
+            return json.dumps(retr_val)
 
 
 @app.route("/batch-weight", methods=["POST"])

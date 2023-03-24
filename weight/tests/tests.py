@@ -15,4 +15,20 @@ def test_get_health():
 
 def test_get_session():
     reset_database()
-    app.test_client().post("/weight", )
+    with app.test_client() as c:
+        truck_params = {"direction": "in",
+                        "truck": "123-12-123",
+                        "containers": "C-35434",
+                        "weight": 1000,
+                        "unit": "kg",
+                        "force": False,
+                        "produce": "apples"}
+        container_params = {"direction": "none",
+                            "truck": "na",
+                            "containers": "C-73281",
+                            "weight": 500,
+                            "unit": "kg",
+                            "force": False,
+                            "produce": "na"}
+        c.post("/weight", query_string=truck_params)
+        c.post("/weight", query_string=container_params)
