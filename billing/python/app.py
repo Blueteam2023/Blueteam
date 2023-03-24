@@ -31,7 +31,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return "Connected"
+	return "Connected"
 
 
 # Health check API
@@ -50,18 +50,18 @@ def health_check():
 # Provider list API
 @app.route('/providerlist')
 def plist():
-    try:
-        connection = mysql.connector.connect(
-            user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port=BILLING_MYSQL_PORT, database=MYSQL_DB_NAME)
+	try:
+		connection = mysql.connector.connect(
+			user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port=BILLING_MYSQL_PORT, database=MYSQL_DB_NAME)
 
-        cursor = connection.cursor()
-        cursor.execute('SELECT * FROM Provider;')
-        DB_PROV_LIST = cursor.fetchall()
-        # JSON_PROV_LIST=list(json.dumps(DB_PROV_LIST))
-        connection.close()
-        return DB_PROV_LIST
-    except:
-        return "listfail"
+		cursor = connection.cursor()
+		cursor.execute('SELECT * FROM Provider;')
+		DB_PROV_LIST = cursor.fetchall()
+		# JSON_PROV_LIST=list(json.dumps(DB_PROV_LIST))
+		connection.close()
+		return DB_PROV_LIST
+	except:
+		return "listfail"
 
 
 #PUT provider id API
@@ -105,126 +105,126 @@ def provid(id):
 #GET /rates API
 @app.route('/rates', methods=["GET", "POST"])
 def rates():
-    if request.method == "POST":
-        # Get the option selected by the user
-        option = request.form['option']
-        
-        if option == 'upload':
-        
-            # Retrieve the tariff file from the request form
-            rate_file = request.files['file'].read()
-            excel_file = BytesIO(rate_file)
-            df = pd.read_excel(excel_file)
-            
-            required_columns = ['product_id', 'rate', 'scope']
-            if not all(col in df.columns for col in required_columns):
-                 raise ValueError(f"Error: the DataFrame must have the columns {required_columns}!")
+	if request.method == "POST":
+		# Get the option selected by the user
+		option = request.form['option']
+		
+		if option == 'upload':
+		
+			# Retrieve the tariff file from the request form
+			rate_file = request.files['file'].read()
+			excel_file = BytesIO(rate_file)
+			df = pd.read_excel(excel_file)
+			
+			required_columns = ['product_id', 'rate', 'scope']
+			if not all(col in df.columns for col in required_columns):
+				 raise ValueError(f"Error: the DataFrame must have the columns {required_columns}!")
 
 			# Save the new Excel file to the "/in" directory
-            excel_data = BytesIO()
-            df.to_excel(excel_data, index=False, sheet_name='Sheet1')
-            with open('/in/rates.xlsx', 'wb') as f:
-                f.write(excel_data.getbuffer())
+			excel_data = BytesIO()
+			df.to_excel(excel_data, index=False, sheet_name='Sheet1')
+			with open('/in/rates.xlsx', 'wb') as f:
+				f.write(excel_data.getbuffer())
 
-            excel_file.close()
-            excel_data.close()
+			excel_file.close()
+			excel_data.close()
 
 
 
-            # Connect to the MySQL database
-            connection = mysql.connector.connect(
-                user=MYSQL_USER,
-                password=MYSQL_ROOT_PASSWORD,
-                host=MYSQL_HOST,
-                port="3306",
-                database=MYSQL_DB_NAME
-            )
+			# Connect to the MySQL database
+			connection = mysql.connector.connect(
+				user=MYSQL_USER,
+				password=MYSQL_ROOT_PASSWORD,
+				host=MYSQL_HOST,
+				port="3306",
+				database=MYSQL_DB_NAME
+			)
 
-            # Insert the data from the DataFrame into the MySQL database
-            cursor = connection.cursor()
-            cursor.execute("TRUNCATE TABLE Rates")
-            for row in df.itertuples():
-                cursor.execute(f"INSERT INTO Rates (product_id, rate, scope) VALUES ('{row.product_id}', '{row.rate}', '{row.scope}')")
-            connection.commit()
-            cursor.close()
-            connection.close()
+			# Insert the data from the DataFrame into the MySQL database
+			cursor = connection.cursor()
+			cursor.execute("TRUNCATE TABLE Rates")
+			for row in df.itertuples():
+				cursor.execute(f"INSERT INTO Rates (product_id, rate, scope) VALUES ('{row.product_id}', '{row.rate}', '{row.scope}')")
+			connection.commit()
+			cursor.close()
+			connection.close()
 
-            return '"The new rates have been successfully uploaded!"'
+			return '"The new rates have been successfully uploaded!"'
 
-        elif option == 'download':
-            # Send the Excel file stored in the "/in" directory as a download
-            return send_file(os.path.join('/in', 'rates.xlsx'), as_attachment=True)
+		elif option == 'download':
+			# Send the Excel file stored in the "/in" directory as a download
+			return send_file(os.path.join('/in', 'rates.xlsx'), as_attachment=True)
 
-    return render_template('rates.html')
+	return render_template('rates.html')
 
 
 # -------------------- start API Trucks -----------------------------------------
 
 @app.route("/truck", methods=["GET", "POST"])
 def data_truck():
-    if request.method == "GET":
-        return render_template('truck.html')
+	if request.method == "GET":
+		return render_template('truck.html')
 
-    elif request.method == "POST":
-        id = request.form['id']
-        provider_id = request.form['provider_id']
+	elif request.method == "POST":
+		id = request.form['id']
+		provider_id = request.form['provider_id']
 		connection=mysql.connector.connect(
 		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-        cursor = connection.cursor()
-        cursor.execute("SELECT id FROM Provider where id=(%s)",(int(provider_id),))
-        DB_PROV_ID = cursor.fetchall()
+		cursor = connection.cursor()
+		cursor.execute("SELECT id FROM Provider where id=(%s)",(int(provider_id),))
+		DB_PROV_ID = cursor.fetchall()
 
-        if len(DB_PROV_ID) == 0:
-            connection.close()
-            return f"Failed: new truck with license plate : {id} can not be add, his provider : {provider_id} does not exist", 500
-        else:
-            cursor.execute("INSERT INTO Trucks(id, provider_id) VALUES(%s,%s)", (id, provider_id))
-            cursor.execute("SELECT id FROM Trucks where id=(%s)", (id,))
-            DB_TRUCK_ID = cursor.fetchall()
-            connection.close()
-            return f"Success: new truck with license plate : {json.dumps(DB_TRUCK_ID[0][0])} has been added", 200
+		if len(DB_PROV_ID) == 0:
+			connection.close()
+			return f"Failed: new truck with license plate : {id} can not be add, his provider : {provider_id} does not exist", 500
+		else:
+			cursor.execute("INSERT INTO Trucks(id, provider_id) VALUES(%s,%s)", (id, provider_id))
+			cursor.execute("SELECT id FROM Trucks where id=(%s)", (id,))
+			DB_TRUCK_ID = cursor.fetchall()
+			connection.close()
+			return f"Success: new truck with license plate : {json.dumps(DB_TRUCK_ID[0][0])} has been added", 200
 
 
 
 @app.route("/truck/<id>", methods=["PUT"])
 def update_truck_license_plate(id):
-    data = request.get_json(force=True)
+	data = request.get_json(force=True)
 	connection=mysql.connector.connect(
 	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-    cursor = connection.cursor()
+	cursor = connection.cursor()
 
-    cursor.execute("SELECT id FROM Provider where id=(%s)",(int(data["provider_id"]),))
-    PROVIDER_ID = cursor.fetchall()
-    if len(PROVIDER_ID) == 0:
-        connection.close()
-        return { 'message' : f'There is no provider id {data["provider_id"]}'}, 400
-    else:
-        cursor.execute("SELECT id FROM Trucks where id=(%s)", (id,))
-        TRUCK_ID = cursor.fetchall()
-        if len(TRUCK_ID) == 0:
-            connection.close()
-            return { 'message' : f'There is no truck id {id}'}, 400
-        else:
-            cursor.execute("UPDATE Trucks SET provider_id = (%s) where id=(%s)", (int((data["provider_id"])), id))
-            connection.close()
-            return { 'message' : f'Truck with license plate {TRUCK_ID[0][0]} has been updated to provider {PROVIDER_ID[0][0]}'}, 200
+	cursor.execute("SELECT id FROM Provider where id=(%s)",(int(data["provider_id"]),))
+	PROVIDER_ID = cursor.fetchall()
+	if len(PROVIDER_ID) == 0:
+		connection.close()
+		return { 'message' : f'There is no provider id {data["provider_id"]}'}, 400
+	else:
+		cursor.execute("SELECT id FROM Trucks where id=(%s)", (id,))
+		TRUCK_ID = cursor.fetchall()
+		if len(TRUCK_ID) == 0:
+			connection.close()
+			return { 'message' : f'There is no truck id {id}'}, 400
+		else:
+			cursor.execute("UPDATE Trucks SET provider_id = (%s) where id=(%s)", (int((data["provider_id"])), id))
+			connection.close()
+			return { 'message' : f'Truck with license plate {TRUCK_ID[0][0]} has been updated to provider {PROVIDER_ID[0][0]}'}, 200
 
  # ----  List of truck with id -------------
 
 
 @app.route('/trucklist')
 def trucklist():
-    try:
+	try:
 		connection=mysql.connector.connect(
 		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-        cursor = connection.cursor()
-        cursor.execute('SELECT * FROM Trucks;')
-        DB_PROV_LIST = cursor.fetchall()
-        connection.close()
-        return DB_PROV_LIST
-    except:
-        connection.close()
-        return "listfail"
+		cursor = connection.cursor()
+		cursor.execute('SELECT * FROM Trucks;')
+		DB_PROV_LIST = cursor.fetchall()
+		connection.close()
+		return DB_PROV_LIST
+	except:
+		connection.close()
+		return "listfail"
 		
 #GET bill API
 @app.route('/bill/<id>')
@@ -304,12 +304,12 @@ def bill(id):
 #  "truckCount": <int>,
 #  "sessionCount": <int>,
 #  "products": [
-#    { "product":<str>,
-#      "count": <str>, // number of sessions
-#      "amount": <int>, // total kg
-#      "rate": <int>, // agorot
-#      "pay": <int> // agorot
-#    },...
+#	{ "product":<str>,
+#	  "count": <str>, // number of sessions
+#	"amount": <int>, // total kg
+#	  "rate": <int>, // agorot
+#	  "pay": <int> // agorot
+#	},...
 #  ],
 #  "total": <int> // agorot
 #}
@@ -319,4 +319,4 @@ def bill(id):
 	
 #main
 if __name__ == '__main__':
-     app.run(host="0.0.0.0", port=80, debug=True)
+	 app.run(host="0.0.0.0", port=80, debug=True)
