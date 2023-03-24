@@ -25,7 +25,7 @@ services:
       - BlueTeam
     # ports:
     #   - "8083:5000"
-    command: gunicorn weight:app
+    command: gunicorn weight:app --bind 0.0.0.0:80 --timeout 120
     depends_on:
       - db
     links:
