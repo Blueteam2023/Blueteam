@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -x #debugging 
-set -e #exit if a command fails
+#set -e #exit if a command fails
 
 GIT_REPO=Blueteam
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
@@ -64,21 +64,40 @@ build_testing(){
 }
 
 # Health check
-health_check(){
-    if [ "$1" = "testing" ]; then
-        check_billing=$(curl -v -o /dev/null -w "%{http_code}" http://test-$team1-app:80/health)
-        echo $check_billing
-        check_weight=$(curl -v -o /dev/null -w "%{http_code}" http://test-$team2-app:5000/health)
-        echo $check_weight
-    elif [ "$1" = "production" ]; then
-        check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://$team1-app:80/health)
-        check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://$team2-app:5000/health)
+
+check_health(){
+  service="$1"
+  port="$2"
+  health=$(curl -s -o /dev/null -w "%{http_code}" http://$service:$port/health)
+  echo $health
+}
+
+health_test(){
+    timeout=30
+    interval=5
+    attempts=$((timeout / interval))
+    success=false
+    for i in $(seq 1 $attempts); do
+        if [ "$1" = "testing" ]; then
+            check_billing=$(check_health "test-$team1-app" 80)
+            check_weight=$(check_health "test-$team2-app" 5000)
+        elif [ "$1" = "production" ]; then
+            check_billing=$(check_health "$team1-app" 80)
+            check_weight=$(check_health "$team2-app" 5000)
+        fi
+        if [ "$check_billing" = "200" ] && [ "$check_weight" = "200" ]; then
+            success=true
+            break
+        else
+            echo "Health check failed, retrying in $interval seconds..."
+            sleep $interval
+        fi
+    done
+    if [ "$success" = true ]; then
+        return 0
+    else
+        return 1
     fi
-	if [ "$check_billing" = "200" ] && [ "$check_weight" = "200" ]; then
-    	return 0
-	else
-		return 1
-	fi
 }
 
 # Run devs E2E tests
@@ -139,7 +158,7 @@ production_init(){
     git pull
     build_production
     echo "Starting health check"
-    health_check production
+    health_test production
     health=$?
     #health=0 # for testing
     if [ $health -eq 1 ]; then
@@ -163,7 +182,7 @@ testing_init(){
         clone_testing
         build_testing
         echo "Starting health check"
-        health_check testing
+        health_test testing
         health=$?
         if [ $health -eq 1 ]; then
             echo "Health failed, Reverting to last commit and sending mails to devops and dev."
