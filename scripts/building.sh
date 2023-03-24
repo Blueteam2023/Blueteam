@@ -37,11 +37,9 @@ modify_files(){
 	b=$1
     echo "Modifying $b files for testing environment"
     if [ "$b" = "billing" ]; then
-	    #sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
-        echo "some"
+	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
     elif [ "$b" = "weight" ]; then
-        #sed -i "s/DB_HOST=.*/DB_HOST=test-$b-database/" .env
-        echo "some"
+        sed -i "s/DB_HOST=.*/DB_HOST=test-$b-database/" .env
     fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
@@ -102,7 +100,7 @@ health_test(){
 
 # Run devs E2E tests
 run_e2e_tests(){
-	return 0
+	return 1
 }
 
 # Sending mails function
@@ -217,8 +215,7 @@ main(){
     if [ $testing_result -eq 0 ]; then
         production_init
     else
-        echo "Testing Failes, Alerting devops and devs."
-        send_mail "Test Failed, Revert pull request" "Contact devops team for more details."
+        echo "Testing Failed" 
     fi
     rm "$lockfile"
 }
