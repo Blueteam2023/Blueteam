@@ -100,6 +100,7 @@ health_test(){
 
 # Run devs E2E tests
 run_e2e_tests(){
+    echo "Running devs E2E tests"
 	return 1
 }
 
@@ -185,7 +186,7 @@ testing_init(){
             echo "Health failed, Reverting to last commit and sending mails to devops and dev."
             return 1
             #git reset --hard HEAD~1
-        elif [ $health -eq 0 ]; then
+        elif [ $health_result -eq 0 ]; then
             echo "running E2E tests"
             run_e2e_tests
             tester=$?
