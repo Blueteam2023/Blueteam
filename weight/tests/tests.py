@@ -4,9 +4,12 @@ from flask.testing import FlaskClient, FlaskCliRunner
 from http import HTTPStatus
 import pytest
 from weight import app, reset_database
-
+import json
 app.testing = True
 
+
+
+OK = "200 OK"
 
 def test_get_health():
     with app.test_client() as c:
@@ -73,3 +76,43 @@ def test_get_session():
         assert truck_data["bruto"] == 1000
         assert truck_data["truckTara"] == 300
         assert truck_data["neto"] == 1000 - 300 - 296
+
+
+
+def test_post_weight():
+    reset_database()
+    test_data = {"direction": "in", 
+                "truck": "12-12-12",
+                "containers": "C-35434,K-8263,T-17267",
+                "weight": 10000,
+                "unit":"kg",
+                "force":False,
+                "produce": "oranges"}
+    
+    with app.test_client() as c:
+        #regular in session test:
+        response = c.post("/weight",query_string=test_data)
+        data = json.loads(response.data)
+        assert response.status == OK
+        assert data["id"] == 10001
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 10000
+
+        #regular out after in test:
+        test_data = {"direction": "out", 
+                "truck": "12-12-12",
+                "containers": "",
+                "weight": 100,
+                "unit":"kg",
+                "force":False,
+                "produce": "na"}
+        response = c.post("/weight",query_string=test_data)
+        # assert response.data == 0
+        assert response.status == OK
+        print(response.data)
+        data = json.loads(response.data)
+        assert data["id"] == 10002
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 100
+        assert data["truckTara"] == 100
+        assert data["neto"] == 9056

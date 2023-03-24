@@ -50,11 +50,11 @@ def calculateNeto(bruto, containers_weight, truckTara, unit):
 
 def sumContainerWeight(cont1, cont2, cont3, cont4, unit1, unit2, unit3):
     if unit1 == "lbs":
-        cont1 *= 2.2
+        cont1 /= 2.2
     if unit2 == "lbs":
-        cont2 *= 2.2
+        cont2 /= 2.2
     if unit3 == "lbs":
-        cont3 *= 2.2
+        cont3 /= 2.2
 
     sum = cont1+cont2+cont3+cont4
     return sum
@@ -88,26 +88,24 @@ def get_weight_containers(containers):
             containers_weight3 = 0
 
             for container1, container2, container3 in zip(data1, data2, data3):
-                if unfound_containers:
-                    if container1[0] in containers:
-                        containers_weight1 += int(container1[1])
-                        unfound_containers.remove(container1[0])
-
-                    if container2[0] in containers:
-                        containers_weight2 += int(container2[1])
-                        unfound_containers.remove(container2[0])
-
-                    if container3["id"] in containers:
-                        containers_weight3 += int(container3["weight"])
-                        unfound_containers.remove(container3["id"])
-                else:
+                if not unfound_containers:
                     break
-        if unfound_containers:
-            return "na"
-        else:
+                if container1[0] in unfound_containers:
+                    containers_weight1 += int(container1[1])
+                    unfound_containers.remove(container1[0])
+                if container2[0] in unfound_containers:
+                    containers_weight2 += int(container2[1])
+                    unfound_containers.remove(container2[0])
+                if container3["id"] in unfound_containers:
+                    containers_weight3 += int(container3["weight"])
+                    unfound_containers.remove(container3["id"])
+                    
+        if not unfound_containers:
             cont_sum = sumContainerWeight(
                 containers_weight1, containers_weight2, containers_weight3, containers_weight4, unit1, unit2, unit3)
             return cont_sum
+        return "na"
+        
     else:
         return containers_weight4
 
@@ -197,7 +195,7 @@ def post_weight():
             weight_data["truckTara"] = truckTara
             weight_data["neto"] = neto
             retr_val["truckTara"] = truckTara
-            retr_val["neto"] = neto
+            retr_val["neto"] = int(neto)
 
             match last_transaction["direction"]:
 
@@ -237,11 +235,6 @@ def post_weight():
             if force != 'true':
                 body = "Container already registerd. In order to over write container weight request force = True."
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-
-            sqlQueries.insert_transaction(weight_data)
-            sqlQueries.update_container(container_id, weight, unit)
-            retr_val["id"] = id
-            return json.dumps(retr_val)
 
             sqlQueries.insert_transaction(weight_data)
             sqlQueries.update_container(container_id, weight, unit)
