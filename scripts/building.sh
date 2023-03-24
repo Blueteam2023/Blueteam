@@ -189,7 +189,8 @@ main(){
         done
     fi
     touch "$lockfile"
-    if [ testing_init -eq 0 ]; then
+    testing_result=$(testing_init)
+    if [ $testing_result -eq 0 ]; then
         production_init
     else
         echo "Testing Failes, Alerting devops and devs."
