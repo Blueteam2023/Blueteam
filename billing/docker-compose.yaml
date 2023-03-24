@@ -10,7 +10,11 @@ services:
    - BlueTeam
   command: sh -c "sleep 15s ; python3 ./app.py"
   volumes:
+<<<<<<< HEAD:billing/docker-compose.yaml
    - '/etc/localtime:/etc/localtime:ro'
+=======
+   - ./mysql/in/:/in/ 
+>>>>>>> 3fd345b:billing/docker-compose.yml
   env_file:
    - ./sql.env
   depends_on:
@@ -25,7 +29,7 @@ services:
   volumes:
    - ./mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
   environment:
-   MYSQL_DATABASE: "billingdb"
+   MYSQL_DATABASE: "billdb"
    MYSQL_ROOT_PASSWORD: "root"
   env_file:
    - ./sql.env

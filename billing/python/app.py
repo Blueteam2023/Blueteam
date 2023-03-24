@@ -4,8 +4,13 @@
 from flask import Flask, request, render_template
 import mysql.connector
 import json
+import os
+import pandas as pd
 from os import environ
 from datetime import datetime
+from flask import send_file
+from io import BytesIO
+
 
 # Preparing environment variables
 MYSQL_USER = environ['ENV_USER']
@@ -59,41 +64,6 @@ def plist():
         return "listfail"
 
 
-@app.route('/provider', methods=["GET", "POST"])
-def prov():
-	if request.method=="GET":	
-		return render_template('prov.html')
-		
-	elif request.method=="POST":	
-		
-		GIVEN_PROV_NAME = request.form['nm']		
-		connection=mysql.connector.connect(
-		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-		cursor=connection.cursor()
-
-
-		cursor.execute("SELECT name FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
-		DB_PROV_NAME=cursor.fetchall()
-		PROV_NAME = json.dumps(DB_PROV_NAME)
-		
-		if PROV_NAME == f'[["{GIVEN_PROV_NAME}"]]':
-			cursor.execute("SELECT id FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
-			DB_PROV_ID=cursor.fetchall()
-			PROV_ID=json.dumps(DB_PROV_ID[0][0])
-			connection.close()
-			return f"Error: provider name already exists at ID {PROV_ID}"
-		else:
-			cursor.execute("INSERT INTO Provider (`name`) VALUES ((%s));",(GIVEN_PROV_NAME,))	
-			cursor.execute("SELECT id FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
-			DB_PROV_ID=cursor.fetchall()
-			PROV_ID=json.dumps(DB_PROV_ID[0][0])
-			connection.close()
-			return f"Provider name saved to ID {PROV_ID}"
-
-	else:
-		return "error"
-
-
 #PUT provider id API
 @app.route('/provider/<id>', methods=["GET", "POST"])
 def provid(id):
@@ -126,11 +96,67 @@ def provid(id):
 		else: 
 			cursor.execute("UPDATE Provider set name=(%s) where id=(%s)",(GIVEN_PROV_NAME, id,))
 			connection.close()
-			return f"New provider name saved to ID {id}"
 
-
+			return f"New provider name saved to ID {id}"	
 	else:
 		return "error"
+
+
+#GET /rates API
+@app.route('/rates', methods=["GET", "POST"])
+def rates():
+    if request.method == "POST":
+        # Get the option selected by the user
+        option = request.form['option']
+        
+        if option == 'upload':
+        
+            # Retrieve the tariff file from the request form
+            rate_file = request.files['file'].read()
+            excel_file = BytesIO(rate_file)
+            df = pd.read_excel(excel_file)
+            
+            required_columns = ['product_id', 'rate', 'scope']
+            if not all(col in df.columns for col in required_columns):
+                 raise ValueError(f"Error: the DataFrame must have the columns {required_columns}!")
+
+			# Save the new Excel file to the "/in" directory
+            excel_data = BytesIO()
+            df.to_excel(excel_data, index=False, sheet_name='Sheet1')
+            with open('/in/rates.xlsx', 'wb') as f:
+                f.write(excel_data.getbuffer())
+
+            excel_file.close()
+            excel_data.close()
+
+
+
+            # Connect to the MySQL database
+            connection = mysql.connector.connect(
+                user=MYSQL_USER,
+                password=MYSQL_ROOT_PASSWORD,
+                host=MYSQL_HOST,
+                port="3306",
+                database=MYSQL_DB_NAME
+            )
+
+            # Insert the data from the DataFrame into the MySQL database
+            cursor = connection.cursor()
+            cursor.execute("TRUNCATE TABLE Rates")
+            for row in df.itertuples():
+                cursor.execute(f"INSERT INTO Rates (product_id, rate, scope) VALUES ('{row.product_id}', '{row.rate}', '{row.scope}')")
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+            return '"The new rates have been successfully uploaded!"'
+
+        elif option == 'download':
+            # Send the Excel file stored in the "/in" directory as a download
+            return send_file(os.path.join('/in', 'rates.xlsx'), as_attachment=True)
+
+    return render_template('rates.html')
+
 
 # -------------------- start API Trucks -----------------------------------------
 
@@ -142,7 +168,7 @@ def data_truck():
     elif request.method == "POST":
         id = request.form['id']
         provider_id = request.form['provider_id']
-        connection = mysql.connector.connect(user="root", password="root", host="billing-mysql", port="3306", database="billdb")
+		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
         cursor = connection.cursor()
         cursor.execute("SELECT id FROM Provider where id=(%s)",(int(provider_id),))
         DB_PROV_ID = cursor.fetchall()
@@ -162,7 +188,7 @@ def data_truck():
 @app.route("/truck/<id>", methods=["PUT"])
 def update_truck_license_plate(id):
     data = request.get_json(force=True)
-    connection = mysql.connector.connect(user="root", password="root", host="billing-mysql", port="3306", database="billdb")
+	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
     cursor = connection.cursor()
 
     cursor.execute("SELECT id FROM Provider where id=(%s)",(int(data["provider_id"]),))
@@ -181,7 +207,7 @@ def update_truck_license_plate(id):
             connection.close()
             return { 'message' : f'Truck with license plate {TRUCK_ID[0][0]} has been updated to provider {PROVIDER_ID[0][0]}'}, 200
 
- # ----  Liste of truck with id -------------
+ # ----  List of truck with id -------------
 
 
 @app.route('/trucklist')
