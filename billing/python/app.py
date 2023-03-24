@@ -168,6 +168,7 @@ def data_truck():
     elif request.method == "POST":
         id = request.form['id']
         provider_id = request.form['provider_id']
+		connection=mysql.connector.connect(
 		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
         cursor = connection.cursor()
         cursor.execute("SELECT id FROM Provider where id=(%s)",(int(provider_id),))
@@ -188,6 +189,7 @@ def data_truck():
 @app.route("/truck/<id>", methods=["PUT"])
 def update_truck_license_plate(id):
     data = request.get_json(force=True)
+	connection=mysql.connector.connect(
 	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
     cursor = connection.cursor()
 
@@ -213,7 +215,8 @@ def update_truck_license_plate(id):
 @app.route('/trucklist')
 def trucklist():
     try:
-        connection = mysql.connector.connect(user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port="3306", database=MYSQL_DB_NAME)
+		connection=mysql.connector.connect(
+		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM Trucks;')
         DB_PROV_LIST = cursor.fetchall()
