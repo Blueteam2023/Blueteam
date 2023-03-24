@@ -19,22 +19,23 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(file):
     check_line = file.readline().decode().strip("\n")
-    file.seek(0,0)
+    file.seek(0, 0)
     if file.mimetype == 'text/csv':
         if check_line == '"id","kg"':
             return "containers1.csv"
         if check_line == '"id","lbs"':
             return "containers2.csv"
-        
+
     if file.mimetype == 'application/json':
         check_line = file.readline()
         check_line = file.readline().decode()
-        file.seek(0,0)
-        if re.search(CHECK_JSON_FILE,check_line):
-           
-           return "containers3.json"
-    
-    return False 
+        file.seek(0, 0)
+        if re.search(CHECK_JSON_FILE, check_line):
+
+            return "containers3.json"
+
+    return False
+
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
@@ -43,6 +44,7 @@ def calculateNeto(bruto, containers_weight, truckTara, unit):
     if unit == "lbs":
         neto *= 2.2
     return neto
+
 
 def sumContainerWeight(cont1, cont2, cont3, cont4, unit1, unit2, unit3):
     if unit1 == "lbs":
@@ -241,16 +243,16 @@ def post_weight():
 def post_batch_weight():
     batch_file = request.files['file']
     if batch_file.filename == '':
-            body = "No selected file"
-            return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-    if batch_file and allowed_file(batch_file):    
+        body = "No selected file"
+        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    if batch_file and allowed_file(batch_file):
         filename = secure_filename(allowed_file(batch_file))
-        batch_file.save(os.path.join(app.config["UPLOAD_FOLDER"],filename))
+        batch_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         body = f"File uploaded succefuly. replaced {filename}"
     else:
         body = 'File must be csv or json file.\nFile formats accepted: csv (id,kg), csv (id,lbs), json ([{"id":..,"weight":..,"unit":..},...])'
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-    return Response(response=body,status=HTTPStatus.OK)
+    return Response(response=body, status=HTTPStatus.OK)
 
 
 @app.route("/unknown", methods=["GET"])
@@ -334,6 +336,10 @@ def get_session(id: str):
 @app.route("/health", methods=["GET"])
 def get_health():
     return sqlQueries.health()
+
+
+def reset_database():
+    sqlQueries.reset_database()
 
 
 if __name__ == "__main__":

@@ -17,6 +17,42 @@ config = {
 # For Yuval
 
 
+def reset_database():
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute("DROP TABLE transactions")
+            cursor.execute("DROP TABLE containers_registered")
+            create_containers = ("CREATE TABLE IF NOT EXISTS `containers_registered` ("
+                                 "`container_id` varchar(15) NOT NULL,"
+                                 "`weight` int(12) DEFAULT NULL,"
+                                 "`unit` varchar(10) DEFAULT NULL,"
+                                 "  PRIMARY KEY (`container_id`)"
+                                 ") ENGINE=MyISAM AUTO_INCREMENT=10001")
+            create_transactions = ("CREATE TABLE IF NOT EXISTS `transactions` ("
+                                   "`id` int(12) NOT NULL AUTO_INCREMENT,"
+                                   "`datetime` datetime DEFAULT NULL,"
+                                   "`direction` varchar(10) DEFAULT NULL,"
+                                   "`truck` varchar(50) DEFAULT NULL,"
+                                   "`containers` varchar(10000) DEFAULT NULL,"
+                                   "`bruto` int(12) DEFAULT NULL,"
+                                   "`truckTara` int(12) DEFAULT NULL,"
+                                   "`neto` int(12) DEFAULT NULL,"
+                                   "`produce` varchar(50) DEFAULT NULL,"
+                                   "PRIMARY KEY (`id`)"
+                                   ") ENGINE=MyISAM AUTO_INCREMENT=10001 ;")
+            cursor.execute(create_containers)
+            cursor.execute(create_transactions)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+
+
 def health():
     cnx = connect(**config)
     if cnx.is_connected():
