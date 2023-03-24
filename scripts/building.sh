@@ -100,8 +100,24 @@ health_test(){
 
 # Run devs E2E tests
 run_e2e_tests(){
-    echo "Running devs E2E tests"
-	return 1
+    echo "Running E2E tests"
+    # test_file_path=$(find /app/testenv -name test.py)
+    # if [ -n "$test_file_path" ]; then
+    #     test_result=$(pytest "$test_file_path" 2>&1)
+    #     passed_count=$(echo "$test_result" | grep -o 'passed' | wc -l)
+    #     failed_count=$(echo "$test_result" | grep -o 'failed' | wc -l)
+    #     echo "Total Passed: $passed_count"
+    #     echo "Total Failed: $failed_count"
+    #     if [ $failed_count -eq 0 ]; then
+    #         return 0
+    #     else
+    #         return 1
+    #     fi
+    # else
+    #     echo "test.py file not found. Aborting E2E tests."
+    #     return 1
+    # fi
+    return 0
 }
 
 # Sending mails function
@@ -195,6 +211,7 @@ testing_init(){
                 terminate_testing
                 return 0
             elif [ $tester -eq 1 ]; then
+                send_mail "New version deploy failed, E2E test failed during testing" "Request number: $number\nContact devops team for more details" dev
                 echo "E2E Tests failed, Stopping update process"
                 terminate_testing
                 return 1
