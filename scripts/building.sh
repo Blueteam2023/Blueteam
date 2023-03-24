@@ -16,6 +16,7 @@ team1="billing"
 team2="weight"
 lockfile=/tmp/building.lock
 error_msg=""
+health_result=1
 
 
 # Clone to test envoirment
@@ -94,9 +95,9 @@ health_test(){
         fi
     done
     if [ "$success" = true ]; then
-        return 0
+        health_result=0
     else
-        return 1
+        health_result=1
     fi
 }
 
@@ -159,9 +160,8 @@ production_init(){
     build_production
     echo "Starting health check"
     health_test production
-    health=$?
     #health=0 # for testing
-    if [ $health -eq 1 ]; then
+    if [ $health_result -eq 1 ]; then
         global error_msg="H"
         echo "Health failed in production, rerolling to the previous version"
         stop_production
@@ -183,8 +183,7 @@ testing_init(){
         build_testing
         echo "Starting health check"
         health_test testing
-        health=$?
-        if [ $health -eq 1 ]; then
+        if [ $health_result -eq 1 ]; then
             echo "Health failed, Reverting to last commit and sending mails to devops and dev."
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
             #git reset --hard HEAD~1
@@ -213,8 +212,7 @@ main(){
         done
     fi
     touch "$lockfile"
-    testing_init
-    testing_result=$?
+    testing_result=$(testing_init)
     if [ $testing_result -eq 0 ]; then
         production_init
     else
