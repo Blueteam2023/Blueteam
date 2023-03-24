@@ -40,7 +40,6 @@ modify_files(){
 	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
     elif [ "$b" = "weight" ]; then
         sed -i "s/DB_HOST=.*/DB_HOST=test-$b-database/" .env
-        sed '/ports:/,/for local testing/d' docker-compose.yml
     fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
