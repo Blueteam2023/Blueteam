@@ -36,14 +36,11 @@ clone_testing(){
 modify_files(){
 	b=$1
     echo "Modifying $b files for testing environment"
-    # if [ "$b" = "billing" ]; then
-	#     #sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-db/" sql.env
-    #     sed -i "s/8082/8088/g" docker-compose.yaml
-    #     sed -i "s/8081/8087/g" docker-compose.yaml
-    # elif [ "$b" = "weight" ]; then
-    #     #sed -i "s/DB_HOST=.*/DB_HOST=test-$b-db/" .env
-    #     sed -i "s/8083/8089/g" docker-compose.yaml
-    # fi
+    if [ "$b" = "billing" ]; then
+	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
+    elif [ "$b" = "weight" ]; then
+        sed -i "s/DB_HOST=.*/DB_HOST=test-$b-database/" .env
+    fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
     sed -i "s/BlueTeam/test_network/g" docker-compose.yaml
