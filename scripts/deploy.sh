@@ -2,7 +2,7 @@
 team1="billing"
 team2="weight"
 
-
+# check if production already run on startup, if not deploying production envoirment
 if [ -z "$(docker ps -q -f name=weight-app)" ] || [ -z "$(docker ps -q -f name=billing-app)" ]; then
     echo "Running Production Envoirment"
     if [ -z "$(docker ps -q -f name=billing-app)" ]; then

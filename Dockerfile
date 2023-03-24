@@ -6,5 +6,4 @@ RUN apk update && \
     apk add --no-cache --virtual .docker-compose-deps&& \
     pip3 install docker-compose gunicorn && \
     apk del .docker-compose-deps
-COPY ./scripts/ssmtp.conf /etc/ssmtp/ssmtp.conf
 RUN pip install -r requirements.txt
