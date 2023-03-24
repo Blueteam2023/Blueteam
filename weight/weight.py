@@ -14,6 +14,7 @@ IS_TRUCK = r"^\d+\-\d+\-\d+$"
 IS_PRODUCE = r"^[a-zA-Z]+$"
 CHECK_JSON_FILE = r'{"id":"[a-zA-Z]\-\d+","weight":\d+,"unit":"\w+"},\n'
 
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -236,6 +237,12 @@ def post_weight():
             if force != 'true':
                 body = "Container already registerd. In order to over write container weight request force = True."
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+            
+            
+            sqlQueries.insert_transaction(weight_data)
+            sqlQueries.update_container(container_id, weight, unit)
+            retr_val["id"] = id
+            return json.dumps(retr_val)
 
             sqlQueries.insert_transaction(weight_data)
             sqlQueries.update_container(container_id, weight, unit)
