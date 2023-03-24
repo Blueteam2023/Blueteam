@@ -170,11 +170,22 @@ def test_post_weight():
         assert data["truckTara"] == 50
         assert data["neto"] == 9106
 
-        #Bad request expected; truck license fromat incorrect:
-        
+        #Bad request expected; out for unexisting truck:
+        test_data = {"direction": "out", 
+                "truck": "123-123-123",
+                "containers": "",
+                "weight": 100,
+                "unit":"kg",
+                "force":False,
+                "produce": "na"}
+        response = c.post("/weight",query_string=test_data)
+        assert response.status == BAD_REQUEST
+        #check for specific data(assert.data == ?)
+
+        #Bad request expected; truck license fromat incorrect:  
         response = c.post("/weight",query_string=test_data)
         test_data = {"direction": "in", 
-                "truck": "a12-12-12a",
+                "truck": "12-12-12a",
                 "containers": "C-35434,K-8263",
                 "weight": 7777,
                 "unit":"kg",
@@ -183,4 +194,5 @@ def test_post_weight():
         response = c.post("/weight",query_string=test_data)
         assert response.status == BAD_REQUEST
         #check for specific data(assert.data == ?)
-
+    reset_database()
+        
