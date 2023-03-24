@@ -83,11 +83,11 @@ def test_get_session():
 def test_post_weight():
     reset_database()
     with app.test_client() as c:
-        #0k 200 expected; regular in session test:
+        #0k 200 expected; truck weighing in first time:
         test_data = {"direction": "in", 
                 "truck": "12-12-12",
-                "containers": "C-35434,K-8263,T-17267",
-                "weight": 10000,
+                "containers": "C-35434,K-8263",
+                "weight": 7777,
                 "unit":"kg",
                 "force":False,
                 "produce": "oranges"}
@@ -96,9 +96,9 @@ def test_post_weight():
         assert response.status == OK
         assert data["id"] == 10001
         assert data["truck"] == "12-12-12"
-        assert data["bruto"] == 10000
+        assert data["bruto"] == 7777
 
-        #Bad request expected; same truck, in after in test,force = flase:
+        #Bad request expected; same truck. in after in test. force = false:
         test_data = {"direction": "in", 
                 "truck": "12-12-12",
                 "containers": "C-35434,K-8263,T-17267",
@@ -109,7 +109,22 @@ def test_post_weight():
         response = c.post("/weight",query_string=test_data)
         assert response.status == BAD_REQUEST
 
-        #0k 200 expected; regular out after in test:
+        #0k 200 expected; override last in transaction,force = true:
+        test_data = {"direction": "in", 
+                "truck": "12-12-12",
+                "containers": "C-35434,K-8263,T-17267",
+                "weight": 10000,
+                "unit":"kg",
+                "force":True,
+                "produce": "oranges"}
+        response = c.post("/weight",query_string=test_data)
+        data = json.loads(response.data)
+        assert response.status == OK
+        assert data["id"] == 10001
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 10000
+
+        #0k 200 expected; truck weighing out after in test:
         test_data = {"direction": "out", 
                 "truck": "12-12-12",
                 "containers": "",
@@ -154,4 +169,5 @@ def test_post_weight():
         assert data["bruto"] == 50
         assert data["truckTara"] == 50
         assert data["neto"] == 9106
-    
+
+        
