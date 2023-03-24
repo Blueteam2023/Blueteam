@@ -105,11 +105,7 @@ def get_weight_containers(containers):
                 containers_weight1, containers_weight2, containers_weight3, containers_weight4, unit1, unit2, unit3)
             return cont_sum
         return "na"
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 94aea57 (test override last out transaction fix,added get last in containers and bruto by truck query)
     return containers_weight4
 
 

@@ -98,6 +98,17 @@ def test_post_weight():
         assert data["truck"] == "12-12-12"
         assert data["bruto"] == 10000
 
+        #Bad request expected; same truck, in after in test,force = flase:
+        test_data = {"direction": "in", 
+                "truck": "12-12-12",
+                "containers": "C-35434,K-8263,T-17267",
+                "weight": 10000,
+                "unit":"kg",
+                "force":False,
+                "produce": "oranges"}
+        response = c.post("/weight",query_string=test_data)
+        assert response.status == BAD_REQUEST
+
         #0k 200 expected; regular out after in test:
         test_data = {"direction": "out", 
                 "truck": "12-12-12",
@@ -115,7 +126,7 @@ def test_post_weight():
         assert data["truckTara"] == 100
         assert data["neto"] == 9056
 
-        #Bad request expected; same truck, out after out test:
+        #Bad request expected; same truck, out after out test,force = false:
         test_data = {"direction": "out", 
                 "truck": "12-12-12",
                 "containers": "",
@@ -127,7 +138,7 @@ def test_post_weight():
         assert response.status == BAD_REQUEST
         #check for specific data(assert.data == ?)
 
-        #OK 200; override last out transaction:
+        #OK 200; override last out transaction,force = true:
         test_data = {"direction": "out", 
                 "truck": "12-12-12",
                 "containers": "",
@@ -143,3 +154,4 @@ def test_post_weight():
         assert data["bruto"] == 50
         assert data["truckTara"] == 50
         assert data["neto"] == 9106
+    
