@@ -3,20 +3,83 @@ from mysql.connector import connect
 from os import environ
 
 config = {
-
-    # "host": environ['MYSQL_HOST'],
-    # "user": "root",
-    # "password": environ['MYSQL_ROOT_PASSWORD'],
-    # "database": environ['MYSQL_DB_NAME'],
-    # "port": 3306
-    "host": 'localhost',
-    "user": 'root',
-    "password": '12345',
-    "database": 'weight',
-    "port": 3306
+"host": environ['MYSQL_HOST'],
+"user": "root",
+"password": environ['MYSQL_ROOT_PASSWORD'],
+"database": environ['MYSQL_DB_NAME'],
+"port": 3306
+    #   "host": 'localhost',
+    #   "user": 'root',
+    #   "password": '12345',
+    #   "database": 'weight',
+    #   "port": 3306
 }
 # For Yuval
 
+
+def reset_database():
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute("DROP TABLE transactions")
+            cursor.execute("DROP TABLE containers_registered")
+            create_containers = ("CREATE TABLE IF NOT EXISTS `containers_registered` ("
+                                 "`container_id` varchar(15) NOT NULL,"
+                                 "`weight` int(12) DEFAULT NULL,"
+                                 "`unit` varchar(10) DEFAULT NULL,"
+                                 "  PRIMARY KEY (`container_id`)"
+                                 ") ENGINE=MyISAM AUTO_INCREMENT=10001")
+            create_transactions = ("CREATE TABLE IF NOT EXISTS `transactions` ("
+                                   "`id` int(12) NOT NULL AUTO_INCREMENT,"
+                                   "`datetime` datetime DEFAULT NULL,"
+                                   "`direction` varchar(10) DEFAULT NULL,"
+                                   "`truck` varchar(50) DEFAULT NULL,"
+                                   "`containers` varchar(10000) DEFAULT NULL,"
+                                   "`bruto` int(12) DEFAULT NULL,"
+                                   "`truckTara` int(12) DEFAULT NULL,"
+                                   "`neto` int(12) DEFAULT NULL,"
+                                   "`produce` varchar(50) DEFAULT NULL,"
+                                   "PRIMARY KEY (`id`)"
+                                   ") ENGINE=MyISAM AUTO_INCREMENT=10001 ;")
+            cursor.execute(create_containers)
+            cursor.execute(create_transactions)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+
+
+def health():
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            query = ("SELECT 1")
+            cursor.execute(query)
+            return "OK", 200
+        except:
+            return "ERROR", 500
+
+def get_last_in_containers_and_bruto_by_truck(truck_id: str):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
+        try:
+            query = (f"SELECT bruto,containers FROM transactions WHERE truck = '{truck_id}' AND direction = 'in'"
+                     " ORDER BY id DESC LIMIT 1")
+            cursor.execute(query)
+            return cursor.fetchone()
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
 
 def get_last_transaction_by_truck(truck_id: str):
     cnx = connect(**config)
@@ -75,10 +138,10 @@ def change_transaction(values: dict[str, Any]):
         cursor = cnx.cursor()
         try:
             cursor.execute(query_start)
-            query_id = int(cursor.fetchone())
+            query_id = int(''.join(map(str, cursor.fetchone())))
             update_query = ("UPDATE transactions"
                             f" SET datetime = '{values['datetime']}', bruto = {values['bruto']}, truckTara = {values['truckTara']},"
-                            f" neto = {values['neto']}, truck = {values['truck']}, containers = '{values['containers']}'"
+                            f" neto = {values['neto']}, truck = '{values['truck']}', containers = '{values['containers']}'"
                             f" WHERE id = {query_id}")
             cursor.execute(update_query)
         except:
@@ -240,7 +303,7 @@ def get_session_by_id(id: int):
                       "bruto": session_start["bruto"]}
             if not is_truck:
                 return result
-
+            result["truck"] = session_start["truck"]
             session_end_query = (f"SELECT * FROM transactions WHERE id > {id} AND truck = '{session_start['truck']}"
                                  " 'AND direction = 'out' LIMIT 1")
             cursor.execute(session_end_query)
@@ -272,6 +335,65 @@ def get_container_ids_without_weight():
             if ids:
                 for id in ids:
                     result.append(id)
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+            return result
+
+
+def get_truck_transactions_by_id_and_dates(start_date: str, end_date: str, id: str):
+    # get session ids
+    session_query = f"SELECT id FROM transactions WHERE truck = '{id}'"
+    tara_query = (f"SELECT truckTara FROM transactions WHERE truck = '{id}'"
+                  f" AND direction = 'out' ORDER BY id DESC LIMIT 1")
+    cnx = connect(**config)
+    result = {}
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(session_query)
+            for session in cursor:
+                if "sessions" not in result:
+                    result["sessions"] = []
+                result["sessions"].append(session)
+
+            cursor.execute(tara_query)
+            if not cursor:
+                result["tara"] = "na"
+                result["id"] = id
+                return result
+            for tara in cursor:
+                result["tara"] = tara
+            result["id"] = "id"
+            return result
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
+            return result
+
+
+def get_container_transactions_by_id_and_dates(start_date: str, end_date: str, id: str):
+    session_query = f"SELECT id FROM transactions WHERE containers = '{id}' AND truck = '-'"
+    result = {}
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor()
+        try:
+            cursor.execute(session_query)
+            for session in cursor:
+                if "sessions" not in result:
+                    result["sessions"] = []
+                result["sessions"].append(session)
+            result["id"] = id
+            result["tara"] = "na"
         except:
             print("err")
             # TODO: handle errors
