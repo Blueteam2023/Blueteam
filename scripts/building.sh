@@ -92,7 +92,7 @@ send_mail(){
     if [ "$3" = "dev" ]; then
         dev_email=$(grep "^$pusher " emails.txt | awk '{print $2}')
         message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
-        echo -e "$message" | ssmtp $to_email,$DEVOPS_MAIL
+        echo -e "$message" | ssmtp $dev_email,$DEVOPS_MAIL
     else
         message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
         echo -e "$message" | ssmtp $DEVOPS_MAIL
@@ -145,7 +145,7 @@ production_init(){
         stop_production
         #git reset --hard HEAD~1 # revert last pull
         echo "Staring the previous version production"
-        $exec ./scripts/deploy.sh # deploy previous version
+        exec ./scripts/deploy.sh # deploy previous version
     else
         echo "Building production finished successfully"
         send_mail "Version update is successfully" "The new version is currently online" dev
@@ -160,8 +160,8 @@ testing_init(){
         clone_testing
         build_testing
         echo "Checking health"
-        #health=$(health_check testing)
-        health=0 #for testing
+        health=$(health_check testing)
+        #health=0 #for testing
         if [ $health -eq 1 ]; then
             echo "Health failed, Reverting to last commit and sending mails to devops and dev."
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
@@ -192,7 +192,7 @@ main(){
     if [ testing_init -eq 0 ]; then
         production_init
     else
-        Echo "Testing Failes, Alerting devops and devs."
+        echo "Testing Failes, Alerting devops and devs."
         send_mail "Test Failed, Revert pull request" "Contact devops team for more details."
     fi
     rm "$lockfile"
