@@ -131,7 +131,7 @@ def post_weight():
     if not (re.match(IS_TRUCK, truck) or (truck == "na" and direction.lower() == "none")):
         body = "Truck lisence must be in numbers divided by dashes\n"
     if not direction.lower() in "in,out,none":
-        body = "Direction must be in/out/none\n"
+        body += "Direction must be in/out/none\n"
     if not weight.isdigit():
         body += "Weight must be positive integer.\n"
     if not unit.lower() in "kg,lbs":
@@ -139,7 +139,7 @@ def post_weight():
     if not force.lower() in "true,false":
         body += "Force value must be True/False\n"
     if not re.match(IS_PRODUCE, produce):
-        body += "Produce must be letters string\n"
+        body += "Produce must be letters string"
     if body != '':
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
     force = force.lower()

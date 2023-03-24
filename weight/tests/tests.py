@@ -110,6 +110,7 @@ def test_post_weight():
                      "produce": "oranges"}
         response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
+        assert b"Truck already in. To override current 'in', request with force=True" in response.data
 
         # 0k 200 expected; override last in transaction,force = true:
         test_data = {"direction": "in",
@@ -126,18 +127,18 @@ def test_post_weight():
         assert data["truck"] == "12-12-12"
         assert data["bruto"] == 10000
 
-        # Bad request expected; out, produce value diff from "na":
-        test_data = {"direction": "out",
-                     "truck": "12-12-12",
-                     "containers": "",
-                     "weight": 100,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "oranges"
-                     }
-        response = c.post("/weight", query_string=test_data)
+        #Bad request expected; out, produce value not empty(diff from "na"):
+        test_data = {"direction": "out", 
+                "truck": "12-12-12",
+                "containers": "",
+                "weight": 100,
+                "unit":"kg",
+                "force":False,
+                "produce": "oranges"
+                }
+        response = c.post("/weight",query_string=test_data)
         assert response.status == BAD_REQUEST
-        # check for specific data(assert.data == ?)
+        assert b"Truck must be empty while getting out" in response.data
 
         # Bad request expected; out, containers value not empty:
         test_data = {"direction": "out",
@@ -150,7 +151,7 @@ def test_post_weight():
                      }
         response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
-        # check for specific data(assert.data == ?)
+        assert b"Truck must be empty while getting out" in response.data
 
         # 0k 200 expected; truck weighing out after in test:
         test_data = {"direction": "out",
@@ -179,7 +180,7 @@ def test_post_weight():
                      "produce": "na"}
         response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
-        # check for specific data(assert.data == ?)
+        assert b"Truck cannot get out if not inside to override last transaction change force to true." in response.data
 
         # OK 200; override last out transaction,force = true:
         test_data = {"direction": "out",
@@ -197,7 +198,7 @@ def test_post_weight():
         assert data["bruto"] == 50
         assert data["truckTara"] == 50
         assert data["neto"] == 9106
-        # Bad request expected; truck license fromat incorrect:
+
         # Bad request expected; out for unexisting truck:
         test_data = {"direction": "out",
                      "truck": "123-123-123",
@@ -208,21 +209,22 @@ def test_post_weight():
                      "produce": "na"}
         response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
-        # check for specific data(assert.data == ?)
+        assert b"Truck has not been weighed yet" in response.data
+        
 
-        # Bad request expected; truck license fromat incorrect:
-        response = c.post("/weight", query_string=test_data)
-        test_data = {"direction": "in",
-                     "truck": "12-12-12a",
-                     "containers": "C-35434,K-8263",
-                     "weight": 7777,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
+        #Bad request expected; check all wrong insertions scenarios:  
+        response = c.post("/weight",query_string=test_data)
+        test_data = {"direction": "fhe", 
+                "truck": "12-12-12a",
+                "containers": "C-35434,K-8263",
+                "weight": -7777,
+                "unit":"feofe",
+                "force":"jfeoiw",
+                "produce": "oranges123"}
+        response = c.post("/weight",query_string=test_data)
         assert response.status == BAD_REQUEST
-        # check for specific data(assert.data == ?)
-
+        bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
+        assert bad_response in response.data
 
 def test_get_item():
     reset_database()
