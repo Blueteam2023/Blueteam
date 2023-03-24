@@ -287,7 +287,7 @@ def get_session_by_id(id: int):
                       "bruto": session_start["bruto"]}
             if not is_truck:
                 return result
-
+            result["truck"] = session_start["truck"]
             session_end_query = (f"SELECT * FROM transactions WHERE id > {id} AND truck = '{session_start['truck']}"
                                  " 'AND direction = 'out' LIMIT 1")
             cursor.execute(session_end_query)
