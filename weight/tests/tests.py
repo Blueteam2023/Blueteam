@@ -252,6 +252,7 @@ def test_get_item():
 
         request_params = {"from": start, "to": end, "id": "C-73281"}
         result_response = c.get("/item", query_string=request_params)
+        result_response.text
         assert result_response.status == OK
         result_body = json.loads(result_response.data)
 
