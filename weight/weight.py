@@ -105,7 +105,6 @@ def get_weight_containers(containers):
                 containers_weight1, containers_weight2, containers_weight3, containers_weight4, unit1, unit2, unit3)
             return cont_sum
         return "na"
-
     return containers_weight4
 
 
@@ -184,8 +183,10 @@ def post_weight():
                 body = "Truck must be empty while getting out"
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             truckTara = weight
-            last_in_transaction = sqlQueries.get_last_in_containers_and_bruto_by_truck(truck)
-            containers_weight = get_weight_containers(last_in_transaction["containers"].split(","))
+            last_in_transaction = sqlQueries.get_last_in_containers_and_bruto_by_truck(
+                truck)
+            containers_weight = get_weight_containers(
+                last_in_transaction["containers"].split(","))
             neto = calculateNeto(
                 last_in_transaction["bruto"], containers_weight, truckTara, unit)
             if neto < 0:
@@ -345,4 +346,4 @@ def reset_database():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

@@ -3,16 +3,11 @@ from mysql.connector import connect
 from os import environ
 
 config = {
-"host": environ['MYSQL_HOST'],
-"user": "root",
-"password": environ['MYSQL_ROOT_PASSWORD'],
-"database": environ['MYSQL_DB_NAME'],
-"port": 3306
-    #   "host": 'localhost',
-    #   "user": 'root',
-    #   "password": '12345',
-    #   "database": 'weight',
-    #   "port": 3306
+    "host": environ['MYSQL_HOST'],
+    "user": "root",
+    "password": environ['MYSQL_ROOT_PASSWORD'],
+    "database": environ['MYSQL_DB_NAME'],
+    "port": 3306
 }
 # For Yuval
 
@@ -64,6 +59,7 @@ def health():
         except:
             return "ERROR", 500
 
+
 def get_last_in_containers_and_bruto_by_truck(truck_id: str):
     cnx = connect(**config)
     if cnx.is_connected():
@@ -80,6 +76,7 @@ def get_last_in_containers_and_bruto_by_truck(truck_id: str):
             if cnx.is_connected():
                 cursor.close()
                 cnx.close()
+
 
 def get_last_transaction_by_truck(truck_id: str):
     cnx = connect(**config)
@@ -385,13 +382,13 @@ def get_container_transactions_by_id_and_dates(start_date: str, end_date: str, i
     result = {}
     cnx = connect(**config)
     if cnx.is_connected():
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(dictionary=True)
         try:
             cursor.execute(session_query)
             for session in cursor:
                 if "sessions" not in result:
                     result["sessions"] = []
-                result["sessions"].append(session)
+                result["sessions"].append(session["id"])
             result["id"] = id
             result["tara"] = "na"
         except:
