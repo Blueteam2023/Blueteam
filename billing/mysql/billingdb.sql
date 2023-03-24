@@ -12,7 +12,7 @@ USE `billdb`;
 --
 
 CREATE TABLE IF NOT EXISTS `Provider` (
-  `id` int(11) NOT NULL AUTO_INCREMENT, 
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  AUTO_INCREMENT=10001 ;
@@ -24,8 +24,21 @@ CREATE TABLE IF NOT EXISTS `Rates` (
   FOREIGN KEY (scope) REFERENCES `Provider`(`id`)
 ) ENGINE=MyISAM ;
 
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Navel', '50', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Blood', '50', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Mandarin', '50', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Shamuti', '50', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Tangerine', '50', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Clementine', '100', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Grapefruit', '100', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Valencia', '100', 'All');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Mandarin', '100', '43');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Mandarin', '100', '45');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Tangerine', '80', '12');
+INSERT INTO `Rates` (`product_id`, `rate`, `scope`) VALUES ('Valencia', '80', '45');
+
 CREATE TABLE IF NOT EXISTS `Trucks` (
-  `id` varchar(10) NOT NULL,
+  `id` varchar(10) NOT NULL,  
   `provider_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`provider_id`) REFERENCES `Provider`(`id`)
