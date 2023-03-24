@@ -183,7 +183,7 @@ def post_weight():
             if not last_transaction:
                 body = "Truck has not been weighed yet"
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-            if containers or produce:
+            if containers or produce != "na":
                 body = "Truck must be empty while getting out"
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             truckTara = weight
@@ -237,8 +237,7 @@ def post_weight():
             if force != 'true':
                 body = "Container already registerd. In order to over write container weight request force = True."
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-            
-            
+
             sqlQueries.insert_transaction(weight_data)
             sqlQueries.update_container(container_id, weight, unit)
             retr_val["id"] = id

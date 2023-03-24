@@ -19,7 +19,7 @@ def test_get_session():
     with app.test_client() as c:
         truck_params = {"direction": "in",
                         "truck": "123-12-123",
-                        "containers": "C-35434",
+                        "containers": "C-35434",  # 296 kg
                         "weight": 1000,
                         "unit": "kg",
                         "force": False,
@@ -31,13 +31,13 @@ def test_get_session():
                             "unit": "kg",
                             "force": False,
                             "produce": "na"}
-
+        # insert data for testing
         truck_weight_response = c.post("/weight", query_string=truck_params)
+        cont_weight_response = c.post("/weight", query_string=container_params)
+        # keep session id
         truck_session = json.loads(truck_weight_response.data)["id"]
-        container_weight_response = c.post(
-            "/weight", query_string=container_params)
-        container_session = json.loads(container_weight_response.data)["id"]
-
+        container_session = json.loads(cont_weight_response.data)["id"]
+        # get truck response from app
         truck_session_response = c.get(f"/session/{truck_session}")
         assert truck_session_response.status == "200 OK"
 
@@ -45,7 +45,7 @@ def test_get_session():
         assert truck_session == truck_data["id"]
         assert truck_data["truck"] == "123-12-123"
         assert truck_data["bruto"] == 1000
-
+        # get container response from app
         container_session_response = c.get(f"/session/{container_session}")
         assert container_session_response.status == "200 OK"
 
@@ -53,3 +53,23 @@ def test_get_session():
         assert container_session == container_data["id"]
         assert container_data["truck"] == "na"
         assert container_data["bruto"] == 500
+
+        # end truck session
+        truck_params = {"direction": "out",
+                        "truck": "123-12-123",
+                        "containers": "",
+                        "weight": 300,
+                        "unit": "kg",
+                        "force": False,
+                        "produce": "na"}
+        truck_weight_response = c.post("/weight", query_string=truck_params)
+        # get truck response from app
+        truck_session_response = c.get(f"/session/{truck_session}")
+        assert truck_session_response.status == "200 OK"
+        truck_data = json.loads(truck_session_response.data)
+
+        assert truck_session == truck_data["id"]
+        assert truck_data["truck"] == "123-12-123"
+        assert truck_data["bruto"] == 1000
+        assert truck_data["truckTara"] == 300
+        assert truck_data["neto"] == 1000 - 300 - 296
