@@ -23,8 +23,8 @@ services:
     build: .
     networks:
       - BlueTeam
-    # ports:
-    #    - "8083:5000"
+    ports:
+      - "8083:5000"
     command: flask run
     depends_on:
       - db

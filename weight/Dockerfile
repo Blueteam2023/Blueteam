@@ -11,4 +11,4 @@ COPY requirements.txt ./
 
 
 RUN pip install -r requirements.txt
-COPY weight.py sqlQueries.py ./
+COPY weight.py sqlQueries.py /tests/tests.py ./
