@@ -72,7 +72,7 @@ health_check(){
         check_billing=$(curl -s -o /dev/null -w "%{http_code}" http://$team1-app:80/health)
         check_weight=$(curl -s -o /dev/null -w "%{http_code}" http://$team2-app:5000/health)
     fi
-	if [ "$check_billing" -eq 200 ] && [ "$check_weight" -eq 200 ]; then
+	if [ "$check_billing" = "200" ] && [ "$check_weight" = "200" ]; then
     	return 0
 	else
 		return 1
