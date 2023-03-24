@@ -13,8 +13,6 @@ services:
     volumes:
       - ./datadump:/docker-entrypoint-initdb.d
       - ./datadir:/var/lib/mysql
-    stdin_open: true
-    tty: true
 
   app:
     container_name: weight-app
@@ -23,9 +21,9 @@ services:
     build: .
     networks:
       - BlueTeam
-    # ports:
-    #   - "8083:5000"
-    command: gunicorn weight:app
+    ports:
+      - "5000:8000" # for local testing
+    command: python ./weight.py
     depends_on:
       - db
     links:
