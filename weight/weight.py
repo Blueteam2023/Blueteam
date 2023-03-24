@@ -99,15 +99,14 @@ def get_weight_containers(containers):
                 if container3["id"] in unfound_containers:
                     containers_weight3 += int(container3["weight"])
                     unfound_containers.remove(container3["id"])
-                    
+
         if not unfound_containers:
             cont_sum = sumContainerWeight(
                 containers_weight1, containers_weight2, containers_weight3, containers_weight4, unit1, unit2, unit3)
             return cont_sum
         return "na"
-        
-    else:
-        return containers_weight4
+
+    return containers_weight4
 
 
 @app.route("/weight", methods=["POST", "GET"])
