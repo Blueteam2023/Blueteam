@@ -124,6 +124,32 @@ def test_post_weight():
         assert data["truck"] == "12-12-12"
         assert data["bruto"] == 10000
 
+        #Bad request expected; out, produce value diff from "na":
+        test_data = {"direction": "out", 
+                "truck": "12-12-12",
+                "containers": "",
+                "weight": 100,
+                "unit":"kg",
+                "force":False,
+                "produce": "oranges"
+                }
+        response = c.post("/weight",query_string=test_data)
+        assert response.status == BAD_REQUEST
+        #check for specific data(assert.data == ?)
+
+        #Bad request expected; out, containers value not empty:
+        test_data = {"direction": "out", 
+                "truck": "12-12-12",
+                "containers": "C-35434,K-8263",
+                "weight": 100,
+                "unit":"kg",
+                "force":False,
+                "produce": "oranges"
+                }
+        response = c.post("/weight",query_string=test_data)
+        assert response.status == BAD_REQUEST
+        #check for specific data(assert.data == ?)
+
         #0k 200 expected; truck weighing out after in test:
         test_data = {"direction": "out", 
                 "truck": "12-12-12",
@@ -194,5 +220,8 @@ def test_post_weight():
         response = c.post("/weight",query_string=test_data)
         assert response.status == BAD_REQUEST
         #check for specific data(assert.data == ?)
+
+
+
     reset_database()
         
