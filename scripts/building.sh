@@ -137,7 +137,8 @@ production_init(){
     git pull
     build_production
     echo "Starting health check"
-    health=$(health_check production)
+    health_check production
+    health=$?
     #health=0 # for testing
     if [ $health -eq 1 ]; then
         global error_msg="H"
@@ -160,20 +161,21 @@ testing_init(){
         clone_testing
         build_testing
         echo "Starting health check"
-        health=$(health_check testing)
-        #health=0 #for testing
+        health_check testing
+        health=$?
         if [ $health -eq 1 ]; then
             echo "Health failed, Reverting to last commit and sending mails to devops and dev."
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
             #git reset --hard HEAD~1
-        else
+        elif [ $health -eq 0 ]; then
             echo "running E2E tests"
-            tester=$(run_e2e_tests)
+            run_e2e_tests
+            tester=$?
             if [ $tester -eq 0 ]; then
                 echo "E2E Tests passed successfully, Starting production update"
                 terminate_testing
                 return 0
-            else
+            elif [ $tester -eq 1 ]; then
                 echo "E2E Tests failed, Stopping update process"
                 terminate_testing
                 return 1
@@ -190,7 +192,8 @@ main(){
         done
     fi
     touch "$lockfile"
-    testing_result=$(testing_init)
+    testing_init
+    testing_result=$?
     if [ $testing_result -eq 0 ]; then
         production_init
     else
