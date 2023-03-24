@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Truck Information</title>
+</head>
+<body>
+    <h1>Truck Information</h1>
+    <form action="/truck/" method="get">
+        <label for="id">Truck License:</label>
+        <input type="text" id="id" name="id"><br><br>
+        <label for="from">From (yyyymmddhhmmss):</label>
+        <input type="text" id="from" name="from" value="1st of month at 000000"><br><br>
+        <label for="to">To (yyyymmddhhmmss):</label>
+        <input type="text" id="to" name="to" value="now"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <p><em>Note: The server time is assumed for the date-time stamps.</em></p>
+</body>
+</html>

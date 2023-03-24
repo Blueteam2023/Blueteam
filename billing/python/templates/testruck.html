@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Truck API Documentation</title>
+  </head>
+  <body>
+    <h1>Truck API Documentation</h1>
+
+    <h2>POST /truck</h2>
+    <p>Registers a truck in the system</p>
+    <ul>
+      <li>provider - known provider id</li>
+      <li>id - the truck license plate</li>
+    </ul>
+
+    <h2>PUT /truck/{id}</h2>
+    <p>Can be used to update provider id</p>
+    <ul>
+      <li>{id} - the truck license plate</li>
+    </ul>
+
+    <h2>GET /truck/&lt;id&gt;?from=t1&amp;to=t2</h2>
+    <p>Returns information about a specific truck</p>
+    <ul>
+      <li>&lt;id&gt; - the truck license plate (404 will be returned if non-existent)</li>
+      <li>t1,t2 - date-time stamps, formatted as yyyymmddhhmmss. server time is assumed. Default t1 is "1st of month at 000000". Default t2 is "now".</li>
+    </ul>
+    <p>Returns a JSON object with the following properties:</p>
+    <ul>
+      <li>"id": &lt;str&gt;, the truck license plate</li
