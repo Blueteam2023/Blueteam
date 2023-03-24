@@ -81,7 +81,6 @@ health_check(){
 
 # Run devs E2E tests
 run_e2e_tests(){
-	echo "running E2E tests"
 	return 0
 }
 
@@ -137,6 +136,7 @@ production_init(){
     cd /app
     git pull
     build_production
+    echo "Starting health check"
     health=$(health_check production)
     #health=0 # for testing
     if [ $health -eq 1 ]; then
@@ -159,7 +159,7 @@ testing_init(){
     if [ "$branch" = "billing" ] || [ "$branch" = "weight" ]; then
         clone_testing
         build_testing
-        echo "Checking health"
+        echo "Starting health check"
         health=$(health_check testing)
         #health=0 #for testing
         if [ $health -eq 1 ]; then
@@ -167,6 +167,7 @@ testing_init(){
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
             #git reset --hard HEAD~1
         else
+            echo "running E2E tests"
             tester=$(run_e2e_tests)
             if [ $tester -eq 0 ]; then
                 echo "E2E Tests passed successfully, Starting production update"
