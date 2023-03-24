@@ -12,6 +12,13 @@ MYSQL_USER = environ['ENV_USER']
 MYSQL_ROOT_PASSWORD = environ['ENV_ROOT_PASSWORD']
 MYSQL_HOST = environ['ENV_HOST']
 MYSQL_DB_NAME = environ['ENV_DB_NAME']
+BILLING_MYSQL_PORT = "3306"
+#WEIGHT_USER=?
+#WEIGHT_ROOT_PASSWORD=?
+#WEIGHT_HOST=?
+#WEIGHT_PORT=?
+#WEIGHT_DB_NAME=?
+
 
 # Initializing app
 app = Flask(__name__)
@@ -25,13 +32,14 @@ def index():
 # Health check API
 @app.route('/health')
 def health_check():
-    try:
-        connection = mysql.connector.connect(
-            user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port="3306", database=MYSQL_DB_NAME)
-        connection.close()
-        return 'OK', 200
-    except:
-        return 'failure', 500
+
+	try:
+		connection=mysql.connector.connect(
+		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
+		connection.close()
+		return 'OK', 200
+	except:
+		return 'failure', 500
 
 
 # Provider list API
@@ -39,7 +47,7 @@ def health_check():
 def plist():
     try:
         connection = mysql.connector.connect(
-            user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port="3306", database=MYSQL_DB_NAME)
+            user=MYSQL_USER, password=MYSQL_ROOT_PASSWORD, host=MYSQL_HOST, port=BILLING_MYSQL_PORT, database=MYSQL_DB_NAME)
 
         cursor = connection.cursor()
         cursor.execute('SELECT * FROM Provider;')
@@ -49,8 +57,6 @@ def plist():
         return DB_PROV_LIST
     except:
         return "listfail"
-
-# POST provider API
 
 
 @app.route('/provider', methods=["GET", "POST"])
@@ -62,7 +68,7 @@ def prov():
 		
 		GIVEN_PROV_NAME = request.form['nm']		
 		connection=mysql.connector.connect(
-		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = "3306", database = MYSQL_DB_NAME)
+		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
 		cursor=connection.cursor()
 
 
@@ -83,8 +89,6 @@ def prov():
 			PROV_ID=json.dumps(DB_PROV_ID[0][0])
 			connection.close()
 			return f"Provider name saved to ID {PROV_ID}"
-		
-
 
 	else:
 		return "error"
@@ -101,7 +105,7 @@ def provid(id):
 		
 		GIVEN_PROV_NAME = request.form['nm']		
 		connection=mysql.connector.connect(
-		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = "3306", database = MYSQL_DB_NAME)
+		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
 		cursor=connection.cursor()
 
 		cursor.execute("SELECT name FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
@@ -199,25 +203,66 @@ def bill(id):
 	
 	FROM_DATE = request.args.get('from', datetime.today().strftime("%Y%m01%H%M%S"))
 	TO_DATE = request.args.get('to',datetime.today().strftime("%Y%m%d%H%M%S"))
-#	#Billing DB Connection
-#	connection=mysql.connector.connect(
-#	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = "3306", database = MYSQL_DB_NAME)
-#	cursor=connection.cursor()
-#	cursor.execute('SELECT name FROM Provider where id=(%s);',(id,))
-#	DB_PROV_LIST=cursor.fetchall()
-#	#JSON_PROV_LIST=list(json.dumps(DB_PROV_LIST))
-#	connection.close()
-#	
-#	#Weight DB Connection
-#	connection=mysql.connector.connect(
-#	user = WEIGHT_USER, password = WEIGHT_ROOT_PASSWORD, host = WEIGHT_HOST, port = "3306", database = WEIGHT_DB_NAME)
-#	cursor=connection.cursor()
-#	cursor.execute('SELECT name FROM transactions where datetime from (%s) to (%s);',(from, to))
-#	DB_PROV_LIST=cursor.fetchall()
-#	#JSON_PROV_LIST=list(json.dumps(DB_PROV_LIST))
-#	connection.close()
-	return f"from={FROM_DATE}, to={TO_DATE}"
 	
+	#Billing DB Connection
+	connection=mysql.connector.connect(
+	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
+	cursor=connection.cursor()
+	
+	#  "name": <str>,
+	cursor.execute('SELECT name FROM Provider where id=(%s);',(id,))
+	DB_PROV_NAME=cursor.fetchall()
+	try:
+		PROV_NAME=json.dumps(DB_PROV_LIST[0][0])
+	except:
+		return "ERROR: Provider not found."
+	#  list of trucks
+	cursor.execute('SELECT id FROM Trucks where provider_id=(%s);',(id,))
+	TRUCK_LIST=cursor.fetchall()
+	STR_TRUCK_LIST=json.dumps(TRUCK_LIST)
+	
+	
+		
+	connection.close()
+	
+	#Weight DB Connection
+	connection=mysql.connector.connect(
+	user = WEIGHT_USER, password = WEIGHT_ROOT_PASSWORD, host = WEIGHT_HOST, port = WEIGHT_PORT, database = WEIGHT_DB_NAME)
+	cursor=connection.cursor()
+	
+	#  "truckCount": <int>,
+	cursor.execute('SELECT count(distinct truck) FROM transactions where datetime > (%s) and datetime < (%s);',(FROM_DATE, TO_DATE,))
+	DB_TRUCK_COUNT=cursor.fetchall()
+	TRUCK_COUNT=json.dumps(DB_TRUCK_COUNT)
+	
+	#  "sessionCount": <int>,
+	cursor.execute('SELECT count(direction) FROM transactions where direction = "out" and datetime > (%s) and datetime < (%s);',(FROM_DATE, TO_DATE,))
+	DB_SESSION_COUNT=cursor.fetchall()
+	SESSION_COUNT=json.dumps(DB_SESSION_COUNT)
+	
+	#  "products": 
+	cursor.execute('SELECT produce FROM transactions where datetime >= (%s) and datetime <= (%s);',(FROM_DATE, TO_DATE,))
+	DB_PRODUCT_LIST=set(cursor.fetchall())
+	#PRODUCT_LIST=list(json.dumps(DB_PRODUCT_LIST))
+	PRODUCT_INFO=[]
+	for var in DB_PRODUCT_LIST:
+		cursor.execute('SELECT count(id) where produce = (%s) and datetime >= (%s) and datetime <= (%s)',(var, FROM_DATE, TO_DATE,))
+		count=cursor.fetchall()
+		cursor.execute('SELECT sum(neto) where produce = (%s) and datetime >= (%s) and datetime <= (%s)',(var, FROM_DATE, TO_DATE,))
+		amount=cursor.fetchall()
+		
+		PRODUCT_INFO.append(f' \
+		"product": "{var}" \
+		"count": "{count}" \
+		"amount": {amount} \
+		"rate": {a} \
+		"pay": {a}') 
+	
+		
+	connection.close()
+	return STR_TRUCK_LIST
+	
+	#  "total": <int> // agorot
 	
 	
 	
