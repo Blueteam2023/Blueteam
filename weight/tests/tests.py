@@ -10,6 +10,7 @@ app.testing = True
 
 
 OK = "200 OK"
+BAD_REQUEST = "400 BAD REQUEST"
 
 def test_get_health():
     with app.test_client() as c:
@@ -81,16 +82,15 @@ def test_get_session():
 
 def test_post_weight():
     reset_database()
-    test_data = {"direction": "in", 
+    with app.test_client() as c:
+        #0k 200 expected; regular in session test:
+        test_data = {"direction": "in", 
                 "truck": "12-12-12",
                 "containers": "C-35434,K-8263,T-17267",
                 "weight": 10000,
                 "unit":"kg",
                 "force":False,
                 "produce": "oranges"}
-    
-    with app.test_client() as c:
-        #regular in session test:
         response = c.post("/weight",query_string=test_data)
         data = json.loads(response.data)
         assert response.status == OK
@@ -98,7 +98,7 @@ def test_post_weight():
         assert data["truck"] == "12-12-12"
         assert data["bruto"] == 10000
 
-        #regular out after in test:
+        #0k 200 expected; regular out after in test:
         test_data = {"direction": "out", 
                 "truck": "12-12-12",
                 "containers": "",
@@ -107,12 +107,39 @@ def test_post_weight():
                 "force":False,
                 "produce": "na"}
         response = c.post("/weight",query_string=test_data)
-        # assert response.data == 0
         assert response.status == OK
-        print(response.data)
         data = json.loads(response.data)
         assert data["id"] == 10002
         assert data["truck"] == "12-12-12"
         assert data["bruto"] == 100
         assert data["truckTara"] == 100
         assert data["neto"] == 9056
+
+        #Bad request expected; same truck, out after out test:
+        test_data = {"direction": "out", 
+                "truck": "12-12-12",
+                "containers": "",
+                "weight": 100,
+                "unit":"kg",
+                "force":False,
+                "produce": "na"}
+        response = c.post("/weight",query_string=test_data)
+        assert response.status == BAD_REQUEST
+        #check for specific data(assert.data == ?)
+
+        #OK 200; override last out transaction:
+        test_data = {"direction": "out", 
+                "truck": "12-12-12",
+                "containers": "",
+                "weight": 50,
+                "unit":"kg",
+                "force":True,
+                "produce": "na"}
+        response = c.post("/weight",query_string=test_data)
+        assert response.status == OK
+        data = json.loads(response.data)
+        assert data["id"] == 10002
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 50
+        assert data["truckTara"] == 50
+        assert data["neto"] == 9106

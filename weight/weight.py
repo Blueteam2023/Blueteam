@@ -45,7 +45,7 @@ def calculateNeto(bruto, containers_weight, truckTara, unit):
     neto = bruto - containers_weight - truckTara
     if unit == "lbs":
         neto *= 2.2
-    return neto
+    return int(neto)
 
 
 def sumContainerWeight(cont1, cont2, cont3, cont4, unit1, unit2, unit3):
@@ -105,7 +105,11 @@ def get_weight_containers(containers):
                 containers_weight1, containers_weight2, containers_weight3, containers_weight4, unit1, unit2, unit3)
             return cont_sum
         return "na"
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 94aea57 (test override last out transaction fix,added get last in containers and bruto by truck query)
     return containers_weight4
 
 
@@ -184,17 +188,17 @@ def post_weight():
                 body = "Truck must be empty while getting out"
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
             truckTara = weight
-            containers_weight = get_weight_containers(
-                last_transaction["containers"].split(","))
+            last_in_transaction = sqlQueries.get_last_in_containers_and_bruto_by_truck(truck)
+            containers_weight = get_weight_containers(last_in_transaction["containers"].split(","))
             neto = calculateNeto(
-                last_transaction["bruto"], containers_weight, truckTara, unit)
+                last_in_transaction["bruto"], containers_weight, truckTara, unit)
             if neto < 0:
                 body = "Neto weight can not be negative."
                 Response(response=body, status=HTTPStatus.BAD_REQUEST)
             weight_data["truckTara"] = truckTara
             weight_data["neto"] = neto
             retr_val["truckTara"] = truckTara
-            retr_val["neto"] = int(neto)
+            retr_val["neto"] = neto
 
             match last_transaction["direction"]:
 

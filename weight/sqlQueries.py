@@ -64,6 +64,22 @@ def health():
         except:
             return "ERROR", 500
 
+def get_last_in_containers_and_bruto_by_truck(truck_id: str):
+    cnx = connect(**config)
+    if cnx.is_connected():
+        cursor = cnx.cursor(dictionary=True)
+        try:
+            query = (f"SELECT bruto,containers FROM transactions WHERE truck = '{truck_id}' AND direction = 'in'"
+                     " ORDER BY id DESC LIMIT 1")
+            cursor.execute(query)
+            return cursor.fetchone()
+        except:
+            print("err")
+            # TODO: handle errors
+        finally:
+            if cnx.is_connected():
+                cursor.close()
+                cnx.close()
 
 def get_last_transaction_by_truck(truck_id: str):
     cnx = connect(**config)
