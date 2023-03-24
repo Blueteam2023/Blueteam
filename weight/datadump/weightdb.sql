@@ -1,9 +1,8 @@
 --
 -- Database: `Weight`
 --
-GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'temp' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
-
 CREATE DATABASE IF NOT EXISTS `weight`;
 
 -- --------------------------------------------------------
