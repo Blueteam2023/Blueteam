@@ -104,8 +104,8 @@ run_e2e_tests(){
     echo "Running E2E tests for $b"
     if [ "$b" = "weight" ]; then # Weight app tests
         test_result=$(docker exec -i weight-app pytest tests.py 2>&1)
-        passed_count=$(echo "$test_result" | grep -o '^\s*[0-9]* passed\s*$' | awk '{print $1}')
-        failed_count=$(echo "$test_result" | grep -o '^\s*[0-9]* failed\s*$' | awk '{print $1}')
+        passed_count=$(echo "$test_result" | grep -oP '(\d+) passed' | cut -d' ' -f1)
+        failed_count=$(echo "$test_result" | grep -oP '(\d+) failed' | cut -d' ' -f1)
         echo "Total Passed: $passed_count"
         echo "Total Failed: $failed_count"
         if [ $failed_count -eq 0 ]; then
