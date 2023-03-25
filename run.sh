@@ -16,6 +16,9 @@ if [ ! -f id_ed25519 ]; then
     cp ../.ssh/id_ed25519 id_ed25519
 fi
 
+if [ ! -f ./scripts/data/stable_versions.txt ]; then
+    touch ./scripts/data/stable_versions.txt
+fi
 
 echo "Starting Gan-Shmuel"
 docker-compose up
