@@ -13,9 +13,9 @@ fi
 
 if [ ! -f id_ed25519 ]; then
     echo "Fetching github ssh key from host"
-    cp /path/to/your/ssh_key id_ed25519
+    cp ../.ssh/id_ed25519 id_ed25519
 fi
 
 
 echo "Starting Gan-Shmuel"
-docker-compsoe up
+docker-compose up

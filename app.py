@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import re
 import subprocess
 import requests
@@ -56,7 +56,10 @@ def health_check():
 @app.route('/monitor')
 def monitor():
     with open('./data/stable_versions.txt', 'r') as f:
-        lines = [line.strip() for line in f.readlines()]
+        lines = f.readlines()
+        current_version = lines[-1].strip()
+        previous_version = lines[-2].strip()
+
     
     services = {
         'production': {
@@ -83,17 +86,14 @@ def monitor():
             except requests.exceptions.RequestException:
                 statuses[env][service] = "Down - Service Unreachable"
 
-    return render_template('monitor.html', statuses=statuses, lines=lines)
+    return render_template('monitor.html', statuses=statuses, last_version=current_version, prev_version=previous_version)
 
 
-@app.route('/reroll', methods=['POST'])
-def reroll():
-    version = request.form['version']
-    # Call the reroll.sh script with the selected version as an argument
-    os.system(f'./reroll.sh {version}')
-
-    # Redirect the user back to the index page
-    return redirect(url_for('index'))
+@app.route('/rollback', methods=['POST'])
+def rollback():
+    tag = request.form['tag']
+    subprocess.run(["./scripts/rollback.sh", tag])
+    return redirect(url_for('monitor'))
 
 if __name__ == "__main__":
     app.run()
