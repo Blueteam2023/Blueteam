@@ -108,7 +108,7 @@ def monitor():
 def rollback():
     tag = request.form['tag']
     print(tag)
-    t = threading.Thread(target=run_rollback, args=(tag))
+    t = threading.Thread(target=run_rollback, args=(tag,))
     t.start()
     return redirect(url_for('monitor'), last_version=True)
 
