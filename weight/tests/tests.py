@@ -1,8 +1,4 @@
 import json
-from flask import Flask
-from flask.testing import FlaskClient, FlaskCliRunner
-from http import HTTPStatus
-import pytest
 from weight import app, reset_database
 import json
 from datetime import datetime
@@ -23,6 +19,9 @@ def test_get_health():
 def test_get_session():
     reset_database()
     with app.test_client() as c:
+        # test getting a session that doesn't exist
+        session_response = c.get("/session/1")
+        assert session_response.status == BAD_REQUEST
         truck_params = {"direction": "in",
                         "truck": "123-12-123",
                         "containers": "C-35434",  # 296 kg
@@ -127,16 +126,16 @@ def test_post_weight():
         assert data["truck"] == "12-12-12"
         assert data["bruto"] == 10000
 
-        #Bad request expected; out, produce value not empty(diff from "na"):
-        test_data = {"direction": "out", 
-                "truck": "12-12-12",
-                "containers": "",
-                "weight": 100,
-                "unit":"kg",
-                "force":False,
-                "produce": "oranges"
-                }
-        response = c.post("/weight",query_string=test_data)
+        # Bad request expected; out, produce value not empty(diff from "na"):
+        test_data = {"direction": "out",
+                     "truck": "12-12-12",
+                     "containers": "",
+                     "weight": 100,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "oranges"
+                     }
+        response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck must be empty while getting out" in response.data
 
@@ -210,28 +209,25 @@ def test_post_weight():
         response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck has not been weighed yet" in response.data
-        
 
-        #Bad request expected; check all wrong insertions scenarios:  
-        response = c.post("/weight",query_string=test_data)
-        test_data = {"direction": "fhe", 
-                "truck": "12-12-12a",
-                "containers": "C-35434,K-8263",
-                "weight": -7777,
-                "unit":"feofe",
-                "force":"jfeoiw",
-                "produce": "oranges123"}
-        response = c.post("/weight",query_string=test_data)
+        # Bad request expected; check all wrong insertions scenarios:
+        response = c.post("/weight", query_string=test_data)
+        test_data = {"direction": "fhe",
+                     "truck": "12-12-12a",
+                     "containers": "C-35434,K-8263",
+                     "weight": -7777,
+                     "unit": "feofe",
+                     "force": "jfeoiw",
+                     "produce": "oranges123"}
+        response = c.post("/weight", query_string=test_data)
         assert response.status == BAD_REQUEST
         bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
         assert bad_response in response.data
 
-        
-
 
 def test_get_item():
     reset_database()
-    # insert a container and get it
+
     with app.test_client() as c:
         container_params = {"direction": "none",
                             "truck": "na",
@@ -263,3 +259,78 @@ def test_get_item():
 
         assert result_body["tara"] == "na"
         assert result_body["sessions"][0] == container_session
+
+        # test getting an item that doesn't exist
+        request_params["id"] = "a made up id"
+        result_response = c.get("/item", query_string=request_params)
+        assert result_response.status == OK
+        assert json.loads(result_response.data)["tara"] == "na"
+        assert "sessions" not in json.loads(result_response.data)
+
+
+def test_get_weight():
+    reset_database()
+    with app.test_client() as c:
+        today = datetime.today()
+        year = today.year
+        # guarantee double digits
+        month = today.month if today.month > 9 else f"0{today.month}"
+        day = today.day if today.day > 9 else f"0{today.day}"
+        start = f"{year}{month}{day}000000"
+
+        hour = today.hour if today.hour > 9 else f"0{today.hour}"
+        minute = today.minute if today.minute > 9 else f"0{today.minute}"
+        second = today.second if today.second > 9 else f"0{today.second}"
+        end = f"{year}{month}{day}{hour}{minute}{second}"
+        request_params = {"from": start, "to": end, "filter": "in,out,none"}
+        # test getting no weights
+        request_response = c.get("/weight", query_string=request_params)
+        assert request_response.status == OK
+        assert not json.loads(request_response.data)
+
+        # test getting weights
+        truck_params = {"direction": "in",
+                        "truck": "123-12-123",
+                        "containers": "C-35434",  # 296 kg
+                        "weight": 1000,
+                        "unit": "kg",
+                        "force": False,
+                        "produce": "apples"}
+        container_params = {"direction": "none",
+                            "truck": "na",
+                            "containers": "C-73281",
+                            "weight": 500,
+                            "unit": "kg",
+                            "force": False,
+                            "produce": "na"}
+        # insert data for testing
+        c.post("/weight", query_string=truck_params)
+        c.post("/weight", query_string=container_params)
+
+        request_response = c.get("/weight", query_string=request_params)
+        assert request_response.status == OK
+        response_data = json.loads(request_response.data)
+        assert response_data[0]["containers"] == ['C-35434']
+        assert response_data[1]["containers"] == ["C-73281"]
+
+
+def test_get_unknown():
+    reset_database()
+    with app.test_client() as c:
+        # test no unknown containers
+        response = c.get("/unknown")
+        assert response.status == OK
+        assert not json.loads(response.data)
+
+        # test unknown containers
+        truck = {"direction": "in",
+                 "truck": "123-12-123",
+                 "containers": "U-12345",
+                 "weight": 1000,
+                 "unit": "kg",
+                 "force": False,
+                 "produce": "apples"}
+        c.post("/weight", query_string=truck)
+        response = c.get("/unknown")
+        assert response.status == OK
+        assert "U-12345" in json.loads(response.data)

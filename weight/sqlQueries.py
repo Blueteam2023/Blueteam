@@ -237,7 +237,7 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
     if len(directions) > 1:
         for index in range(1, len(directions)):
             directions_query += f" OR direction = '{directions[index]}'"
-    query = (f"SELECT id, truck, direction, bruto, neto, produce, containers FROM transactions WHERE datetime >= '{start_date}'"
+    query = (f"SELECT * FROM transactions WHERE datetime >= '{start_date}'"
              f" AND datetime <= '{end_date}' AND {directions_query}")
     if cnx.is_connected():
         cursor = cnx.cursor(dictionary=True)
@@ -249,17 +249,18 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
             # if entry direction is "out", find previous entry with same truck field which has "in" direction
             # and change id to match its id
             for entry in cursor.fetchall():
-                if entry["direction"] == "in" or entry["direction"] == "none":  # type: ignore
+                neto = entry["neto"] if entry["neto"] != -1 else "na"
+                produce = entry["produce"] if entry["produce"] != "-" else "na"
+                if entry["direction"] != "out":
                     result_entry = {"id": entry["id"],
                                     "direction": entry["direction"],
                                     "bruto": entry["bruto"],
-                                    "neto": entry["neto"],
-                                    "produce": entry["produce"],
+                                    "neto": neto,
+                                    "produce": produce,
                                     "containers": []}
                     if entry["containers"] != "NULL":
                         for container in entry["containers"].split(','):
-                            entry["containers"].append(container)
-                    result.append(result_entry)
+                            result_entry["containers"].append(container)
                     if entry["direction"] == "in":
                         if entry["truck"] in in_entries:
                             in_entries[entry["truck"]].append(entry["id"])
@@ -269,12 +270,13 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
                     result_entry = {"id": in_entries[entry["truck"][-1]],
                                     "direction": entry["direction"],
                                     "bruto": entry["bruto"],
-                                    "neto": entry["neto"],
-                                    "produce": entry["produce"],
+                                    "neto": neto,
+                                    "produce": produce,
                                     "containers": []}
+                result.append(result_entry)
             return result
-        except:
-            print("err")
+        except Exception as ex:
+            return ex
             # TODO: handle errors
         finally:
             if cnx.is_connected():
@@ -321,17 +323,16 @@ def get_session_by_id(id: int):
 
 def get_container_ids_without_weight():
     result = []
-    query = f"SELECT id FROM containers_registered WHERE weight = -1"
+    query = f"SELECT container_id FROM containers_registered WHERE weight = -1"
 
     cnx = connect(**config)
     if cnx.is_connected():
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(dictionary=True)
         try:
             cursor.execute(query)
-            ids = cursor.fetchall()
-            if ids:
-                for id in ids:
-                    result.append(id)
+            for entry in cursor.fetchall():
+                result.append(entry["container_id"])
+            return result
         except:
             print("err")
             # TODO: handle errors
@@ -339,7 +340,6 @@ def get_container_ids_without_weight():
             if cnx.is_connected():
                 cursor.close()
                 cnx.close()
-            return result
 
 
 def get_truck_transactions_by_id_and_dates(start_date: str, end_date: str, id: str):

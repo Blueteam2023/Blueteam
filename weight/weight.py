@@ -157,6 +157,9 @@ def post_weight():
             if not last_transaction:
                 id = sqlQueries.insert_transaction(weight_data)
                 retr_val["id"] = id
+                for container in containers.split(','):
+                    if get_weight_containers([container]) == "na" and not sqlQueries.get_containers_by_id([container]):
+                        sqlQueries.register_container(container, -1, "kg")
                 return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
 
             match last_transaction["direction"]:
@@ -165,6 +168,10 @@ def post_weight():
                     if force == 'true':
                         sqlQueries.change_transaction(weight_data)
                         retr_val["id"] = last_transaction["id"]
+                        for container in containers.split(','):
+                            if get_weight_containers([container]) == "na" and not sqlQueries.get_containers_by_id([container]):
+                                sqlQueries.register_container(
+                                    container, -1, "kg")
                         return Response(response=json.dumps(retr_val), status=HTTPStatus.OK)
                     body = "Truck already in. To override current 'in', request with force=True"
                     return Response(response=body, status=HTTPStatus.BAD_REQUEST)
@@ -313,14 +320,10 @@ def get_item():
         if is_truck:
             transactions = sqlQueries.get_truck_transactions_by_id_and_dates(
                 start_date, end_date, id)
-            if not transactions:
-                return Response(status=HTTPStatus.NOT_FOUND)
             return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
 
         transactions = sqlQueries.get_container_transactions_by_id_and_dates(
             start_date, end_date, id)
-        if not transactions:
-            return Response(status=HTTPStatus.NOT_FOUND)
         return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
 
 
