@@ -84,9 +84,8 @@ def monitor():
         }
     }
 
-    last_version_param = request.args.get('last_version')
-    if last_version_param is not None:
-        last_version = last_version_param
+    if request.args.get('last_version'):
+        last_version = request.args.get('last_version')
 
     statuses = {}
 
@@ -111,7 +110,7 @@ def rollback():
     print(tag)
     t = threading.Thread(target=run_rollback, args=(tag))
     t.start()
-    return redirect(url_for('monitor'), last_version="Rolling back in process")
+    return redirect(url_for('monitor'), last_version=True)
 
 if __name__ == "__main__":
     app.run()
