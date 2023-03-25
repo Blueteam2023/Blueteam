@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -x #debugging 
+
 # Check if an argument is provided
 if [ $# -eq 0 ]; then
     echo "Usage: rollback <valid_tag_name>"
@@ -7,8 +9,15 @@ if [ $# -eq 0 ]; then
 fi
 
 TAG_NAME="$1"
-pwd
-source /app/scripts/building.sh
+
+stop_production(){
+    echo "Stopping production for rollback to version $TAG_NAME"
+    docker-compose -f /app/$team1/docker-compose.yaml stop
+    docker-compose -f /app/$team1/docker-compose.yaml rm -f
+    docker-compose -f /app/$team2/docker-compose.yaml stop
+    docker-compose -f /app/$team2/docker-compose.yaml rm -f  
+    echo "Production environment is offline" 
+}
 
 cd /app
 git checkout tags/"$TAG_NAME"
