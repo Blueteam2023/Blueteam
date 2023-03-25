@@ -46,7 +46,7 @@
         }
     </style>
     <script>
-        function confirmReroll() {
+        function confirmRollback() {
             return confirm('Are you sure you want to rollback to the previous version?');
         }
     </script>
@@ -72,7 +72,7 @@
     <p>Current version: {{ last_version }}</p>
 <p>
     Previous version: {{ prev_version }}
-    <form action="/reroll" method="post">
+    <form action="/rollback" method="post" onsubmit="return confirmRollback()">
         <input type="hidden" name="tag" value="{{ prev_version }}">
         <input type="submit" value="Rollback">
     </form>
