@@ -16,10 +16,12 @@
             color: white;
             padding: 15px;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         table {
-            width: 100%;
+            width: 80%;
+            margin: auto;
             border-collapse: collapse;
         }
 
@@ -44,7 +46,52 @@
         .ok {
         color: green;
         }
+        
+        /* Style for the popup */
+        .popup {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: white;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0px 0px 10px grey;
+          z-index: 1;
+        }
+
+        .popup button {
+          background-color: #1100ff;
+          color: white;
+          border: none;
+          padding: 10px;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        #rollback_box {
+            width: fit-content;
+            margin: 42px auto auto auto;
+        }
+    
+        .right {
+            float: right;
+        }
+
     </style>
+    <script>
+        function confirmRollback() {
+            return confirm('Are you sure you want to rollback to the previous version?');
+        }
+        
+        function showPopup() {
+            document.getElementById("popup").style.display = "block";
+        }
+        
+        function hidePopup() {
+            document.getElementById("popup").style.display = "none";
+        }
+    </script>
 </head>
 <body>
     <h1>Gan Shmuel Monitoring Page</h1>
@@ -64,5 +111,25 @@
             {% endfor %}
         {% endfor %}
     </table>
+    <div id="rollback_box">
+        <h2>Rollback:</h2>
+        <p>Current version: {{ last_version }}</p>
+        {% if prev_version == 'No previous stable version found' %}
+                <p>Previous version: {{ prev_version }}</p>
+                <button class="right" onclick="showPopup()">Rollback</button>
+        {% else %}
+                <p>Previous version: {{ prev_version }}</p>
+                <form action="/rollback" method="post" onsubmit="return confirmRollback()">
+                    <input type="hidden" name="tag" value="{{ prev_version }}">
+                    <input type="submit" value="Rollback" class="right">
+                </form>
+        {% endif %}
+    </div>
+    
+    <!-- Popup div -->
+    <div id="popup" class="popup" style="display: none;">
+        <p>No version to rollback.</p>
+        <button onclick="hidePopup()">Close</button>
+    </div>
 </body>
 </html>

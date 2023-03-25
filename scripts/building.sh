@@ -178,14 +178,23 @@ production_init(){
         global error_msg="H"
         echo "Health failed in production, rerolling to the previous version"
         stop_production
-        #git reset --hard HEAD~1 # revert last pull
+        version=$(tail -n 1 "./data/stable_versions.txt")
+        if [ -z "$version" ]; then
+            echo "ERROR: No stable versions found."
+            echo "Sending alert to devops team"
+            send_mail "ERROR: no production online. Health check failed and non stable versions found" "Request $number: Health check failed and non stable versions found"
+            # can add option to revert to last commit for unstable version
+            return 1 
+        fi
+        git checkout tags/"$version"
+        send_mail "ERROR: production health check failed. Version Rolled back to $version" "The application has been Rolled back to version $version."
         echo "Staring the previous version production"
-        exec ./scripts/deploy.sh # deploy previous version
+        build_production # deploy previous version
     else
         echo "Building production finished successfully"
         send_mail "Version update is successfully" "The new version is currently online" dev
         tag="Stable-$TIMESTAMP"
-        echo $tag >> ../data/stable_versions.txt
+        echo $tag >> ./data/stable_versions.txt
         git tag $tag
         git push origin $tag
         echo "$tag version tagged as stabled"
@@ -200,7 +209,8 @@ testing_init(){
         health_test testing
         if [ $health_result -eq 1 ]; then
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
-            echo "Health failed, Rolling back to previous version."
+            echo "Health failed, Stopping update process."
+            terminate_testing
             return 1
             #git reset --hard HEAD~1
         elif [ $health_result -eq 0 ]; then
