@@ -183,12 +183,12 @@ production_init(){
             echo "ERROR: No stable versions found."
             echo "Sending alert to devops team"
             send_mail "FATAL: no production online. Health check failed and non stable versions found" "Request $number: Health check failed and non stable versions found"
-            return 
+            return 1 
         fi
         git checkout tags/"$version"
         send_mail "ERROR: production health check failed. Version Rerolled: $version" "The application has been rerolled to version $version."
         echo "Staring the previous version production"
-        exec ./scripts/deploy.sh # deploy previous version
+        build_production # deploy previous version
     else
         echo "Building production finished successfully"
         send_mail "Version update is successfully" "The new version is currently online" dev
@@ -209,7 +209,7 @@ testing_init(){
         if [ $health_result -eq 1 ]; then
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
             echo "Health failed, Rolling back to previous version."
-            return 1
+            return
             #git reset --hard HEAD~1
         elif [ $health_result -eq 0 ]; then
             echo "running E2E tests"

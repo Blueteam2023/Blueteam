@@ -13,6 +13,9 @@ fi
 
 TAG_NAME="$1"
 
+echo "Rollback in process" >> ./data/stable_versions.txt
+
+
 stop_production(){
     echo "Stopping production for rollback to version $TAG_NAME"
     docker-compose -f /app/$team1/docker-compose.yaml stop
@@ -22,10 +25,18 @@ stop_production(){
     echo "Production environment is offline" 
 }
 
+start_production(){
+    echo "Starting $team1 container"
+    docker-compose -f /app/$team1/docker-compose.yaml up -d
+    echo "Starting $team2 container"
+    docker-compose -f /app/$team2/docker-compose.yaml up -d
+}
+
+
 stop_production
 cd /app
 git checkout tags/"$TAG_NAME"
-exec /app/scripts/deploy.sh
+start_production
 
 echo $TAG_NAME >> ./data/stable_versions.txt
 send_mail "Version Rerolled: $TAG_NAME" "The application has been rerolled to version $TAG_NAME. Please review and verify the changes."
