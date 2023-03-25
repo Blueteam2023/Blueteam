@@ -152,7 +152,7 @@ def test_post_weight():
         assert response.status == BAD_REQUEST
         assert b"Truck must be empty while getting out" in response.data
 
-        # 0k 200 expected; truck weighing out after in test:
+        # 0k 200 expected; truck weighing out after in:
         test_data = {"direction": "out",
                      "truck": "12-12-12",
                      "containers": "",
@@ -224,6 +224,12 @@ def test_post_weight():
         bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
         assert bad_response in response.data
 
+<<<<<<< HEAD
+=======
+        #check containers insertion
+        #check negative neto
+
+>>>>>>> 76c5577 (testing notes)
 
 def test_get_item():
     reset_database()
