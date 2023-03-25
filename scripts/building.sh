@@ -182,11 +182,12 @@ production_init(){
         if [ -z "$version" ]; then
             echo "ERROR: No stable versions found."
             echo "Sending alert to devops team"
-            send_mail "FATAL: no production online. Health check failed and non stable versions found" "Request $number: Health check failed and non stable versions found"
+            send_mail "ERROR: no production online. Health check failed and non stable versions found" "Request $number: Health check failed and non stable versions found"
+            # can add option to revert to last commit for unstable version
             return 1 
         fi
         git checkout tags/"$version"
-        send_mail "ERROR: production health check failed. Version Rerolled: $version" "The application has been rerolled to version $version."
+        send_mail "ERROR: production health check failed. Version Rolled back to $version" "The application has been Rolled back to version $version."
         echo "Staring the previous version production"
         build_production # deploy previous version
     else
