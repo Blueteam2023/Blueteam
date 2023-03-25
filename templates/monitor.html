@@ -102,11 +102,13 @@
     <p>Current version: {{ last_version }}</p>
     {% if prev_version == 'No previous stable version found' %}
         <p>
-            <button onclick="showPopup()">No version to rollback.</button>
+            <span>No version to rollback.</span>
+            <button onclick="showPopup()">OK</button>
         </p>
     {% else %}
         <p>
-            Previous version: {{ prev_version }}&nbsp;&nbsp;<form action="/rollback" method="post" onsubmit="return confirmRollback()">
+            <span>Previous version: {{ prev_version }}</span>
+            <form action="/rollback" method="post" onsubmit="return confirmRollback()">
                 <input type="hidden" name="tag" value="{{ prev_version }}">
                 <input type="submit" value="Rollback">
             </form>
@@ -115,7 +117,7 @@
     
     <!-- Popup div -->
     <div id="popup" class="popup" style="display: none;">
-        <p>No version to rollback.</p
+        <p>No version to rollback.</p>
         <button onclick="hidePopup()">Close</button>
     </div>
 </body>

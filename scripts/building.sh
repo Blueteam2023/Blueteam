@@ -178,14 +178,16 @@ production_init(){
         global error_msg="H"
         echo "Health failed in production, rerolling to the previous version"
         stop_production
-        #git reset --hard HEAD~1 # revert last pull
+        version=$(tail -n 1 "./data/stable_versions.txt")
+        git checkout tags/"$version"
+        send_mail "ERROR: production health check failed. Version Rerolled: $version" "The application has been rerolled to version $version."
         echo "Staring the previous version production"
         exec ./scripts/deploy.sh # deploy previous version
     else
         echo "Building production finished successfully"
         send_mail "Version update is successfully" "The new version is currently online" dev
         tag="Stable-$TIMESTAMP"
-        echo $tag >> ../data/stable_versions.txt
+        echo $tag >> ./data/stable_versions.txt
         git tag $tag
         git push origin $tag
         echo "$tag version tagged as stabled"
