@@ -15,14 +15,10 @@ if [ ! -f id_ed25519 ]; then
     cp ../.ssh/id_ed25519 id_ed25519
 fi
 
-if [ ! -f ./scripts/data/stable_versions.txt ]; then
-    echo "Creating new versions file"
-    git fetch --tags 
-    git tag --sort=creatordate > ./scripts/data/stable_versions.txt
-    if [ ! -s tags.txt ]; then
-        echo "ERROR: Stable versions not found."
-    fi
-fi
+echo "Creating new stable versions file"
+git fetch --tags 
+git tag --sort=creatordate > ./scripts/data/stable_versions.txt
+
 
 echo "Starting Gan-Shmuel"
 docker-compose up
