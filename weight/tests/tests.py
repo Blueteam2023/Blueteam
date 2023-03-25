@@ -224,12 +224,76 @@ def test_post_weight():
         bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
         assert bad_response in response.data
 
-<<<<<<< HEAD
-=======
-        #check containers insertion
-        #check negative neto
 
->>>>>>> 76c5577 (testing notes)
+        #OK 200 expected; check container insertion
+        response = c.post("/weight", query_string=test_data)
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", query_string=test_data)
+        data = json.loads(response.data)
+        assert data["id"] == 10003
+        assert data["truck"] == "na"
+        assert data["bruto"] == 500
+
+        # Bad request expected; same container insertion, force = false:
+        response = c.post("/weight", query_string=test_data)
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", query_string=test_data)
+        assert response.status == BAD_REQUEST
+        bad_response = b"Container already registerd. In order to over write container weight request force = True."
+        assert bad_response in response.data
+
+        # Bad request expected; same container insertion, force = false:
+        response = c.post("/weight", query_string=test_data)
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", query_string=test_data)
+        assert response.status == BAD_REQUEST
+        bad_response = b"Container already registerd. In order to over write container weight request force = True."
+        assert bad_response in response.data
+
+        # Bad request expected; same container insertion, force = false:
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434,K-8263",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", query_string=test_data)
+        assert response.status == BAD_REQUEST
+        bad_response = b"While registering container only one container is allowed"
+        assert bad_response in response.data
+
+        # 0k 200 expected;same truck weighing in again:
+        test_data = {"direction": "in",
+                     "truck": "12-12-12",
+                     "containers": "C-35434,K-8263",
+                     "weight": 10000,
+                     "unit": "lbs",
+                     "force": False,
+                     "produce": "apples"}
+        response = c.post("/weight", query_string=test_data)
+        assert response.status == OK
+        assert data["id"] == 10004
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 10000
 
 def test_get_item():
     reset_database()
@@ -318,6 +382,7 @@ def test_get_weight():
         response_data = json.loads(request_response.data)
         assert response_data[0]["containers"] == ['C-35434']
         assert response_data[1]["containers"] == ["C-73281"]
+
 
 
 def test_get_unknown():

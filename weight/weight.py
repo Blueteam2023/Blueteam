@@ -68,7 +68,11 @@ def get_weight_containers(containers):
         for cont in db_containers:
             w = cont["weight"]
             if w == -1:
+<<<<<<< HEAD
                 return "na"
+=======
+                return "na" 
+>>>>>>> be6d21b (minor changes on tests post weight)
             if cont["unit"] == "lbs":
                 w *= 2.2
             containers_weight4 += w
