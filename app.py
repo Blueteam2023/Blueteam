@@ -3,6 +3,8 @@ import re
 import subprocess
 import requests
 import threading
+import os
+
 
 
 app = Flask(__name__)
@@ -53,6 +55,9 @@ def health_check():
 
 @app.route('/monitor')
 def monitor():
+    with open('./data/stable_versions.txt', 'r') as f:
+        lines = [line.strip() for line in f.readlines()]
+    
     services = {
         'production': {
             'billing': 'http://billing-app:80/health',
@@ -78,9 +83,19 @@ def monitor():
             except requests.exceptions.RequestException:
                 statuses[env][service] = "Down - Service Unreachable"
 
-    return render_template('monitor.html', statuses=statuses)
+    return render_template('monitor.html', statuses=statuses, lines=lines)
+
+
+@app.route('/reroll', methods=['POST'])
+def reroll():
+    version = request.form['version']
+    # Call the reroll.sh script with the selected version as an argument
+    os.system(f'./reroll.sh {version}')
+
+    # Redirect the user back to the index page
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
+    app.run()
 
 

@@ -12,10 +12,10 @@ RUN apk update && \
 RUN pip install -r requirements.txt
 
 RUN mkdir -p /root/.ssh
-COPY ../.ssh/id_ed25519 /root/.ssh/id_ed25519
+COPY id_ed25519 /root/.ssh/id_ed25519
 
-RUN chmod 600 /root/.ssh/id_rsa && \
-    chown root:root /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/id_ed25519 && \
+    chown root:root /root/.ssh/id_ed25519
 
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
