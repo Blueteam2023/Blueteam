@@ -102,21 +102,20 @@ health_test(){
 run_e2e_tests(){
     b=$1
     echo "Running E2E tests for $b"
-    # if [ "$b" = "weight" ]; then # Weight app tests
-    #     test_result=$(docker exec -it weight-app pytest tests.py 2>&1)
-    #     passed_count=$(echo "$test_result" | grep -o 'passed' | wc -l)
-    #     failed_count=$(echo "$test_result" | grep -o 'failed' | wc -l)
-    #     echo "Total Passed: $passed_count"
-    #     echo "Total Failed: $failed_count"
-    #     if [ $failed_count -eq 0 ]; then
-    #         return 0
-    #     else
-    #         return 1
-    #     fi
-    # elif [ "$b" = "billing" ]; then
-    #     return 0
-    # fi
-    return 0 # remove when tests working
+    if [ "$b" = "weight" ]; then # Weight app tests
+        test_result=$(docker exec -it weight-app pytest tests.py 2>&1)
+        passed_count=$(echo "$test_result" | grep -o 'passed' | wc -l)
+        failed_count=$(echo "$test_result" | grep -o 'failed' | wc -l)
+        echo "Total Passed: $passed_count"
+        echo "Total Failed: $failed_count"
+        if [ $failed_count -eq 0 ]; then
+            return 0
+        else
+            return 1
+        fi
+    elif [ "$b" = "billing" ]; then
+        return 0
+    fi
 }
 
 # Sending mails function
