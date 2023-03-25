@@ -57,8 +57,16 @@ def health_check():
 def monitor():
     with open('./scripts/data/stable_versions.txt', 'r') as f:
         lines = f.readlines()
-        current_version = lines[-1].strip()
-        previous_version = lines[-2].strip()
+
+    if len(lines) == 0:
+        last_version = "No stable version found"
+        prev_version = "No stable version found"
+    elif len(lines) == 1:
+        last_version = lines[0].strip()
+        prev_version = "No previous stable version found"
+    else:
+        last_version = lines[-1].strip()
+        prev_version = lines[-2].strip()
 
     
     services = {
@@ -86,7 +94,7 @@ def monitor():
             except requests.exceptions.RequestException:
                 statuses[env][service] = "Down - Service Unreachable"
 
-    return render_template('monitor.html', statuses=statuses, last_version=current_version, prev_version=previous_version)
+    return render_template('monitor.html', statuses=statuses, last_version=last_version, prev_version=prev_version)
 
 
 @app.route('/rollback', methods=['POST'])
