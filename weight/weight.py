@@ -110,6 +110,13 @@ def get_weight_containers(containers):
 
 @app.route("/")
 def index():
+    is_healthy = get_health()
+    if not is_healthy:
+        with open("./templates/error.html") as error:
+            doc = ""
+            for line in error.readlines():
+                doc += line
+            return doc
     with open("./templates/index.html") as index:
         doc = ""
         for line in index.readlines():
