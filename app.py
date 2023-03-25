@@ -88,7 +88,6 @@ def monitor():
     if last_version_param is not None:
         last_version = last_version_param
 
-    
     statuses = {}
 
     for env, env_services in services.items():
@@ -103,8 +102,6 @@ def monitor():
             except requests.exceptions.RequestException:
                 statuses[env][service] = "Down - Service Unreachable"
     
-    if 
-
     return render_template('monitor.html', statuses=statuses, last_version=last_version, prev_version=prev_version)
 
 
