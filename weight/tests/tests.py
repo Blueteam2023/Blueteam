@@ -1,8 +1,4 @@
 import json
-from flask import Flask
-from flask.testing import FlaskClient, FlaskCliRunner
-from http import HTTPStatus
-import pytest
 from weight import app, reset_database
 import json
 from datetime import datetime
@@ -316,3 +312,25 @@ def test_get_weight():
         response_data = json.loads(request_response.data)
         assert response_data[0]["containers"] == ['C-35434']
         assert response_data[1]["containers"] == ["C-73281"]
+
+
+def test_get_unknown():
+    reset_database()
+    with app.test_client() as c:
+        # test no unknown containers
+        response = c.get("/unknown")
+        assert response.status == OK
+        assert not json.loads(response.data)
+
+        # test unknown containers
+        truck = {"direction": "in",
+                 "truck": "123-12-123",
+                 "containers": "U-12345",
+                 "weight": 1000,
+                 "unit": "kg",
+                 "force": False,
+                 "produce": "apples"}
+        c.post("/weight", query_string=truck)
+        response = c.get("/unknown")
+        assert response.status == OK
+        assert "U-12345" in json.loads(response.data)

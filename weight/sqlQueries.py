@@ -323,17 +323,16 @@ def get_session_by_id(id: int):
 
 def get_container_ids_without_weight():
     result = []
-    query = f"SELECT id FROM containers_registered WHERE weight = -1"
+    query = f"SELECT container_id FROM containers_registered WHERE weight = -1"
 
     cnx = connect(**config)
     if cnx.is_connected():
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(dictionary=True)
         try:
             cursor.execute(query)
-            ids = cursor.fetchall()
-            if ids:
-                for id in ids:
-                    result.append(id)
+            for entry in cursor.fetchall():
+                result.append(entry["container_id"])
+            return result
         except:
             print("err")
             # TODO: handle errors
@@ -341,7 +340,6 @@ def get_container_ids_without_weight():
             if cnx.is_connected():
                 cursor.close()
                 cnx.close()
-            return result
 
 
 def get_truck_transactions_by_id_and_dates(start_date: str, end_date: str, id: str):
