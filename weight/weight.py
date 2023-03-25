@@ -41,7 +41,7 @@ def allowed_file(file):
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
-        return 0
+        return "na"
     neto = bruto - containers_weight - truckTara
     if unit == "lbs":
         neto *= 2.2
@@ -67,6 +67,8 @@ def get_weight_containers(containers):
     if db_containers:
         for cont in db_containers:
             w = cont["weight"]
+            if w == -1:
+                return "na"
             if cont["unit"] == "lbs":
                 w *= 2.2
             containers_weight4 += w
@@ -212,16 +214,15 @@ def post_weight():
                 last_in_transaction["containers"].split(","))
             neto = calculateNeto(
                 last_in_transaction["bruto"], containers_weight, truckTara, unit)
-            if neto < 0:
+            if neto != "na" and neto < 0:
                 body = "Neto weight can not be negative."
                 Response(response=body, status=HTTPStatus.BAD_REQUEST)
             weight_data["truckTara"] = truckTara
-            weight_data["neto"] = neto
+            weight_data["neto"] = neto if neto != "na" else -1
             retr_val["truckTara"] = truckTara
             retr_val["neto"] = neto
 
             match last_transaction["direction"]:
-
                 case "in":
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id

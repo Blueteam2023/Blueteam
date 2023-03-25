@@ -383,27 +383,24 @@
                 produce: "na",
                 weight: containerWeight
             },
-            success: function (result) {
-                if (result !== '[]') {
-                    let tableData = "";
-                    const parsed_data = JSON.parse(result);
-                    for (const index in parsed_data) {
-                        console.log(parsed_data[index])
-                        tableData += `<tr><td>${parsed_data[index]}</td></tr>`
-                    }
-                    const table = `<table class="table">
+            success: function (response) {
+                let tableHeaders = "";
+                let tableData = "";
+                const parsed_data = JSON.parse(response);
+                for (const key in parsed_data) {
+                    tableHeaders += `<th>${key}</th>`
+                    tableData += `<td>${(parsed_data[key])}</td>`
+                }
+                const table = `<table class="table">
                                     <thead>
-                                    <tr><th>Container Id</th></tr>
+                                    <tr>${tableHeaders}</tr>
                                     </thead>
                                     <tbody>
-                                        ${tableData}
+                                        <tr>${tableData}</tr>
                                     </tbody>
                                 </table>`
 
-                    $("#content").html(table)
-                } else {
-                    $("#content").html("No Results")
-                }
+                $("#content").html(table)
             },
             error: function () {
                 $("#content").html("Error")
@@ -429,27 +426,25 @@
                 unit: weightUnit,
                 force: force,
                 direction: "in"
-            }, success: function (result) {
-                if (result !== '[]') {
-                    let tableData = "";
-                    const parsed_data = JSON.parse(result);
-                    for (const index in parsed_data) {
-                        console.log(parsed_data[index])
-                        tableData += `<tr><td>${parsed_data[index]}</td></tr>`
-                    }
-                    const table = `<table class="table">
+            },
+            success: function (response) {
+                let tableHeaders = "";
+                let tableData = "";
+                const parsed_data = JSON.parse(response);
+                for (const key in parsed_data) {
+                    tableHeaders += `<th>${key}</th>`
+                    tableData += `<td>${(parsed_data[key])}</td>`
+                }
+                const table = `<table class="table">
                                     <thead>
-                                    <tr><th>Container Id</th></tr>
+                                    <tr>${tableHeaders}</tr>
                                     </thead>
                                     <tbody>
-                                        ${tableData}
+                                        <tr>${tableData}</tr>
                                     </tbody>
                                 </table>`
 
-                    $("#content").html(table)
-                } else {
-                    $("#content").html("No Results")
-                }
+                $("#content").html(table)
             },
             error: function () {
                 $("#content").html("Error")
@@ -473,27 +468,25 @@
                 produce: "na",
                 containers: "",
                 direction: "out"
-            }, success: function (result) {
-                if (result !== '[]') {
-                    let tableData = "";
-                    const parsed_data = JSON.parse(result);
-                    for (const index in parsed_data) {
-                        console.log(parsed_data[index])
-                        tableData += `<tr><td>${parsed_data[index]}</td></tr>`
-                    }
-                    const table = `<table class="table">
+            },
+            success: function (response) {
+                let tableHeaders = "";
+                let tableData = "";
+                const parsed_data = JSON.parse(response);
+                for (const key in parsed_data) {
+                    tableHeaders += `<th>${key}</th>`
+                    tableData += `<td>${(parsed_data[key])}</td>`
+                }
+                const table = `<table class="table">
                                     <thead>
-                                    <tr><th>Container Id</th></tr>
+                                    <tr>${tableHeaders}</tr>
                                     </thead>
                                     <tbody>
-                                        ${tableData}
+                                        <tr>${tableData}</tr>
                                     </tbody>
                                 </table>`
 
-                    $("#content").html(table)
-                } else {
-                    $("#content").html("No Results")
-                }
+                $("#content").html(table)
             },
             error: function () {
                 $("#content").html("Error")
