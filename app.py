@@ -10,8 +10,12 @@ import os
 app = Flask(__name__)
 
 
-def run_script(branch, pusher, url, number):
+def run_building(branch, pusher, url, number):
     subprocess.run(['./scripts/building.sh', branch, pusher, url, number])
+
+def run_rollback(tag):
+    subprocess.run(["./scripts/rollback.sh", tag])
+
 
 
 @app.route("/trigger", methods=['POST'])
@@ -29,7 +33,7 @@ def trigger():
             if action == 'closed' and payload['pull_request']['merged_at'] is not None: #if pull request approved
                 if branch == "billing" or branch=="weight":
                     print("Starting testing process")
-                    t = threading.Thread(target=run_script, args=(branch, pusher, url, number))
+                    t = threading.Thread(target=run_building, args=(branch, pusher, url, number))
                     t.start()
                     return jsonify({"action": action, "pusher": pusher, "repository.branches_url": branch}), 200
                 elif "revert" in branch:
@@ -100,8 +104,9 @@ def monitor():
 @app.route('/rollback', methods=['POST'])
 def rollback():
     tag = request.form['tag']
-    subprocess.run(["./scripts/rollback.sh", tag])
-    return redirect(url_for('monitor'))
+    t = threading.Thread(target=run_rollback, args=(tag))
+    t.start()
+    return redirect(url_for('monitor'), last_version="Rolling back in process")
 
 if __name__ == "__main__":
     app.run()
