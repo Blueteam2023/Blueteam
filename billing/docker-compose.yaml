@@ -24,7 +24,7 @@ services:
    - BlueTeam
   restart: always
   volumes:
-   - ./mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
+   - /home/ubuntu/app/billing/mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
   environment:
    MYSQL_DATABASE: "billdb"
    MYSQL_ROOT_PASSWORD: "root"
