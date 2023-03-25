@@ -209,8 +209,9 @@ testing_init(){
         health_test testing
         if [ $health_result -eq 1 ]; then
             send_mail "New version deploy failed, Healthcheck test failed during testing" "Request number: $number\nContact devops team for more details" dev
-            echo "Health failed, Rolling back to previous version."
-            return
+            echo "Health failed, Stopping update process."
+            terminate_testing
+            return 1
             #git reset --hard HEAD~1
         elif [ $health_result -eq 0 ]; then
             echo "running E2E tests"
