@@ -4,6 +4,7 @@ set -x #debugging
 
 team1="billing"
 team2="weight"
+DEVOPS_MAIL="blueteamdevops2023@gmail.com"
 
 # Check if an argument is provided
 if [ $# -eq 0 ]; then
@@ -36,14 +37,8 @@ start_production(){
 send_mail(){
 	subject="Gan Shmuel CI\CD: $1"
 	body="$2"
-    if [ "$3" = "dev" ]; then
-        dev_email=$(grep "^$pusher " ./data/emails.txt | awk '{print $2}')
-        message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
-        echo -e "$message" | ssmtp $dev_email,$DEVOPS_MAIL
-    else
-        message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
-        echo -e "$message" | ssmtp $DEVOPS_MAIL
-    fi
+    message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
+    echo -e "$message" | ssmtp $DEVOPS_MAIL
     if [ $? -eq 0 ]; then
         echo "Email sent successfully."
     else
