@@ -291,3 +291,28 @@ def test_get_weight():
         request_response = c.get("/weight", query_string=request_params)
         assert request_response.status == OK
         assert not json.loads(request_response.data)
+
+        # test getting weights
+        truck_params = {"direction": "in",
+                        "truck": "123-12-123",
+                        "containers": "C-35434",  # 296 kg
+                        "weight": 1000,
+                        "unit": "kg",
+                        "force": False,
+                        "produce": "apples"}
+        container_params = {"direction": "none",
+                            "truck": "na",
+                            "containers": "C-73281",
+                            "weight": 500,
+                            "unit": "kg",
+                            "force": False,
+                            "produce": "na"}
+        # insert data for testing
+        c.post("/weight", query_string=truck_params)
+        c.post("/weight", query_string=container_params)
+
+        request_response = c.get("/weight", query_string=request_params)
+        assert request_response.status == OK
+        response_data = json.loads(request_response.data)
+        assert response_data[0]["containers"] == ['C-35434']
+        assert response_data[1]["containers"] == ["C-73281"]
