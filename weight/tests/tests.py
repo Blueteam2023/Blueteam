@@ -267,4 +267,27 @@ def test_get_item():
         # test getting an item that doesn't exist
         request_params["id"] = "a made up id"
         result_response = c.get("/item", query_string=request_params)
-        assert result_response.status == BAD_REQUEST
+        assert result_response.status == OK
+        assert json.loads(result_response.data)["tara"] == "na"
+        assert "sessions" not in json.loads(result_response.data)
+
+
+def test_get_weight():
+    reset_database()
+    with app.test_client() as c:
+        today = datetime.today()
+        year = today.year
+        # guarantee double digits
+        month = today.month if today.month > 9 else f"0{today.month}"
+        day = today.day if today.day > 9 else f"0{today.day}"
+        start = f"{year}{month}{day}000000"
+
+        hour = today.hour if today.hour > 9 else f"0{today.hour}"
+        minute = today.minute if today.minute > 9 else f"0{today.minute}"
+        second = today.second if today.second > 9 else f"0{today.second}"
+        end = f"{year}{month}{day}{hour}{minute}{second}"
+        request_params = {"from": start, "to": end, "filter": "in,out,none"}
+        # test getting no weights
+        request_response = c.get("/weight", query_string=request_params)
+        assert request_response.status == OK
+        assert not json.loads(request_response.data)
