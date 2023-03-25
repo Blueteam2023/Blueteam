@@ -1,13 +1,14 @@
 #!/bin/sh
 
 # Check if an argument is provided
-if [ $# -eq 0 ]; then
-    echo "Usage: ./reroll.sh <tag_name>"
+if [ $# -eq 0 ] || [ $# = "No previous stable version found" ]; then
+    echo "Usage: rollback <valid_tag_name>"
     exit 1
 fi
 
 TAG_NAME="$1"
-source ./building.sh
+pwd
+source ./scripts/building.sh
 
 cd /app
 git checkout tags/"$TAG_NAME"
