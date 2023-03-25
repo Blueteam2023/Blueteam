@@ -19,11 +19,11 @@ stop_production(){
     echo "Production environment is offline" 
 }
 
+stop_production
 cd /app
 git checkout tags/"$TAG_NAME"
-
 stop_production
-exec ./scripts/deploy.sh
+exec /app/scripts/deploy.sh
 
 echo $TAG_NAME >> ./data/stable_versions.txt
 send_mail "Version Rerolled: $TAG_NAME" "The application has been rerolled to version $TAG_NAME. Please review and verify the changes."
