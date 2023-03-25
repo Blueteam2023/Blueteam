@@ -45,6 +45,8 @@ def calculateNeto(bruto, containers_weight, truckTara, unit):
     neto = bruto - containers_weight - truckTara
     if unit == "lbs":
         neto *= 2.2
+    if neto < 0:
+        return "na"
     return int(neto)
 
 
@@ -68,11 +70,7 @@ def get_weight_containers(containers):
         for cont in db_containers:
             w = cont["weight"]
             if w == -1:
-<<<<<<< HEAD
                 return "na"
-=======
-                return "na" 
->>>>>>> be6d21b (minor changes on tests post weight)
             if cont["unit"] == "lbs":
                 w *= 2.2
             containers_weight4 += w
@@ -218,9 +216,7 @@ def post_weight():
                 last_in_transaction["containers"].split(","))
             neto = calculateNeto(
                 last_in_transaction["bruto"], containers_weight, truckTara, unit)
-            if neto != "na" and neto < 0:
-                body = "Neto weight can not be negative."
-                Response(response=body, status=HTTPStatus.BAD_REQUEST)
+            
             weight_data["truckTara"] = truckTara
             weight_data["neto"] = neto if neto != "na" else -1
             retr_val["truckTara"] = truckTara
@@ -264,7 +260,7 @@ def post_weight():
                 body = "Container already registerd. In order to over write container weight request force = True."
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
-            sqlQueries.insert_transaction(weight_data)
+            id = sqlQueries.insert_transaction(weight_data)
             sqlQueries.update_container(container_id, weight, unit)
             retr_val["id"] = id
             return json.dumps(retr_val)
