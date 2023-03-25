@@ -10,13 +10,13 @@ if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
     docker rmi -f $(docker images -aq)
 fi
 
-
 if [ ! -f id_ed25519 ]; then
     echo "Fetching github ssh key from host"
     cp ../.ssh/id_ed25519 id_ed25519
 fi
 
 if [ ! -f ./scripts/data/stable_versions.txt ]; then
+    echo "Creating new versions file"
     touch ./scripts/data/stable_versions.txt
 fi
 

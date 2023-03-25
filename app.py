@@ -55,7 +55,7 @@ def health_check():
 
 @app.route('/monitor')
 def monitor():
-    with open('./data/stable_versions.txt', 'r') as f:
+    with open('./scripts/data/stable_versions.txt', 'r') as f:
         lines = f.readlines()
         current_version = lines[-1].strip()
         previous_version = lines[-2].strip()
