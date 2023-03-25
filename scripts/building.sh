@@ -217,7 +217,8 @@ testing_init(){
             weight_tester=$?
             run_e2e_tests billing
             billing_tester=$?
-            if [ $tester -eq 0 ]; then
+
+            if [ $weight_tester -eq 0 ] && [ $billing_tester -eq 0 ]; then
                 echo "E2E Tests passed successfully, Starting production update"
                 terminate_testing
                 return 0
