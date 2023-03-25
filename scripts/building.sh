@@ -108,7 +108,7 @@ run_e2e_tests(){
         failed_count=$(echo "$test_result" | grep -E -o '([0-9]+) failed' | cut -d' ' -f1)
         echo "Total Passed: $passed_count"
         echo "Total Failed: $failed_count"
-        if [ $failed_count -eq 0 ]; then
+        if [ $failed_count = "0" ]; then
             return 0
         else
             return 1
