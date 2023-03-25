@@ -110,7 +110,7 @@ def rollback():
     print(tag)
     t = threading.Thread(target=run_rollback, args=(tag,))
     t.start()
-    return redirect(url_for('monitor'), last_version=True)
+    return redirect(url_for('monitor', last_version="Rolling back in process"))
 
 if __name__ == "__main__":
     app.run()
