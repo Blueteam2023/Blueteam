@@ -108,6 +108,15 @@ def get_weight_containers(containers):
     return containers_weight4
 
 
+@app.route("/")
+def index():
+    with open("./templates/index.html") as index:
+        doc = ""
+        for line in index.readlines():
+            doc += line
+        return doc
+
+
 @app.route("/weight", methods=["POST", "GET"])
 def post_weight():
     if request.method == "GET":
