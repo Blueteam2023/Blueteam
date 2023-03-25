@@ -179,6 +179,12 @@ production_init(){
         echo "Health failed in production, rerolling to the previous version"
         stop_production
         version=$(tail -n 1 "./data/stable_versions.txt")
+        if [ -z "$version" ]; then
+            echo "ERROR: No stable versions found."
+            echo "Sending alert to devops team"
+            send_mail "FATAL: no production online. Health check failed and non stable versions found" "Request $number: Health check failed and non stable versions found"
+            return 
+        fi
         git checkout tags/"$version"
         send_mail "ERROR: production health check failed. Version Rerolled: $version" "The application has been rerolled to version $version."
         echo "Staring the previous version production"
