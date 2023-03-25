@@ -124,7 +124,7 @@ send_mail(){
 	subject="Gan Shmuel CI\CD: $1"
 	body="$2"
     if [ "$3" = "dev" ]; then
-        dev_email=$(grep "^$pusher " ./data/emails.txt | awk '{print $2}')
+        dev_email=$(grep "^$pusher " /app/scripts/data/emails.txt | awk '{print $2}')
         message="To: $DEVOPS_MAIL\nSubject: $subject\n\n$body"
         echo -e "$message" | ssmtp $dev_email,$DEVOPS_MAIL
     else
@@ -175,10 +175,9 @@ production_init(){
     health_test production
     #health=0 # for testing
     if [ $health_result -eq 1 ]; then
-        global error_msg="H"
         echo "Health failed in production, rerolling to the previous version"
         stop_production
-        version=$(tail -n 1 "./data/stable_versions.txt")
+        version=$(tail -n 1 "/app/scripts/data/stable_versions.txt")
         if [ -z "$version" ]; then
             echo "ERROR: No stable versions found."
             echo "Sending alert to devops team"
@@ -194,7 +193,7 @@ production_init(){
         echo "Building production finished successfully"
         send_mail "Version update is successfully" "The new version is currently online" dev
         tag="Stable-$TIMESTAMP"
-        echo $tag >> ./data/stable_versions.txt
+        echo $tag >> /app/scripts/data/stable_versions.txt
         git tag $tag
         git push origin $tag
         echo "$tag version tagged as stabled"
