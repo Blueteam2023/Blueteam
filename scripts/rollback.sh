@@ -14,7 +14,7 @@ fi
 
 TAG_NAME="$1"
 
-echo "Rollback in process" >> ./data/stable_versions.txt
+echo "Rollback in process" >> /app/scripts/data/stable_versions.txt
 
 
 stop_production(){
@@ -51,6 +51,6 @@ cd /app
 git checkout tags/"$TAG_NAME"
 start_production
 
-echo $TAG_NAME >> ./data/stable_versions.txt
+sed -i "s/Rollback in process/$TAG_NAME/g" /app/scripts/data/stable_versions.txt
 send_mail "Version Rolled back: $TAG_NAME" "The application has been rolled back to version $TAG_NAME. Please review and verify the changes."
 echo "Rolled back to version $TAG_NAME and sent an email to the devops team for manually adjusting."
