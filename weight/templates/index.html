@@ -13,8 +13,13 @@
 <body>
     <div class="text-center">
         <h1>Weight App</h1>
-        <p>Choose an action</p>
     </div>
+    <div class="container" id="responses" hidden>
+        <div class="col-md-12 text-center form-control">
+            <div class="d-flex justify-content-center" id="content">
+            </div>
+        </div>
+    </div><br>
     <div class="container">
         <div class="col-md-12 text-center form-control">
             <h5 class="text-center p-2">See Crates With Unknown Weights</h5>
@@ -47,6 +52,21 @@
                     <label>
                         Item Id:
                         <input type="text" name="itemId" id="itemId">
+                    </label><br><br>
+                    <label>
+                        Filter:
+                        <label>
+                            In
+                            <input type="checkbox" name="getWeightIn" id="getWeightIn" value="in">
+                        </label>
+                        <label>
+                            Out
+                            <input type="checkbox" name="getWeightOut" id="getWeightOut" value="out">
+                        </label>
+                        <label>
+                            None
+                            <input type="checkbox" name="getWeightNone" id="getWeightNone" value="none">
+                        </label>
                     </label>
                 </div><br>
                 <input type="button" class="btn btn-primary" value="see sessions by item id" onclick="getItem()">
@@ -55,20 +75,116 @@
         </div>
         <br>
 
+        <div class="col-md-12 text-center form-control">
+            <h5 class="text-center p-2">Submit a Batch of Containers</h5>
+            <form>
+                <div class="form-text">
+                    <label>
+                        File:
+                        <input type="file" name="file" id="file">
+                    </label>
+                </div><br>
+                <input type="button" class="btn btn-secondary" value="submit file" onclick="postBatch()">
+            </form>
+        </div>
+        <br>
 
-    </div>
-
-
-    <div class="container">
-        <div class="row">
-            <div class="d-flex justify-content-center" id="content">
+        <div class="col-md-12 text-center form-control">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="text-center p-2">Register or Replace a Container</h5>
+                    <form>
+                        <div class="form-text">
+                            <input placeholder="Container id" type="text" name="containerId" id="containerId">
+                            <br>
+                            <input placeholder="Container weight" type="number" name="containerWeight"
+                                id="containerWeight"><br>
+                            <label>
+                                Unit:
+                                <label>
+                                    kg:
+                                    <input type="radio" name="registerUnit" id="registerKg" checked>
+                                </label>
+                                <label>
+                                    lbs:
+                                    <input type="radio" name="registerUnit" id="registerLbs">
+                                </label>
+                            </label><br>
+                            <label>
+                                Force:
+                                <input type="checkbox" name="forceRegister" id="forceRegister">
+                            </label>
+                        </div>
+                        <br>
+                        <input type="button" class="btn btn-primary" value="register" onclick="registerContainer()">
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center p-2">Submit Loaded Truck Weight</h5>
+                    <form>
+                        <div class="form-text">
+                            <input placeholder="Truck id" type="text" name="truckLoadedId" id="truckLoadedId">
+                            <br>
+                            <input placeholder="Truck weight" type="number" name="truckLoadedWeight"
+                                id="truckLoadedWeight">
+                            <input placeholder="Produce" type="text" name="produce" id="produce">
+                            <input placeholder="Comma delimited container ids" type="text" name="loadedContainers"
+                                id="loadedContainers"><br>
+                            <label>
+                                Unit:
+                                <label>
+                                    kg:
+                                    <input type="radio" name="loadedUnit" id="loadedKg" checked>
+                                </label>
+                                <label>
+                                    lbs:
+                                    <input type="radio" name="loadedUnit" id="loadedLbs">
+                                </label>
+                            </label><br>
+                            <label>
+                                Force:
+                                <input type="checkbox" name="forceIn" id="forceIn">
+                            </label>
+                        </div><br>
+                        <input type="button" class="btn btn-primary" value="submit" onclick="submitLoadedWeight()">
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-center p-2">Submit Unloaded Truck Weight</h5>
+                    <form>
+                        <div class="form-text">
+                            <input placeholder="Truck id" type="text" name="emptyTruckId" id="emptyTruckId">
+                            <br>
+                            <input placeholder="Truck weight" type="number" name="emptyTruckWeight"
+                                id="emptyTruckWeight"><br>
+                            <label>
+                                Unit:
+                                <label>
+                                    kg:
+                                    <input type="radio" name="unloadedUnit" id="unloadedKg" checked>
+                                </label>
+                                <label>
+                                    lbs:
+                                    <input type="radio" name="unloadedUnit" id="unloadedLbs">
+                                </label>
+                            </label><br>
+                            <label>
+                                Force:
+                                <input type="checkbox" name="forceOut" id="forceOut">
+                            </label>
+                        </div><br>
+                        <input type="button" class="btn btn-primary" value="submit" onclick="submitEmptyWeight()">
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+    <br>
 </body>
 <script>
     function getUnknown() {
-        $("#content").html("");
+        $("#responses").removeAttr("hidden")
+        $("#content").empty()
         $.ajax("/unknown", {
             method: "GET",
             success: function (result) {
@@ -88,7 +204,7 @@
                                     </tbody>
                                 </table>`
 
-                    $("#content").append(table)
+                    $("#content").html(table)
                 } else {
                     $("#content").html("No Results")
                 }
@@ -99,7 +215,8 @@
         })
     }
     function getSession() {
-        $("#contents").html("")
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
         $.ajax(`/session/${$("#sessionId").val()}`, {
             method: "GET",
             success: function (response) {
@@ -120,7 +237,7 @@
                                     </tbody>
                                 </table>`
 
-                $("#content").append(table)
+                $("#content").html(table)
             },
             error: function () {
                 $("#content").html("Error")
@@ -128,7 +245,8 @@
         })
     }
     function getItem() {
-        $("#contents").html("")
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
         const startTime = $("#startDate").val()
             .replace(/\-/g, '')
             .replace(/T/, '')
@@ -163,7 +281,219 @@
                                     </tbody>
                                 </table>`
 
-                $("#content").append(table)
+                $("#content").html(table)
+            },
+            error: function () {
+                $("#content").html("Error")
+            }
+        })
+    }
+    function getSessions() {
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
+        const startTime = $("#startDate").val()
+            .replace(/\-/g, '')
+            .replace(/T/, '')
+            .replace(/\:/g, '') + "00"
+        const endTime = $("#endDate").val()
+            .replace(/\-/g, '')
+            .replace(/T/, '')
+            .replace(/\:/g, '') + "00"
+        const isIn = $("#getWeightIn").is(":checked")
+        const isOut = $("#getWeightOut").is(":checked")
+        const isNone = $("#getWeightNone").is(":checked")
+        let directions = ""
+        if (isIn) directions += "in"
+        if (isOut) directions += ",out"
+        if (isNone) directions += ",none"
+        console.log(directions)
+        $.ajax("/weight", {
+            method: "GET",
+            data: {
+                from: startTime,
+                to: endTime,
+                filter: directions
+            },
+            success: function (response) {
+                let tableHeaders = "";
+                let tableData = "";
+                const parsed_data = JSON.parse(response);
+                for (const key in parsed_data) {
+                    for (const field in parsed_data[key]) {
+                        tableHeaders += `<th>${field}</th>`
+                        tableData += `<td>${(parsed_data[key])[field]}</td>`
+                    }
+                }
+                const table = `<table class="table">
+                                    <thead>
+                                    <tr>${tableHeaders}</tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>${tableData}</tr>
+                                    </tbody>
+                                </table>`
+
+                $("#content").html(table)
+            },
+            error: function () {
+                $("#content").html("Error")
+            }
+        })
+    }
+    function postBatch() {
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
+        file = $("#file").prop("files")[0]
+        console.log(file)
+        if (!file) {
+            alert("You must submit a file")
+            return
+        }
+        let formData = new FormData()
+        formData.append("file", file)
+        console.log(formData)
+        $.ajax("/batch-weight", {
+            method: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                console.log(response)
+            },
+            error: function (response) {
+                console.error(response)
+            }
+        })
+    }
+    function registerContainer() {
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
+        const containerId = $("#containerId").val()
+        const containerWeight = $("#containerWeight").val()
+        const force = $("#forceRegister").is(":checked")
+        const weightUnit = $("#registerKg").is(":checked") ? "kg" : "lbs"
+        $.ajax("/weight", {
+            method: "POST",
+            data: {
+                direction: "none",
+                truck: "na",
+                containers: containerId,
+                unit: weightUnit,
+                force: force,
+                produce: "na",
+                weight: containerWeight
+            },
+            success: function (result) {
+                if (result !== '[]') {
+                    let tableData = "";
+                    const parsed_data = JSON.parse(result);
+                    for (const index in parsed_data) {
+                        console.log(parsed_data[index])
+                        tableData += `<tr><td>${parsed_data[index]}</td></tr>`
+                    }
+                    const table = `<table class="table">
+                                    <thead>
+                                    <tr><th>Container Id</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableData}
+                                    </tbody>
+                                </table>`
+
+                    $("#content").html(table)
+                } else {
+                    $("#content").html("No Results")
+                }
+            },
+            error: function () {
+                $("#content").html("Error")
+            }
+        })
+    }
+    function submitLoadedWeight() {
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
+        truckId = $("#truckLoadedId").val()
+        truckWeight = $("#truckLoadedWeight").val()
+        produce = $("#produce").val()
+        containerIds = $("#loadedContainers").val()
+        weightUnit = $("#unloadedKg").is(":checked") ? "kg" : "lbs"
+        const force = $("#forceIn").is(":checked")
+        $.ajax("/weight", {
+            method: "POST",
+            data: {
+                truck: truckId,
+                weight: truckWeight,
+                produce: produce,
+                containers: containerIds,
+                unit: weightUnit,
+                force: force,
+                direction: "in"
+            }, success: function (result) {
+                if (result !== '[]') {
+                    let tableData = "";
+                    const parsed_data = JSON.parse(result);
+                    for (const index in parsed_data) {
+                        console.log(parsed_data[index])
+                        tableData += `<tr><td>${parsed_data[index]}</td></tr>`
+                    }
+                    const table = `<table class="table">
+                                    <thead>
+                                    <tr><th>Container Id</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableData}
+                                    </tbody>
+                                </table>`
+
+                    $("#content").html(table)
+                } else {
+                    $("#content").html("No Results")
+                }
+            },
+            error: function () {
+                $("#content").html("Error")
+            }
+        })
+    }
+    function submitEmptyWeight() {
+        $("#responses").removeAttr("hidden")
+        $("#contents").empty()
+        truckId = $("#emptyTruckId").val()
+        truckWeight = $("#emptyTruckWeight").val()
+        weightUnit = $("#loadedKg").is(":checked") ? "kg" : "lbs"
+        const force = $("#forceOut").is(":checked")
+        $.ajax("/weight", {
+            method: "POST",
+            data: {
+                truck: truckId,
+                weight: truckWeight,
+                unit: weightUnit,
+                force: force,
+                produce: "na",
+                containers: "",
+                direction: "out"
+            }, success: function (result) {
+                if (result !== '[]') {
+                    let tableData = "";
+                    const parsed_data = JSON.parse(result);
+                    for (const index in parsed_data) {
+                        console.log(parsed_data[index])
+                        tableData += `<tr><td>${parsed_data[index]}</td></tr>`
+                    }
+                    const table = `<table class="table">
+                                    <thead>
+                                    <tr><th>Container Id</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableData}
+                                    </tbody>
+                                </table>`
+
+                    $("#content").html(table)
+                } else {
+                    $("#content").html("No Results")
+                }
             },
             error: function () {
                 $("#content").html("Error")

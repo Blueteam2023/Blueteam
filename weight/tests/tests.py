@@ -37,8 +37,8 @@ def test_get_session():
                             "force": False,
                             "produce": "na"}
         # insert data for testing
-        truck_weight_response = c.post("/weight", query_string=truck_params)
-        cont_weight_response = c.post("/weight", query_string=container_params)
+        truck_weight_response = c.post("/weight", data=truck_params)
+        cont_weight_response = c.post("/weight", data=container_params)
         # keep session id
         truck_session = json.loads(truck_weight_response.data)["id"]
         container_session = json.loads(cont_weight_response.data)["id"]
@@ -67,7 +67,7 @@ def test_get_session():
                         "unit": "kg",
                         "force": False,
                         "produce": "na"}
-        truck_weight_response = c.post("/weight", query_string=truck_params)
+        truck_weight_response = c.post("/weight", data=truck_params)
         # get truck response from app
         truck_session_response = c.get(f"/session/{truck_session}")
         assert truck_session_response.status == OK
@@ -91,7 +91,7 @@ def test_post_weight():
                      "unit": "kg",
                      "force": False,
                      "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
 
         data = json.loads(response.data)
         assert response.status == OK
@@ -107,7 +107,7 @@ def test_post_weight():
                      "unit": "kg",
                      "force": False,
                      "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck already in. To override current 'in', request with force=True" in response.data
 
@@ -119,7 +119,7 @@ def test_post_weight():
                      "unit": "kg",
                      "force": True,
                      "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         data = json.loads(response.data)
         assert response.status == OK
         assert data["id"] == 10001
@@ -135,7 +135,7 @@ def test_post_weight():
                      "force": False,
                      "produce": "oranges"
                      }
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck must be empty while getting out" in response.data
 
@@ -148,7 +148,7 @@ def test_post_weight():
                      "force": False,
                      "produce": "oranges"
                      }
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck must be empty while getting out" in response.data
 
@@ -160,7 +160,7 @@ def test_post_weight():
                      "unit": "kg",
                      "force": False,
                      "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == OK
         data = json.loads(response.data)
         assert data["id"] == 10002
@@ -177,7 +177,7 @@ def test_post_weight():
                      "unit": "kg",
                      "force": False,
                      "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck cannot get out if not inside to override last transaction change force to true." in response.data
 
@@ -189,7 +189,7 @@ def test_post_weight():
                      "unit": "kg",
                      "force": True,
                      "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == OK
         data = json.loads(response.data)
         assert data["id"] == 10002
@@ -206,12 +206,12 @@ def test_post_weight():
                      "unit": "kg",
                      "force": False,
                      "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == BAD_REQUEST
         assert b"Truck has not been weighed yet" in response.data
 
         # Bad request expected; check all wrong insertions scenarios:
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         test_data = {"direction": "fhe",
                      "truck": "12-12-12a",
                      "containers": "C-35434,K-8263",
@@ -219,7 +219,7 @@ def test_post_weight():
                      "unit": "feofe",
                      "force": "jfeoiw",
                      "produce": "oranges123"}
-        response = c.post("/weight", query_string=test_data)
+        response = c.post("/weight", data=test_data)
         assert response.status == BAD_REQUEST
         bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
         assert bad_response in response.data
@@ -236,7 +236,7 @@ def test_get_item():
                             "unit": "kg",
                             "force": False,
                             "produce": "na"}
-        cont_weight_response = c.post("/weight", query_string=container_params)
+        cont_weight_response = c.post("/weight", data=container_params)
         # keep session id
         container_session = json.loads(cont_weight_response.data)["id"]
         today = datetime.today()
@@ -304,8 +304,8 @@ def test_get_weight():
                             "force": False,
                             "produce": "na"}
         # insert data for testing
-        c.post("/weight", query_string=truck_params)
-        c.post("/weight", query_string=container_params)
+        c.post("/weight", data=truck_params)
+        c.post("/weight", data=container_params)
 
         request_response = c.get("/weight", query_string=request_params)
         assert request_response.status == OK
@@ -330,7 +330,7 @@ def test_get_unknown():
                  "unit": "kg",
                  "force": False,
                  "produce": "apples"}
-        c.post("/weight", query_string=truck)
+        c.post("/weight", data=truck)
         response = c.get("/unknown")
         assert response.status == OK
         assert "U-12345" in json.loads(response.data)

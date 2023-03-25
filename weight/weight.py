@@ -127,21 +127,21 @@ def index():
 @app.route("/weight", methods=["POST", "GET"])
 def post_weight():
     if request.method == "GET":
-        start = request.args.get("start")
-        end = request.args.get("end")
-        direct = request.args.get("direct")
+        start = request.args.get("from")
+        end = request.args.get("to")
+        direct = request.args.get("filter")
         return get_weight(start, end, direct)
 
     id = 0
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     body = ''
-    direction = request.args.get('direction')
-    truck = str(request.args.get('truck'))
-    containers = str(request.args.get('containers'))
-    weight = request.args.get('weight')
-    unit = request.args.get('unit')
-    force = request.args.get('force')
-    produce = request.args.get('produce')
+    direction = request.form.get('direction')
+    truck = str(request.form.get('truck'))
+    containers = str(request.form.get('containers'))
+    weight = request.form.get('weight')
+    unit = request.form.get('unit')
+    force = request.form.get('force')
+    produce = request.form.get('produce')
 
     # handle wrong insertions
     if not (re.match(IS_TRUCK, truck) or (truck == "na" and direction.lower() == "none")):
@@ -268,17 +268,17 @@ def post_weight():
 @app.route("/batch-weight", methods=["POST"])
 def post_batch_weight():
     batch_file = request.files['file']
-    if batch_file.filename == '':
+    if not batch_file:
         body = "No selected file"
+        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    if "json" not in batch_file.mimetype and "csv" not in batch_file.mimetype:
+        body = "Illegal format"
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
     if batch_file and allowed_file(batch_file):
         filename = secure_filename(allowed_file(batch_file))
         batch_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         body = f"File uploaded succefuly. replaced {filename}"
-    else:
-        body = 'File must be csv or json file.\nFile formats accepted: csv (id,kg), csv (id,lbs), json ([{"id":..,"weight":..,"unit":..},...])'
-        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-    return Response(response=body, status=HTTPStatus.OK)
+        return Response(response=body, status=HTTPStatus.OK)
 
 
 @app.route("/unknown", methods=["GET"])
