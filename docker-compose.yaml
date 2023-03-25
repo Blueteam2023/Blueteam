@@ -10,6 +10,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./scripts/ssmtp.conf:/etc/ssmtp/ssmtp.conf
+      - ./weight/datadump/weightdb.sql:/app/weight/datadump/weightdb.sql
+      - ./billing/mysql/in/:/in/
     command: /bin/sh -c "./scripts/deploy.sh && gunicorn app:app --bind 0.0.0.0:8080 --timeout 120"
     expose:
       - "8080"

@@ -27,8 +27,6 @@ services:
     build: .
     networks:
       - BlueTeam
-    #ports:
-    #  - "5000:8000" # for local testing
     command: python ./weight.py
     depends_on:
       - db

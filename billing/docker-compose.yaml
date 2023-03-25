@@ -11,7 +11,7 @@ services:
   command: sh -c "sleep 15s ; python3 ./app.py"
   volumes:
    - '/etc/localtime:/etc/localtime:ro'
-   - ./mysql/in/:/in/ 
+   - /home/ubuntu/app/billing/mysql/in/:/in/ 
   env_file:
    - ./sql.env
   depends_on:
