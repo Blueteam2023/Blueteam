@@ -13,7 +13,7 @@ services:
       - ./weight/datadump/weightdb.sql:/app/weight/datadump/weightdb.sql
       - ./billing/mysql/in/:/app/billing/mysql/in/
       - ./billing/mysql/billdb-data:/app/billing/mysql/billdb-data
-      - ./testenv:/app/testenv
+      - ./testenv/:/app/testenv/
     command: /bin/sh -c "./scripts/deploy.sh && gunicorn app:app --bind 0.0.0.0:8080 --timeout 120"
     expose:
       - "8080"
