@@ -1,3 +1,4 @@
+from sys import stderr
 from typing import Any
 from mysql.connector import connect
 from os import environ
@@ -244,34 +245,30 @@ def get_transaction_range_by_dates_and_directions(start_date: str, end_date: str
         try:
             cursor.execute(query)
             result = []
-            in_entries: dict[str, list[int]] = {}
+            in_entries: dict[str, int] = {}
             # if entry direction is "in" or "none", submit as-is
             # if entry direction is "out", find previous entry with same truck field which has "in" direction
             # and change id to match its id
             for entry in cursor.fetchall():
                 neto = entry["neto"] if entry["neto"] != -1 else "na"
-                produce = entry["produce"] if entry["produce"] != "-" else "na"
                 if entry["direction"] != "out":
                     result_entry = {"id": entry["id"],
                                     "direction": entry["direction"],
                                     "bruto": entry["bruto"],
                                     "neto": neto,
-                                    "produce": produce,
+                                    "produce": entry["produce"],
                                     "containers": []}
-                    if entry["containers"] != "NULL":
+                    if entry["containers"]:
                         for container in entry["containers"].split(','):
                             result_entry["containers"].append(container)
                     if entry["direction"] == "in":
-                        if entry["truck"] in in_entries:
-                            in_entries[entry["truck"]].append(entry["id"])
-                        else:
-                            in_entries[entry["truck"]] = [entry["id"]]
+                        in_entries[entry["truck"]] = entry["id"]
                 else:
-                    result_entry = {"id": in_entries[entry["truck"][-1]],
+                    result_entry = {"id": in_entries[entry["truck"]],
                                     "direction": entry["direction"],
                                     "bruto": entry["bruto"],
                                     "neto": neto,
-                                    "produce": produce,
+                                    "produce": entry["produce"],
                                     "containers": []}
                 result.append(result_entry)
             return result
@@ -391,6 +388,9 @@ def get_container_transactions_by_id_and_dates(start_date: str, end_date: str, i
                 result["sessions"].append(session["id"])
             result["id"] = id
             result["tara"] = "na"
+            if "sessions" not in result:
+                return False
+            return result
         except:
             print("err")
             # TODO: handle errors
@@ -398,4 +398,3 @@ def get_container_transactions_by_id_and_dates(start_date: str, end_date: str, i
             if cnx.is_connected():
                 cursor.close()
                 cnx.close()
-            return result

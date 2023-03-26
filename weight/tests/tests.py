@@ -169,7 +169,6 @@ def test_get_weight():
         assert response_data[1]["containers"] == ["C-73281"]
 
 
-
 def test_get_unknown():
     reset_database()
     with app.test_client() as c:
@@ -335,8 +334,7 @@ def test_post_weight():
         bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
         assert bad_response in response.data
 
-
-        #OK 200 expected; check container insertion
+        # OK 200 expected; check container insertion
         test_data = {"direction": "none",
                      "truck": "na",
                      "containers": "C-35434",
