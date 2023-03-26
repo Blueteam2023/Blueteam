@@ -120,7 +120,7 @@ run_e2e_tests(){
             return 1
         fi
     elif [ "$b" = "billing" ]; then
-        cd /app/testenv/billing
+        cd /app/testenv/billing/python
         test_result=$(python3 billingtest.py 2>&1)
         echo "$test_result" | while read line; do
             if echo "$line" | grep -qE 'Response Code: ([0-9]+)'; then
