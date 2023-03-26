@@ -1,3 +1,37 @@
+#networks:
+# BlueTeam:
+#  name: BlueTeam
+#services:
+# 
+# pythonapp:
+#  container_name: billing-app
+#  build: ./python/
+#  networks:
+#   - BlueTeam
+#  command: sh -c "sleep 15s ; python3 ./app.py"
+#  volumes:
+#   - '/etc/localtime:/etc/localtime:ro'
+#   - /home/ubuntu/app/billing/mysql/in/:/in/ 
+#  env_file:
+#   - ./sql.env
+#  depends_on:
+#   - billing-mysql
+#  
+# billing-mysql:
+#  container_name: billing-database
+#  build: ./mysql/
+#  networks:
+#   - BlueTeam
+#  restart: always
+#  volumes:
+#   - /home/ubuntu/app/billing/mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
+#   - /home/ubuntu/app/billing/mysql/billdb-data/:/var/lib/mysql/
+#  environment:
+#   MYSQL_DATABASE: "billdb"
+#   MYSQL_ROOT_PASSWORD: "root"
+#  env_file:
+#   - ./sql.env
+#   
 networks:
  BlueTeam:
   name: BlueTeam
