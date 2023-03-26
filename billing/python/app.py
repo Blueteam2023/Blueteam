@@ -295,31 +295,31 @@ def bill(id):
 	cursor=connection.cursor()
 	
 	#  "truckCount": <int>,
-	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 	DB_TRUCK_COUNT=cursor.fetchall()
 	TRUCK_COUNT=json.dumps(DB_TRUCK_COUNT)
 	
 	#  "sessionCount": <int>,
-	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 	DB_SESSION_COUNT=cursor.fetchall()
 	SESSION_COUNT=json.dumps(DB_SESSION_COUNT)
 	
 	#  "products": 
-	cursor.execute('SELECT produce FROM transactions WHERE datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT produce FROM transactions WHERE datetime >= (%s) AND datetime <= (%s) AND truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 	DB_PRODUCT_LIST=set(cursor.fetchall())
 	#PRODUCT_LIST=list(json.dumps(DB_PRODUCT_LIST))
 	PRODUCT_INFO=[]
 	for var in DB_PRODUCT_LIST:
-		cursor.execute('SELECT count(id) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		cursor.execute('SELECT count(id) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 		count=cursor.fetchall()
-		cursor.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		cursor.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 		amount=cursor.fetchall()
 		
 		connection2=mysql.connector.connect(
 		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
 		cursor2=connection.cursor()
 		
-		cursor2.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		cursor2.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 		rate=cursor.fetchall()
 		connection2.close()
 		pay=rate*amount
@@ -339,7 +339,7 @@ def bill(id):
 	"sessionCount": {SESSION_COUNT} \
 	"products": {PRODUCT_INFO}') 
 	connection.close()
-	return BILL_RESULTS
+	return STR_TRUCK_LIST
 	
 	#  "total": <int> // agorot
 	
