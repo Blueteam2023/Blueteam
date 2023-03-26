@@ -110,15 +110,34 @@ run_e2e_tests(){
         failed_count=$(echo "$test_result" | grep -E -o '([0-9]+) failed' | cut -d' ' -f1)
         echo "Total Passed: $passed_count"
         echo "Total Failed: $failed_count"
-        if [ -z $failed_count ]; then
+        if [ -z "$failed_count" ]; then
+            echo "$b E2E tests passed"
             return 0
         else
+            echo "$b E2E tests failed"
             return 1
         fi
     elif [ "$b" = "billing" ]; then
+        cd /app/testenv/billing
+        test_result=$(python3 billingtest.py 2>&1)
+        echo "$test_result" | while read line; do
+            if echo "$line" | grep -qE 'Response Code: ([0-9]+)'; then
+                if [ "$(echo "$line" | grep -E -o 'Response Code: ([0-9]+)' | cut -d' ' -f3)" != "200" ]; then
+                    echo "Failed: $line"
+                    echo "$b E2E tests failed"
+                    return 1
+                fi
+            elif echo "$line" | grep -qE 'Bad response from [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+'; then
+                echo "Failed: $line"
+                echo "$b E2E tests failed"
+                return 1
+            fi
+        done
+        echo "$b E2E tests passed"
         return 0
     fi
 }
+
 
 # Sending mails function
 send_mail(){
