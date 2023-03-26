@@ -295,12 +295,12 @@ def bill(id):
 	cursor=connection.cursor()
 	
 	#  "truckCount": <int>,
-	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 	DB_TRUCK_COUNT=cursor.fetchall()
 	TRUCK_COUNT=json.dumps(DB_TRUCK_COUNT)
 	
 	#  "sessionCount": <int>,
-	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
 	DB_SESSION_COUNT=cursor.fetchall()
 	SESSION_COUNT=json.dumps(DB_SESSION_COUNT)
 	
