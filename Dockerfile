@@ -4,20 +4,20 @@ WORKDIR /app
 COPY . .
 
 RUN apk update && \
-    apk add --no-cache docker-cli git ssmtp curl openssh&& \
-    apk add --no-cache --virtual .docker-compose-deps&& \
+    apk add --no-cache docker-cli git ssmtp curl openssh && \
+    apk add --no-cache --virtual .docker-compose-deps && \
     pip3 install docker-compose gunicorn && \
-    apk del .docker-compose-deps
+    apk del .docker-compose-deps && \
+    apk add --no-cache curl-dev build-base && \
+    pip install pycurl
 
 RUN pip install -r requirements.txt
 
+
 RUN mkdir -p /root/.ssh
 COPY ./id_ed25519 /root/.ssh/
-
 
 RUN chmod 600 /root/.ssh/id_ed25519 && \
     chown root:root /root/.ssh/id_ed25519
 
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
-
-

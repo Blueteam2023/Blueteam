@@ -262,83 +262,85 @@ def trucklist():
 		return "listfail"
 		
 #GET bill API
-#@app.route('/bill/<id>')
-#def bill(id):
-#	
-#	FROM_DATE = request.args.get('from', datetime.today().strftime("%Y%m01%H%M%S"))
-#	TO_DATE = request.args.get('to',datetime.today().strftime("%Y%m%d%H%M%S"))
-#	
-#	#Billing DB Connection
-#	connection=mysql.connector.connect(
-#	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-#	cursor=connection.cursor()
-#	
-#	#  "name": <str>,
-#	cursor.execute('SELECT name FROM Provider WHERE id=(%s);',(id,))
-#	DB_PROV_NAME=cursor.fetchall()
-#	try:
-#		PROV_NAME=json.dumps(DB_PROV_NAME[0][0])
-#	except:
-#		return "ERROR: Provider not found."
-#	#  list of trucks
-#	cursor.execute('SELECT id FROM Trucks WHERE provider_id=(%s);',(id,))
-#	TRUCK_LIST=cursor.fetchall()
-#	STR_TRUCK_LIST=json.dumps(TRUCK_LIST).replace(']','').replace('[','')
-#		
-#	connection.close()
-#	
-#	
-#	#Weight DB Connection
-#	connection=mysql.connector.connect(
-#	user = WEIGHT_USER, password = WEIGHT_ROOT_PASSWORD, host = WEIGHT_HOST, port = BILLING_MYSQL_PORT, database = WEIGHT_DB_NAME)
-#	cursor=connection.cursor()
-#	
-#	#  "truckCount": <int>,
-#	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-#	DB_TRUCK_COUNT=cursor.fetchall()
-#	TRUCK_COUNT=json.dumps(DB_TRUCK_COUNT)
-#	
-#	#  "sessionCount": <int>,
-#	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-#	DB_SESSION_COUNT=cursor.fetchall()
-#	SESSION_COUNT=json.dumps(DB_SESSION_COUNT)
-#	
-#	#  "products": 
-#	cursor.execute('SELECT produce FROM transactions WHERE datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-#	DB_PRODUCT_LIST=set(cursor.fetchall())
-#	#PRODUCT_LIST=list(json.dumps(DB_PRODUCT_LIST))
-#	PRODUCT_INFO=[]
-#	for var in DB_PRODUCT_LIST:
-#		cursor.execute('SELECT count(id) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-#		count=cursor.fetchall()
-#		cursor.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-#		amount=cursor.fetchall()
-#		
-#		connection2=mysql.connector.connect(
-#		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-#		cursor2=connection.cursor()
-#		
-#		cursor2.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-#		rate=cursor.fetchall()
-#		connection2.close()
-#		pay=rate*amount
-#		PRODUCT_INFO.append(f' \
-#		"product": "{var}" \
-#		"count": "{count}" \
-#		"amount": {amount} \
-#		"rate": {rate} \
-#		"pay": {pay}') 
-#	
-#	BILL_RESULTS.append(f' \
-#	"id": "{id}" \
-#	"name": "{PROV_NAME}" \
-#	"from": {FROM_DATE} \
-#	"to": {TO_DATE} \
-#	"truckCount": {TRUCK_COUNT} \
-#	"sessionCount": {SESSION_COUNT} \
-#	"products": {PRODUCT_INFO}') 
-#	connection.close()
-#	return BILL_RESULTS
+
+@app.route('/bill/<id>')
+def bill(id):
+	
+	FROM_DATE = request.args.get('from', datetime.today().strftime("%Y%m01%H%M%S"))
+	TO_DATE = request.args.get('to',datetime.today().strftime("%Y%m%d%H%M%S"))
+	
+	#Billing DB Connection
+	connection=mysql.connector.connect(
+	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
+	cursor=connection.cursor()
+	
+	#  "name": <str>,
+	cursor.execute('SELECT name FROM Provider WHERE id=(%s);',(id,))
+	DB_PROV_NAME=cursor.fetchall()
+	try:
+		PROV_NAME=json.dumps(DB_PROV_NAME[0][0])
+	except:
+		return "ERROR: Provider not found."
+	#  list of trucks
+	cursor.execute('SELECT id FROM Trucks WHERE provider_id=(%s);',(id,))
+	TRUCK_LIST=cursor.fetchall()
+	STR_TRUCK_LIST=json.dumps(TRUCK_LIST).replace(']','').replace('[','')
+		
+	connection.close()
+	
+	
+	#Weight DB Connection
+	connection=mysql.connector.connect(
+	user = WEIGHT_USER, password = WEIGHT_ROOT_PASSWORD, host = WEIGHT_HOST, port = WEIGHT_PORT, database = WEIGHT_DB_NAME)
+	cursor=connection.cursor()
+	
+	#  "truckCount": <int>,
+	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	DB_TRUCK_COUNT=cursor.fetchall()
+	TRUCK_COUNT=json.dumps(DB_TRUCK_COUNT)
+	
+	#  "sessionCount": <int>,
+	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	DB_SESSION_COUNT=cursor.fetchall()
+	SESSION_COUNT=json.dumps(DB_SESSION_COUNT)
+	
+	#  "products": 
+	cursor.execute('SELECT produce FROM transactions WHERE datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	DB_PRODUCT_LIST=set(cursor.fetchall())
+	#PRODUCT_LIST=list(json.dumps(DB_PRODUCT_LIST))
+	PRODUCT_INFO=[]
+	for var in DB_PRODUCT_LIST:
+		cursor.execute('SELECT count(id) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		count=cursor.fetchall()
+		cursor.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		amount=cursor.fetchall()
+		
+		connection2=mysql.connector.connect(
+		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
+		cursor2=connection.cursor()
+		
+		cursor2.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		rate=cursor.fetchall()
+		connection2.close()
+		pay=rate*amount
+		PRODUCT_INFO.append(f' \
+		"product": "{var}" \
+		"count": "{count}" \
+		"amount": {amount} \
+		"rate": {rate} \
+		"pay": {pay}') 
+	
+	BILL_RESULTS.append(f' \
+	"id": "{id}" \
+	"name": "{PROV_NAME}" \
+	"from": {FROM_DATE} \
+	"to": {TO_DATE} \
+	"truckCount": {TRUCK_COUNT} \
+	"sessionCount": {SESSION_COUNT} \
+	"products": {PRODUCT_INFO}') 
+	connection.close()
+	return BILL_RESULTS
+
 	
 	#  "total": <int> // agorot
 	

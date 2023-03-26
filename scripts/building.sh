@@ -38,6 +38,8 @@ modify_files(){
     echo "Modifying $b files for testing environment"
     if [ "$b" = "billing" ]; then
 	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
+        sed -i "s/billing-app/test-billing-app/" sql.env
+        sed -i "s/weight-database/test-weight-database/" sql.env
         sed -i '/^\s*- \/home\/ubuntu\/app\/billing/s|/home/ubuntu/app/billing|/home/ubuntu/app/testenv/billing|g' docker-compose.yaml
     elif [ "$b" = "weight" ]; then
         sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" .env
@@ -110,15 +112,34 @@ run_e2e_tests(){
         failed_count=$(echo "$test_result" | grep -E -o '([0-9]+) failed' | cut -d' ' -f1)
         echo "Total Passed: $passed_count"
         echo "Total Failed: $failed_count"
-        if [ -z $failed_count ]; then
+        if [ -z "$failed_count" ]; then
+            echo "$b E2E tests passed"
             return 0
         else
+            echo "$b E2E tests failed"
             return 1
         fi
     elif [ "$b" = "billing" ]; then
+        cd /app/testenv/billing/python
+        test_result=$(python3 billingtest.py 2>&1)
+        echo "$test_result" | while read line; do
+            if echo "$line" | grep -qE 'Response Code: ([0-9]+)'; then
+                if [ "$(echo "$line" | grep -E -o 'Response Code: ([0-9]+)' | cut -d' ' -f3)" != "200" ]; then
+                    echo "Failed: $line"
+                    echo "$b E2E tests failed"
+                    return 1
+                fi
+            elif echo "$line" | grep -qE 'Bad response from [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+'; then
+                echo "Failed: $line"
+                echo "$b E2E tests failed"
+                return 1
+            fi
+        done
+        echo "$b E2E tests passed"
         return 0
     fi
 }
+
 
 # Sending mails function
 send_mail(){
@@ -148,6 +169,7 @@ terminate_testing(){
     docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing rm -f
 	rm -rf /app/testenv/*
     rm -rf /app/testenv/.git
+    rm -rf /app/testenv/.gitignore
 }
 
 stop_production(){
@@ -224,7 +246,7 @@ testing_init(){
                 echo "E2E Tests passed successfully, Starting production update"
                 terminate_testing
                 return 0
-            elif [ $tester -eq 1 ]; then
+            else
                 send_mail "New version deploy failed, E2E tests failed during testing" "Request number: $number\nContact devops team for more details" dev
                 echo "E2E Tests failed, Stopping update process"
                 terminate_testing
