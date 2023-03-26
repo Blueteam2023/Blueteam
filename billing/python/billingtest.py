@@ -32,6 +32,7 @@ def test_get(route):
 		print(f"Bad response from {route}")
 
 testhost= environ['testhost']
+#testhost="172.19.0.3:80"
 test_get(f'{testhost}/health')
 test_get(f'{testhost}/provider')
 test_get(f'{testhost}/providerlist')

@@ -291,7 +291,7 @@ def bill(id):
 	
 	#Weight DB Connection
 	connection=mysql.connector.connect(
-	user = WEIGHT_USER, password = WEIGHT_ROOT_PASSWORD, host = WEIGHT_HOST, port = WEIGHT_PORT, database = WEIGHT_DB_NAME)
+	user = WEIGHT_USER, password = WEIGHT_ROOT_PASSWORD, host = WEIGHT_HOST, port = BILLING_MYSQL_PORT, database = WEIGHT_DB_NAME)
 	cursor=connection.cursor()
 	
 	#  "truckCount": <int>,
@@ -340,7 +340,6 @@ def bill(id):
 	"products": {PRODUCT_INFO}') 
 	connection.close()
 	return BILL_RESULTS
-
 	
 	#  "total": <int> // agorot
 	
