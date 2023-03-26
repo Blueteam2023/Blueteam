@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  ci:
+    container_name: gan_shmuel_ci
+    build: .
+    networks:
+      - BlueTeam
+      - test_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/ssmtp.conf:/etc/ssmtp/ssmtp.conf
+      - ./weight/datadump/weightdb.sql:/app/weight/datadump/weightdb.sql
+      - ./billing/mysql/in/:/app/billing/mysql/in/
+      - ./billing/mysql/billdb-data:/app/billing/mysql/billdb-data
+    command: /bin/sh -c "./scripts/deploy.sh && gunicorn app:app --bind 0.0.0.0:8080 --timeout 120"
+    expose:
+      - "8080"
+
+  nginx:
+    image: nginx:stable-alpine
+    command: /bin/sh -c "sleep 30 && exec nginx -g 'daemon off;'"
+    restart: always
+    ports:
+      - "8080:8080"
+      - "8082:8082"
+      - "8084:8084"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - ci
+    networks:
+      - BlueTeam
+
+networks:
+  BlueTeam:
+    name: BlueTeam
+  test_network:
+    name: test_network

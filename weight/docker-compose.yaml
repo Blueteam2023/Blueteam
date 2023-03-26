@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  db:
+    container_name: weight-database
+    image: mysql:5.7
+    networks:
+      - BlueTeam
+    expose:
+      - 3306
+    restart: always
+    volumes:
+      - /home/ubuntu/app/weight/datadump/weightdb.sql:/docker-entrypoint-initdb.d/weightdb.sql
+    environment:
+      MYSQL_DATABASE: "weight"
+      MYSQL_ROOT_PASSWORD: "root"
+    env_file:
+      - ./.env
+
+  app:
+    container_name: weight-app
+    environment:
+      MYSQL_DATABASE: "weight"
+      MYSQL_ROOT_PASSWORD: "root"
+    env_file:
+      - ./.env
+    build: .
+    networks:
+      - BlueTeam
+    command: python ./weight.py
+    depends_on:
+      - db
+
+networks:
+  BlueTeam:
+    name: BlueTeam
