@@ -41,10 +41,12 @@ def allowed_file(file):
 
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
-        return 0
+        return "na"
     neto = bruto - containers_weight - truckTara
     if unit == "lbs":
         neto *= 2.2
+    if neto < 0:
+        return "na"
     return int(neto)
 
 
@@ -67,6 +69,8 @@ def get_weight_containers(containers):
     if db_containers:
         for cont in db_containers:
             w = cont["weight"]
+            if w == -1:
+                return "na"
             if cont["unit"] == "lbs":
                 w *= 2.2
             containers_weight4 += w
@@ -108,24 +112,40 @@ def get_weight_containers(containers):
     return containers_weight4
 
 
+@app.route("/")
+def index():
+    is_healthy = get_health()
+    if not is_healthy:
+        with open("./templates/error.html") as error:
+            doc = ""
+            for line in error.readlines():
+                doc += line
+            return doc
+    with open("./templates/index.html") as index:
+        doc = ""
+        for line in index.readlines():
+            doc += line
+        return doc
+
+
 @app.route("/weight", methods=["POST", "GET"])
 def post_weight():
     if request.method == "GET":
-        start = request.args.get("start")
-        end = request.args.get("end")
-        direct = request.args.get("direct")
+        start = request.args.get("from")
+        end = request.args.get("to")
+        direct = request.args.get("filter")
         return get_weight(start, end, direct)
 
     id = 0
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     body = ''
-    direction = request.args.get('direction')
-    truck = str(request.args.get('truck'))
-    containers = str(request.args.get('containers'))
-    weight = request.args.get('weight')
-    unit = request.args.get('unit')
-    force = request.args.get('force')
-    produce = request.args.get('produce')
+    direction = request.form.get('direction')
+    truck = str(request.form.get('truck'))
+    containers = str(request.form.get('containers'))
+    weight = request.form.get('weight')
+    unit = request.form.get('unit')
+    force = request.form.get('force')
+    produce = request.form.get('produce')
 
     # handle wrong insertions
     if not (re.match(IS_TRUCK, truck) or (truck == "na" and direction.lower() == "none")):
@@ -196,16 +216,13 @@ def post_weight():
                 last_in_transaction["containers"].split(","))
             neto = calculateNeto(
                 last_in_transaction["bruto"], containers_weight, truckTara, unit)
-            if neto < 0:
-                body = "Neto weight can not be negative."
-                Response(response=body, status=HTTPStatus.BAD_REQUEST)
+            
             weight_data["truckTara"] = truckTara
-            weight_data["neto"] = neto
+            weight_data["neto"] = neto if neto != "na" else -1
             retr_val["truckTara"] = truckTara
             retr_val["neto"] = neto
 
             match last_transaction["direction"]:
-
                 case "in":
                     id = sqlQueries.insert_transaction(weight_data)
                     retr_val["id"] = id
@@ -243,7 +260,7 @@ def post_weight():
                 body = "Container already registerd. In order to over write container weight request force = True."
                 return Response(response=body, status=HTTPStatus.BAD_REQUEST)
 
-            sqlQueries.insert_transaction(weight_data)
+            id = sqlQueries.insert_transaction(weight_data)
             sqlQueries.update_container(container_id, weight, unit)
             retr_val["id"] = id
             return json.dumps(retr_val)
@@ -252,17 +269,17 @@ def post_weight():
 @app.route("/batch-weight", methods=["POST"])
 def post_batch_weight():
     batch_file = request.files['file']
-    if batch_file.filename == '':
+    if not batch_file:
         body = "No selected file"
+        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
+    if "json" not in batch_file.mimetype and "csv" not in batch_file.mimetype:
+        body = "Illegal format"
         return Response(response=body, status=HTTPStatus.BAD_REQUEST)
     if batch_file and allowed_file(batch_file):
         filename = secure_filename(allowed_file(batch_file))
         batch_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         body = f"File uploaded succefuly. replaced {filename}"
-    else:
-        body = 'File must be csv or json file.\nFile formats accepted: csv (id,kg), csv (id,lbs), json ([{"id":..,"weight":..,"unit":..},...])'
-        return Response(response=body, status=HTTPStatus.BAD_REQUEST)
-    return Response(response=body, status=HTTPStatus.OK)
+        return Response(response=body, status=HTTPStatus.OK)
 
 
 @app.route("/unknown", methods=["GET"])

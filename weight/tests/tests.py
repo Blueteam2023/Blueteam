@@ -37,8 +37,8 @@ def test_get_session():
                             "force": False,
                             "produce": "na"}
         # insert data for testing
-        truck_weight_response = c.post("/weight", query_string=truck_params)
-        cont_weight_response = c.post("/weight", query_string=container_params)
+        truck_weight_response = c.post("/weight", data=truck_params)
+        cont_weight_response = c.post("/weight", data=container_params)
         # keep session id
         truck_session = json.loads(truck_weight_response.data)["id"]
         container_session = json.loads(cont_weight_response.data)["id"]
@@ -67,7 +67,7 @@ def test_get_session():
                         "unit": "kg",
                         "force": False,
                         "produce": "na"}
-        truck_weight_response = c.post("/weight", query_string=truck_params)
+        truck_weight_response = c.post("/weight", data=truck_params)
         # get truck response from app
         truck_session_response = c.get(f"/session/{truck_session}")
         assert truck_session_response.status == OK
@@ -78,151 +78,6 @@ def test_get_session():
         assert truck_data["bruto"] == 1000
         assert truck_data["truckTara"] == 300
         assert truck_data["neto"] == 1000 - 300 - 296
-
-
-def test_post_weight():
-    reset_database()
-    with app.test_client() as c:
-        # 0k 200 expected; truck weighing in first time:
-        test_data = {"direction": "in",
-                     "truck": "12-12-12",
-                     "containers": "C-35434,K-8263",
-                     "weight": 7777,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
-
-        data = json.loads(response.data)
-        assert response.status == OK
-        assert data["id"] == 10001
-        assert data["truck"] == "12-12-12"
-        assert data["bruto"] == 7777
-
-        # Bad request expected; same truck. in after in test. force = false:
-        test_data = {"direction": "in",
-                     "truck": "12-12-12",
-                     "containers": "C-35434,K-8263,T-17267",
-                     "weight": 10000,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == BAD_REQUEST
-        assert b"Truck already in. To override current 'in', request with force=True" in response.data
-
-        # 0k 200 expected; override last in transaction,force = true:
-        test_data = {"direction": "in",
-                     "truck": "12-12-12",
-                     "containers": "C-35434,K-8263,T-17267",
-                     "weight": 10000,
-                     "unit": "kg",
-                     "force": True,
-                     "produce": "oranges"}
-        response = c.post("/weight", query_string=test_data)
-        data = json.loads(response.data)
-        assert response.status == OK
-        assert data["id"] == 10001
-        assert data["truck"] == "12-12-12"
-        assert data["bruto"] == 10000
-
-        # Bad request expected; out, produce value not empty(diff from "na"):
-        test_data = {"direction": "out",
-                     "truck": "12-12-12",
-                     "containers": "",
-                     "weight": 100,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "oranges"
-                     }
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == BAD_REQUEST
-        assert b"Truck must be empty while getting out" in response.data
-
-        # Bad request expected; out, containers value not empty:
-        test_data = {"direction": "out",
-                     "truck": "12-12-12",
-                     "containers": "C-35434,K-8263",
-                     "weight": 100,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "oranges"
-                     }
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == BAD_REQUEST
-        assert b"Truck must be empty while getting out" in response.data
-
-        # 0k 200 expected; truck weighing out after in test:
-        test_data = {"direction": "out",
-                     "truck": "12-12-12",
-                     "containers": "",
-                     "weight": 100,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == OK
-        data = json.loads(response.data)
-        assert data["id"] == 10002
-        assert data["truck"] == "12-12-12"
-        assert data["bruto"] == 100
-        assert data["truckTara"] == 100
-        assert data["neto"] == 9056
-
-        # Bad request expected; same truck, out after out test,force = false:
-        test_data = {"direction": "out",
-                     "truck": "12-12-12",
-                     "containers": "",
-                     "weight": 100,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == BAD_REQUEST
-        assert b"Truck cannot get out if not inside to override last transaction change force to true." in response.data
-
-        # OK 200; override last out transaction,force = true:
-        test_data = {"direction": "out",
-                     "truck": "12-12-12",
-                     "containers": "",
-                     "weight": 50,
-                     "unit": "kg",
-                     "force": True,
-                     "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == OK
-        data = json.loads(response.data)
-        assert data["id"] == 10002
-        assert data["truck"] == "12-12-12"
-        assert data["bruto"] == 50
-        assert data["truckTara"] == 50
-        assert data["neto"] == 9106
-
-        # Bad request expected; out for unexisting truck:
-        test_data = {"direction": "out",
-                     "truck": "123-123-123",
-                     "containers": "",
-                     "weight": 100,
-                     "unit": "kg",
-                     "force": False,
-                     "produce": "na"}
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == BAD_REQUEST
-        assert b"Truck has not been weighed yet" in response.data
-
-        # Bad request expected; check all wrong insertions scenarios:
-        response = c.post("/weight", query_string=test_data)
-        test_data = {"direction": "fhe",
-                     "truck": "12-12-12a",
-                     "containers": "C-35434,K-8263",
-                     "weight": -7777,
-                     "unit": "feofe",
-                     "force": "jfeoiw",
-                     "produce": "oranges123"}
-        response = c.post("/weight", query_string=test_data)
-        assert response.status == BAD_REQUEST
-        bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
-        assert bad_response in response.data
 
 
 def test_get_item():
@@ -236,7 +91,7 @@ def test_get_item():
                             "unit": "kg",
                             "force": False,
                             "produce": "na"}
-        cont_weight_response = c.post("/weight", query_string=container_params)
+        cont_weight_response = c.post("/weight", data=container_params)
         # keep session id
         container_session = json.loads(cont_weight_response.data)["id"]
         today = datetime.today()
@@ -304,14 +159,15 @@ def test_get_weight():
                             "force": False,
                             "produce": "na"}
         # insert data for testing
-        c.post("/weight", query_string=truck_params)
-        c.post("/weight", query_string=container_params)
+        c.post("/weight", data=truck_params)
+        c.post("/weight", data=container_params)
 
         request_response = c.get("/weight", query_string=request_params)
         assert request_response.status == OK
         response_data = json.loads(request_response.data)
         assert response_data[0]["containers"] == ['C-35434']
         assert response_data[1]["containers"] == ["C-73281"]
+
 
 
 def test_get_unknown():
@@ -330,7 +186,207 @@ def test_get_unknown():
                  "unit": "kg",
                  "force": False,
                  "produce": "apples"}
-        c.post("/weight", query_string=truck)
+        c.post("/weight", data=truck)
         response = c.get("/unknown")
         assert response.status == OK
         assert "U-12345" in json.loads(response.data)
+
+
+def test_post_weight():
+    reset_database()
+    with app.test_client() as c:
+        # 0k 200 expected; truck weighing in first time:
+        test_data = {"direction": "in",
+                     "truck": "12-12-12",
+                     "containers": "C-35434,K-8263",
+                     "weight": 7777,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "oranges"}
+        response = c.post("/weight", data=test_data)
+
+        data = json.loads(response.data)
+        assert response.status == OK
+        assert data["id"] == 10001
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 7777
+
+        # Bad request expected; same truck. in after in test. force = false:
+        test_data = {"direction": "in",
+                     "truck": "12-12-12",
+                     "containers": "C-35434,K-8263,T-17267",
+                     "weight": 10000,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "oranges"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        assert b"Truck already in. To override current 'in', request with force=True" in response.data
+
+        # 0k 200 expected; override last in transaction,force = true:
+        test_data = {"direction": "in",
+                     "truck": "12-12-12",
+                     "containers": "C-35434,K-8263,T-17267",
+                     "weight": 10000,
+                     "unit": "kg",
+                     "force": True,
+                     "produce": "oranges"}
+        response = c.post("/weight", data=test_data)
+        data = json.loads(response.data)
+        assert response.status == OK
+        assert data["id"] == 10001
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 10000
+
+        # Bad request expected; out, produce value not empty(diff from "na"):
+        test_data = {"direction": "out",
+                     "truck": "12-12-12",
+                     "containers": "",
+                     "weight": 100,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "oranges"
+                     }
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        assert b"Truck must be empty while getting out" in response.data
+
+        # Bad request expected; out, containers value not empty:
+        test_data = {"direction": "out",
+                     "truck": "12-12-12",
+                     "containers": "C-35434,K-8263",
+                     "weight": 100,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "oranges"
+                     }
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        assert b"Truck must be empty while getting out" in response.data
+
+        # 0k 200 expected; truck weighing out after in:
+        test_data = {"direction": "out",
+                     "truck": "12-12-12",
+                     "containers": "",
+                     "weight": 100,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == OK
+        data = json.loads(response.data)
+        assert data["id"] == 10002
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 100
+        assert data["truckTara"] == 100
+        assert data["neto"] == 9056
+
+        # Bad request expected; same truck, out after out test,force = false:
+        test_data = {"direction": "out",
+                     "truck": "12-12-12",
+                     "containers": "",
+                     "weight": 100,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        assert b"Truck cannot get out if not inside to override last transaction change force to true." in response.data
+
+        # OK 200; override last out transaction,force = true:
+        test_data = {"direction": "out",
+                     "truck": "12-12-12",
+                     "containers": "",
+                     "weight": 50,
+                     "unit": "kg",
+                     "force": True,
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == OK
+        data = json.loads(response.data)
+        assert data["id"] == 10002
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 50
+        assert data["truckTara"] == 50
+        assert data["neto"] == 9106
+
+        # Bad request expected; out for unexisting truck:
+        test_data = {"direction": "out",
+                     "truck": "123-123-123",
+                     "containers": "",
+                     "weight": 100,
+                     "unit": "kg",
+                     "force": False,
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        assert b"Truck has not been weighed yet" in response.data
+
+        # Bad request expected; check all wrong insertions scenarios:
+        test_data = {"direction": "fhe",
+                     "truck": "12-12-12a",
+                     "containers": "C-35434,K-8263",
+                     "weight": -7777,
+                     "unit": "feofe",
+                     "force": "jfeoiw",
+                     "produce": "oranges123"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        bad_response = b"Truck lisence must be in numbers divided by dashes\nDirection must be in/out/none\nWeight must be positive integer.\nUnit value must be Kg/Lbs\nForce value must be True/False\nProduce must be letters string"
+        assert bad_response in response.data
+
+
+        #OK 200 expected; check container insertion
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        data = json.loads(response.data)
+        assert data["id"] == 10003
+        assert data["truck"] == "na"
+        assert data["bruto"] == 500
+
+        # Bad request expected; same container insertion, force = false:
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        bad_response = b"Container already registerd. In order to over write container weight request force = True."
+        assert bad_response in response.data
+
+        # Bad request expected; multiple container insertion, :
+        test_data = {"direction": "none",
+                     "truck": "na",
+                     "containers": "C-35434,K-8263",
+                     "weight": 500,
+                     "unit": "kg",
+                     "force": "false",
+                     "produce": "na"}
+        response = c.post("/weight", data=test_data)
+        assert response.status == BAD_REQUEST
+        bad_response = b"While registering container only one container is allowed"
+        assert bad_response in response.data
+
+        # 0k 200 expected;same truck weighing in again:
+        test_data = {"direction": "in",
+                     "truck": "12-12-12",
+                     "containers": "C-35434,K-8263",
+                     "weight": 10000,
+                     "unit": "lbs",
+                     "force": False,
+                     "produce": "apples"}
+        response = c.post("/weight", data=test_data)
+        data = json.loads(response.data)
+        assert response.status == OK
+        assert data["id"] == 10004
+        assert data["truck"] == "12-12-12"
+        assert data["bruto"] == 10000

@@ -2,3 +2,4 @@ venv/
 delete-containers.sh
 datadir/
 __pycache__/
+docker-compose.yaml
