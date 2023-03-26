@@ -19,6 +19,14 @@ if [ ! -f ./scripts/data/stable_versions.txt ]; then
     echo "Creating new stable versions file"
     git fetch --tags 
     git tag --sort=creatordate > ./scripts/data/stable_versions.txt
+else
+    printf "Create new stable versions file from remote? (y/n): "
+    read answer
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+        echo "Creating new stable versions file"
+        git fetch --tags 
+        git tag --sort=creatordate > ./scripts/data/stable_versions.txt
+    fi
 fi
 
 echo "Starting Gan-Shmuel"
