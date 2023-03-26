@@ -118,9 +118,7 @@ def test_get_item():
         # test getting an item that doesn't exist
         request_params["id"] = "a made up id"
         result_response = c.get("/item", query_string=request_params)
-        assert result_response.status == OK
-        assert json.loads(result_response.data)["tara"] == "na"
-        assert "sessions" not in json.loads(result_response.data)
+        assert result_response.status == BAD_REQUEST
 
 
 def test_get_weight():
