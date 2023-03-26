@@ -25,7 +25,6 @@ services:
   restart: always
   volumes:
    - /home/ubuntu/app/billing/mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
-   - /home/ubuntu/app/billing/mysql/billdb-data/:/var/lib/mysql/
   environment:
    MYSQL_DATABASE: "billdb"
    MYSQL_ROOT_PASSWORD: "root"

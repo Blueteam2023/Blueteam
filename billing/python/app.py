@@ -64,44 +64,6 @@ def plist():
 		return "listfail"
 
 
-#POST provider API
-@app.route('/provider', methods=["GET", "POST"])
-def prov():
-	if request.method=="GET":	
-		return render_template('prov.html')
-		
-	elif request.method=="POST":	
-		
-		GIVEN_PROV_NAME = request.form['nm']		
-		connection=mysql.connector.connect(
-		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = "3306", database = MYSQL_DB_NAME)
-		cursor=connection.cursor()
-
-
-		cursor.execute("SELECT name FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
-		DB_PROV_NAME=cursor.fetchall()
-		PROV_NAME = json.dumps(DB_PROV_NAME)
-		
-		if PROV_NAME == f'[["{GIVEN_PROV_NAME}"]]':
-			cursor.execute("SELECT id FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
-			DB_PROV_ID=cursor.fetchall()
-			PROV_ID=json.dumps(DB_PROV_ID[0][0])
-			connection.close()
-			return f"Error: provider name already exists at ID {PROV_ID}"
-		else:
-			cursor.execute("INSERT INTO Provider (`name`) VALUES ((%s));",(GIVEN_PROV_NAME,))	
-			cursor.execute("SELECT id FROM Provider where name=(%s)",(GIVEN_PROV_NAME,))
-			DB_PROV_ID=cursor.fetchall()
-			PROV_ID=json.dumps(DB_PROV_ID[0][0])
-			connection.close()
-			return f"Provider name saved to ID {PROV_ID}"
-		
-
-
-	else:
-		return "error"
-		
-		
 #PUT provider id API
 @app.route('/provider/<id>', methods=["GET", "POST"])
 def provid(id):
@@ -224,26 +186,26 @@ def data_truck():
 
 
 
-@app.route("/truck/<id>", methods=["PUT","GET"])
+@app.route("/truck/<id>", methods=["PUT"])
 def update_truck_license_plate(id):
 	data = request.get_json(force=True)
 	connection=mysql.connector.connect(
 	user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
 	cursor = connection.cursor()
 
-	cursor.execute("SELECT id FROM Provider WHERE id=(%s)",(int(data["provider_id"]),))
+	cursor.execute("SELECT id FROM Provider where id=(%s)",(int(data["provider_id"]),))
 	PROVIDER_ID = cursor.fetchall()
 	if len(PROVIDER_ID) == 0:
 		connection.close()
 		return { 'message' : f'There is no provider id {data["provider_id"]}'}, 400
 	else:
-		cursor.execute("SELECT id FROM Trucks WHERE id=(%s)", (id,))
+		cursor.execute("SELECT id FROM Trucks where id=(%s)", (id,))
 		TRUCK_ID = cursor.fetchall()
 		if len(TRUCK_ID) == 0:
 			connection.close()
 			return { 'message' : f'There is no truck id {id}'}, 400
 		else:
-			cursor.execute("UPDATE Trucks SET provider_id = (%s) WHERE id=(%s)", (int((data["provider_id"])), id))
+			cursor.execute("UPDATE Trucks SET provider_id = (%s) where id=(%s)", (int((data["provider_id"])), id))
 			connection.close()
 			return { 'message' : f'Truck with license plate {TRUCK_ID[0][0]} has been updated to provider {PROVIDER_ID[0][0]}'}, 200
 
@@ -257,10 +219,11 @@ def trucklist():
 		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
 		cursor = connection.cursor()
 		cursor.execute('SELECT * FROM Trucks;')
-		DB_TRUCK_LIST = cursor.fetchall()
+		DB_PROV_LIST = cursor.fetchall()
 		connection.close()
-		return DB_TRUCK_LIST
+		return DB_PROV_LIST
 	except:
+		connection.close()
 		return "listfail"
 		
 #GET bill API
@@ -276,19 +239,20 @@ def bill(id):
 	cursor=connection.cursor()
 	
 	#  "name": <str>,
-	cursor.execute('SELECT name FROM Provider WHERE id=(%s);',(id,))
+	cursor.execute('SELECT name FROM Provider where id=(%s);',(id,))
 	DB_PROV_NAME=cursor.fetchall()
 	try:
-		PROV_NAME=json.dumps(DB_PROV_NAME[0][0])
+		PROV_NAME=json.dumps(DB_PROV_LIST[0][0])
 	except:
 		return "ERROR: Provider not found."
 	#  list of trucks
-	cursor.execute('SELECT id FROM Trucks WHERE provider_id=(%s);',(id,))
+	cursor.execute('SELECT id FROM Trucks where provider_id=(%s);',(id,))
 	TRUCK_LIST=cursor.fetchall()
-	STR_TRUCK_LIST=json.dumps(TRUCK_LIST).replace(']','').replace('[','')
+	STR_TRUCK_LIST=json.dumps(TRUCK_LIST)
+	
+	
 		
 	connection.close()
-	
 	
 	#Weight DB Connection
 	connection=mysql.connector.connect(
@@ -296,49 +260,34 @@ def bill(id):
 	cursor=connection.cursor()
 	
 	#  "truckCount": <int>,
-	cursor.execute('SELECT count(distinct truck) FROM transactions WHERE datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT count(distinct truck) FROM transactions where datetime > (%s) and datetime < (%s);',(FROM_DATE, TO_DATE,))
 	DB_TRUCK_COUNT=cursor.fetchall()
 	TRUCK_COUNT=json.dumps(DB_TRUCK_COUNT)
 	
 	#  "sessionCount": <int>,
-	cursor.execute('SELECT count(direction) FROM transactions WHERE direction = "out" AND datetime > (%s) AND datetime < (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT count(direction) FROM transactions where direction = "out" and datetime > (%s) and datetime < (%s);',(FROM_DATE, TO_DATE,))
 	DB_SESSION_COUNT=cursor.fetchall()
 	SESSION_COUNT=json.dumps(DB_SESSION_COUNT)
 	
 	#  "products": 
-	cursor.execute('SELECT produce FROM transactions WHERE datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+	cursor.execute('SELECT produce FROM transactions where datetime >= (%s) and datetime <= (%s);',(FROM_DATE, TO_DATE,))
 	DB_PRODUCT_LIST=set(cursor.fetchall())
 	#PRODUCT_LIST=list(json.dumps(DB_PRODUCT_LIST))
 	PRODUCT_INFO=[]
 	for var in DB_PRODUCT_LIST:
-		cursor.execute('SELECT count(id) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		cursor.execute('SELECT count(id) where produce = (%s) and datetime >= (%s) and datetime <= (%s)',(var, FROM_DATE, TO_DATE,))
 		count=cursor.fetchall()
-		cursor.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
+		cursor.execute('SELECT sum(neto) where produce = (%s) and datetime >= (%s) and datetime <= (%s)',(var, FROM_DATE, TO_DATE,))
 		amount=cursor.fetchall()
 		
-		connection2=mysql.connector.connect(
-		user = MYSQL_USER, password = MYSQL_ROOT_PASSWORD, host = MYSQL_HOST, port = BILLING_MYSQL_PORT, database = MYSQL_DB_NAME)
-		cursor2=connection.cursor()
-		
-		cursor2.execute('SELECT sum(neto) WHERE produce = (%s) AND datetime >= (%s) AND datetime <= (%s) AND WHERE truck IN ((%s));',(var, FROM_DATE, TO_DATE, STR_TRUCK_LIST,))
-		rate=cursor.fetchall()
-		connection2.close()
-		pay=rate*amount
 		PRODUCT_INFO.append(f' \
 		"product": "{var}" \
 		"count": "{count}" \
 		"amount": {amount} \
-		"rate": {rate} \
-		"pay": {pay}') 
+		"rate": {a} \
+		"pay": {a}') 
 	
-	BILL_RESULTS.append(f' \
-	"id": "{id}" \
-	"name": "{PROV_NAME}" \
-	"from": {FROM_DATE} \
-	"to": {TO_DATE} \
-	"truckCount": {TRUCK_COUNT} \
-	"sessionCount": {SESSION_COUNT} \
-	"products": {PRODUCT_INFO}') 
+		
 	connection.close()
 	return STR_TRUCK_LIST
 	
