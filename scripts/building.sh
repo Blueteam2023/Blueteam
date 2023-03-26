@@ -168,6 +168,7 @@ terminate_testing(){
     docker-compose -f /app/testenv/$team2/docker-compose.yaml --project-name testing rm -f
 	rm -rf /app/testenv/*
     rm -rf /app/testenv/.git
+    rm -rf /app/testenv/.gitignore
 }
 
 stop_production(){
