@@ -279,7 +279,7 @@ def bill(id):
 	try:
 		PROV_NAME=json.dumps(DB_PROV_NAME[0][0])
 	except:
-		return "ERROR: Provider not found.", 400
+		return "ERROR: Provider not found."
 	#  list of trucks
 	cursor.execute('SELECT id FROM Trucks WHERE provider_id=(%s);',(id,))
 	TRUCK_LIST=cursor.fetchall()
