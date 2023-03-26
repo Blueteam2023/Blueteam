@@ -31,7 +31,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-	return "Connected"
+	return render_template ('first_page.html')
 
 
 # Health check API
