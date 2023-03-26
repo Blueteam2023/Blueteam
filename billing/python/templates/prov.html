@@ -1,9 +1,42 @@
-{% block title %}Provider Page{% endblock %}
-{% block content %}
-<form action="#" method="post">
-	<p>Provider Name:</p>
-	<p><input type="text" name="nm" /></p>
-	<p><input type="submit" value="submit"/></p>
-</form>
-{% endblock %}
-
+<!DOCTYPE html>
+<html>
+  <head>
+	<link rel="stylesheet" href="style.css">
+    <title>Provider Page</title>
+    <style>
+    body {
+				background-image: url('https://routiertransport.com/wp-content/uploads/2022/02/all.jpg');
+				background-repeat: no-repeat;
+				background-attachment: fixed;
+				background-size: cover;
+     		}
+	.center {
+				text-align: center;
+				margin-top: 10%;
+				font-size: large;
+          		align-content: center;
+          		font-family: inter sa,sans-serif;
+          		font-weight: 600;
+		 	}
+	bouton-bleu {
+				background-color: blue;
+				color: yellowgreen;
+			}
+    </style>
+  </head>
+  <body>
+	<div class="center">
+	<h1>Provider Page Insert</h1>
+	<form action="#" method="post">
+		<h2>Provider Name:</h2>
+		<p><input type="text" name="nm" /></p>
+		<p><input type="submit" value="submit"/></p>
+		
+		<input type="button"  value="Home Page" onclick="window.location.href='/';">
+		
+		
+		
+	</div>
+	</form>
+  </body>
+</html>

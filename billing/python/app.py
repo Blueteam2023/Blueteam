@@ -29,7 +29,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-	return "Connected"
+	return render_template ('first_page.html')
 
 
 # Health check API
@@ -262,6 +262,7 @@ def trucklist():
 		return "listfail"
 		
 #GET bill API
+
 @app.route('/bill/<id>')
 def bill(id):
 	
@@ -339,6 +340,7 @@ def bill(id):
 	"products": {PRODUCT_INFO}') 
 	connection.close()
 	return BILL_RESULTS
+
 	
 	#  "total": <int> // agorot
 	

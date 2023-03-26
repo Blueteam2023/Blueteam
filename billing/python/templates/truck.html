@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="style.css">
+<style>
+    body {
+            background-image: url('https://routiertransport.com/wp-content/uploads/2022/02/all.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            
+        }
+    .center {
+            text-align: center;
+            font-size: large;
+            align-content: center;
+            font-family: inter sa,sans-serif;
+            font-weight: 600;
+            margin-top: 10%;
+         }
+</style>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="Viewport" content="witdth=device-width, initial-scale=1.0">
@@ -29,9 +47,10 @@
     </script>
 </head>
 <body>
-    <h1>Formulaire Truck </h1>
+    <div class="center">
+    <h1>Truck Page Form</h1>
     <form id="form" action="#" method="POST">
-        <p>
+        <p> 
             <!-- champ de type text -->
             <label for="Truck_id">License plate :  </label>
             <input type="text" id="truck_id" name="id" required>
@@ -45,7 +64,9 @@
             <!-- champ d'envoi -->
             <input type="submit" value="Add">
             <button onClick="submitPutRequest(event)">update</button>
+            <input type="button"  value="Home Page" onclick="window.location.href='/';">
         </p>
+    </div>
     </form>
     <div id="response"></div>
 </body>
