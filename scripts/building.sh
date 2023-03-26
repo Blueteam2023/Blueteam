@@ -38,13 +38,14 @@ modify_files(){
     echo "Modifying $b files for testing environment"
     if [ "$b" = "billing" ]; then
 	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
+        sed -i '/^\s*- \/home\/ubuntu\/app\/billing/s|/home/ubuntu/app/billing|/home/ubuntu/app/testenv/billing|g' docker-compose.yaml
     elif [ "$b" = "weight" ]; then
         sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" .env
+        sed -i '/^\s*- \/home\/ubuntu\/app\/weight/s|/home/ubuntu/app/weight|/home/ubuntu/app/testenv/weight|g' docker-compose.yaml
     fi
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
     sed -i "s/BlueTeam/test_network/g" docker-compose.yaml
-    sed -i "s|'/home/ubuntu/app/'|'/home/ubuntu/app/testenv/'|" docker-compose.yaml
     echo "Finished modifying $b files for testing environment"
 }
 
