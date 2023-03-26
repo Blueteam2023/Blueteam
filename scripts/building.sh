@@ -246,7 +246,7 @@ testing_init(){
                 echo "E2E Tests passed successfully, Starting production update"
                 terminate_testing
                 return 0
-            elif [ $tester -eq 1 ]; then
+            else
                 send_mail "New version deploy failed, E2E tests failed during testing" "Request number: $number\nContact devops team for more details" dev
                 echo "E2E Tests failed, Stopping update process"
                 terminate_testing
