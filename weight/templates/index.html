@@ -192,7 +192,6 @@
                     let tableData = "";
                     const parsed_data = JSON.parse(result);
                     for (const index in parsed_data) {
-                        console.log(parsed_data[index])
                         tableData += `<tr><td>${parsed_data[index]}</td></tr>`
                     }
                     const table = `<table class="table">
@@ -224,7 +223,6 @@
                 let tableData = "";
                 const parsed_data = JSON.parse(response);
                 for (const key in parsed_data) {
-                    console.log(key)
                     tableHeaders += `<th>${key}</th>`
                     tableData += `<td>${parsed_data[key]}</td>`
                 }
@@ -255,6 +253,10 @@
             .replace(/\-/g, '')
             .replace(/T/, '')
             .replace(/\:/g, '') + "00"
+        if (startTime === "00" || endTime === "00") {
+            alert("Exact date and time required")
+            return
+        }
         const id = $("#itemId").val()
         $.ajax("/item", {
             method: "GET",
@@ -268,7 +270,6 @@
                 let tableData = "";
                 const parsed_data = JSON.parse(response);
                 for (const key in parsed_data) {
-                    console.log(key)
                     tableHeaders += `<th>${key}</th>`
                     tableData += `<td>${parsed_data[key]}</td>`
                 }
@@ -299,6 +300,10 @@
             .replace(/\-/g, '')
             .replace(/T/, '')
             .replace(/\:/g, '') + "00"
+        if (startTime === "00" || endTime === "00") {
+            alert("Exact date and time required")
+            return
+        }
         const isIn = $("#getWeightIn").is(":checked")
         const isOut = $("#getWeightOut").is(":checked")
         const isNone = $("#getWeightNone").is(":checked")
@@ -306,7 +311,7 @@
         if (isIn) directions += "in"
         if (isOut) directions += ",out"
         if (isNone) directions += ",none"
-        console.log(directions)
+        if (directions === "") directions = "in,out,none"
         $.ajax("/weight", {
             method: "GET",
             data: {
@@ -318,18 +323,22 @@
                 let tableHeaders = "";
                 let tableData = "";
                 const parsed_data = JSON.parse(response);
+                for (const key in parsed_data[0]) {
+                    tableHeaders += `<th>${key}</th>`
+                }
                 for (const key in parsed_data) {
+                    tableData += "<tr>"
                     for (const field in parsed_data[key]) {
-                        tableHeaders += `<th>${field}</th>`
                         tableData += `<td>${(parsed_data[key])[field]}</td>`
                     }
+                    tableData += "</tr>"
                 }
                 const table = `<table class="table">
                                     <thead>
                                     <tr>${tableHeaders}</tr>
                                     </thead>
                                     <tbody>
-                                        <tr>${tableData}</tr>
+                                        ${tableData}
                                     </tbody>
                                 </table>`
 
@@ -344,21 +353,19 @@
         $("#responses").removeAttr("hidden")
         $("#contents").empty()
         file = $("#file").prop("files")[0]
-        console.log(file)
         if (!file) {
             alert("You must submit a file")
             return
         }
         let formData = new FormData()
         formData.append("file", file)
-        console.log(formData)
         $.ajax("/batch-weight", {
             method: "POST",
             data: formData,
             processData: false,
             contentType: false,
             success: function (response) {
-                console.log(response)
+                $("#content").html("File sucessfully uploaded")
             },
             error: function (response) {
                 console.error(response)
@@ -414,7 +421,7 @@
         truckWeight = $("#truckLoadedWeight").val()
         produce = $("#produce").val()
         containerIds = $("#loadedContainers").val()
-        weightUnit = $("#unloadedKg").is(":checked") ? "kg" : "lbs"
+        weightUnit = $("#loadedKg").is(":checked") ? "kg" : "lbs"
         const force = $("#forceIn").is(":checked")
         $.ajax("/weight", {
             method: "POST",
@@ -456,7 +463,7 @@
         $("#contents").empty()
         truckId = $("#emptyTruckId").val()
         truckWeight = $("#emptyTruckWeight").val()
-        weightUnit = $("#loadedKg").is(":checked") ? "kg" : "lbs"
+        weightUnit = $("#unloadedKg").is(":checked") ? "kg" : "lbs"
         const force = $("#forceOut").is(":checked")
         $.ajax("/weight", {
             method: "POST",

@@ -1,3 +1,4 @@
+from sys import stderr
 from flask import Flask, request, Response
 import sqlQueries
 from http import HTTPStatus
@@ -6,6 +7,7 @@ import json
 import csv
 import re
 import os
+from itertools import zip_longest
 from werkzeug.utils import secure_filename
 
 
@@ -42,6 +44,8 @@ def allowed_file(file):
 def calculateNeto(bruto, containers_weight, truckTara, unit):
     if containers_weight == "na" or truckTara == "na":
         return "na"
+    if unit == "lbs":
+        truckTara /= 2.2
     neto = bruto - containers_weight - truckTara
     if unit == "lbs":
         neto *= 2.2
@@ -91,7 +95,7 @@ def get_weight_containers(containers):
             containers_weight2 = 0
             containers_weight3 = 0
 
-            for container1, container2, container3 in zip(data1, data2, data3):
+            for container1, container2, container3 in zip_longest(data1, data2, data3, fillvalue=["NaC", "NaC"]):
                 if not unfound_containers:
                     break
                 if container1[0] in unfound_containers:
@@ -100,7 +104,7 @@ def get_weight_containers(containers):
                 if container2[0] in unfound_containers:
                     containers_weight2 += int(container2[1])
                     unfound_containers.remove(container2[0])
-                if container3["id"] in unfound_containers:
+                if "NaC" not in container3 and container3["id"] in unfound_containers:
                     containers_weight3 += int(container3["weight"])
                     unfound_containers.remove(container3["id"])
 
@@ -216,7 +220,6 @@ def post_weight():
                 last_in_transaction["containers"].split(","))
             neto = calculateNeto(
                 last_in_transaction["bruto"], containers_weight, truckTara, unit)
-            
             weight_data["truckTara"] = truckTara
             weight_data["neto"] = neto if neto != "na" else -1
             retr_val["truckTara"] = truckTara
@@ -341,7 +344,9 @@ def get_item():
 
         transactions = sqlQueries.get_container_transactions_by_id_and_dates(
             start_date, end_date, id)
-        return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
+        if transactions:
+            return Response(response=json.dumps(transactions), status=HTTPStatus.OK)
+        return Response(response="Id not found in database", status=HTTPStatus.BAD_REQUEST)
 
 
 @app.route("/session/<id>", methods=["GET"])
