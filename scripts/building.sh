@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -x #debugging 
+#set -x #debugging 
 #set -e #exit if a command fails
 
 GIT_REPO=Blueteam
