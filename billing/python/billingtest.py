@@ -2,6 +2,9 @@
 import pycurl
 import certifi
 from io import BytesIO
+from os import environ
+
+
 
 def test_get(route):
 	print(f"Testing {route}")
@@ -28,13 +31,14 @@ def test_get(route):
 	except:
 		print(f"Bad response from {route}")
 
-test_get('172.19.0.3:80/health')
-test_get('172.19.0.3:80/provider')
-test_get('172.19.0.3:80/providerlist')
-test_get('172.19.0.3:80/provider/1')
-test_get('172.19.0.3:80/truck')
-test_get('172.19.0.3:80/bill/10001')
-test_get('172.19.0.3:80/bill/10001?from=20230101103025&to=202301030103025')
+testhost= environ['testhost']
+test_get(f'{testhost}/health')
+test_get(f'{testhost}/provider')
+test_get(f'{testhost}/providerlist')
+test_get(f'{testhost}/provider/1')
+test_get(f'{testhost}/truck')
+test_get(f'{testhost}/bill/10001')
+test_get(f'{testhost}/bill/10001?from=20230101103025&to=202301030103025')
 
 #if curl 172.19.0.3:80/; then 
 #curl 172.19.0.3:80/health
