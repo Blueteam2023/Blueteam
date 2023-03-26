@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -x #debugging 
+#set -x #debugging 
 
 team1="billing"
 team2="weight"
