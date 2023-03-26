@@ -44,6 +44,7 @@ modify_files(){
 	sed -i "s/container_name: $b-app/container_name: test-$b-app/" docker-compose.yaml
 	sed -i "s/container_name: $b-database/container_name: test-$b-database/" docker-compose.yaml
     sed -i "s/BlueTeam/test_network/g" docker-compose.yaml
+    sed -i "s|'/home/ubuntu/app/'|'/home/ubuntu/app/testenv/'|" docker-compose.yaml
     echo "Finished modifying $b files for testing environment"
 }
 
