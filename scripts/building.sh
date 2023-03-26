@@ -39,6 +39,7 @@ modify_files(){
     if [ "$b" = "billing" ]; then
 	    sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" sql.env
         sed -i "s/billing-app/test-billing-app/" sql.env
+        sed -i "s/weight-database/test-weight-database/" sql.env
         sed -i '/^\s*- \/home\/ubuntu\/app\/billing/s|/home/ubuntu/app/billing|/home/ubuntu/app/testenv/billing|g' docker-compose.yaml
     elif [ "$b" = "weight" ]; then
         sed -i "s/ENV_HOST=.*/ENV_HOST=test-$b-database/" .env
