@@ -11,7 +11,7 @@ services:
   command: sh -c "sleep 15s ; python3 ./app.py"
   volumes:
    - '/etc/localtime:/etc/localtime:ro'
-   - ./mysql/in/:/in/ 
+   - /home/ubuntu/app/billing/mysql/in/:/in/ 
   env_file:
    - ./sql.env
   depends_on:
@@ -24,8 +24,8 @@ services:
    - BlueTeam
   restart: always
   volumes:
-   - ./mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
-   - ./mysql/billdb-data/:/var/lib/mysql/
+   - /home/ubuntu/app/billing/mysql/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
+   - /home/ubuntu/app/billing/mysql/billdb-data/:/var/lib/mysql/
   environment:
    MYSQL_DATABASE: "billdb"
    MYSQL_ROOT_PASSWORD: "root"
