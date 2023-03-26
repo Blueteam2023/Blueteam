@@ -2,6 +2,7 @@
 import pycurl
 import certifi
 from io import BytesIO
+from os import environ
 
 
 
@@ -30,7 +31,7 @@ def test_get(route):
 	except:
 		print(f"Bad response from {route}")
 
-testhost="billing-app"
+testhost= environ['testhost']
 test_get(f'{testhost}/health')
 test_get(f'{testhost}/provider')
 test_get(f'{testhost}/providerlist')
