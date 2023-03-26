@@ -8,7 +8,7 @@ services:
       - BlueTeam
       - test_network
     environment:
-      - testhost="test-billing-app"
+      - testhost=test-billing-app
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./scripts/ssmtp.conf:/etc/ssmtp/ssmtp.conf
