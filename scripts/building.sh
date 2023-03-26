@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -x #debugging 
+#set -x #debugging 
 #set -e #exit if a command fails
 
 GIT_REPO=Blueteam
@@ -79,6 +79,7 @@ health_test(){
     interval=5
     attempts=$((timeout / interval))
     success=false
+    sleep 10
     for i in $(seq 1 $attempts); do
         if [ "$1" = "testing" ]; then
             check_billing=$(check_health "test-$team1-app" 80)
