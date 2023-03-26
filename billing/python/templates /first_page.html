@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+    <title>Home Page</title>
+    <style>
+        body {
+            background-image: url('https://routiertransport.com/wp-content/uploads/2022/02/all.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        .text {
+          font-size: large;
+          align-content: center;
+          font-family: inter sa,sans-serif;
+          font-weight: 600;
+          text-align: center;
+          margin-top: 10%;
+          padding: 10px;
+          border-radius: 28px;
+          border: 1px;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="text">
+    <h1>You are connected to the databases</h1>
+    <h2>What are you looking for?</h2>
+    
+    <ul>
+    <input type="button"  value="Truck page " onclick="window.location.href='/truck';">
+    <input type="button"  value="Provider Page" onclick="window.location.href='/provider';">
+    <input type="button"  value="Provider ID Page" onclick="window.location.href='/provider/<id>';">
+    <input type="button"  value="Rates Page" onclick="window.location.href='/rates';">
+    </ul>
+  </div>
+  </body>
+</html>

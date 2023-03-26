@@ -2,8 +2,25 @@
 <html lang="en">
 <head>
     <title>Upload/Download Excel</title>
+    <style>
+    body {
+		background-image: url('https://routiertransport.com/wp-content/uploads/2022/02/all.jpg');
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+		background-size: cover;
+      }
+	  .center {
+        text-align: center;
+        margin-top: 10%;
+        font-size: large;
+        align-content: center;
+        font-family: inter sa,sans-serif;
+        font-weight: 600;
+      }
+    </style>
 </head>
 <body>
+    <div class="center">
     <h1>Upload/Download Excel</h1>
     <form method="POST" enctype="multipart/form-data">
         <input type="radio" id="upload" name="option" value="upload" checked>
@@ -16,6 +33,8 @@
             accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
         <br><br>
         <input type="submit" value="Submit">
+        <input type="button"  value="Home Page" onclick="window.location.href='/';">
+    </div>
     </form>
 </body>
 </html>
