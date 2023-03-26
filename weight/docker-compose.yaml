@@ -10,7 +10,7 @@ services:
       - 3306
     restart: always
     volumes:
-      - ./datadump:/docker-entrypoint-initdb.d
+      - /home/ubuntu/app/weight/datadump/weightdb.sql:/docker-entrypoint-initdb.d/weightdb.sql
     environment:
       MYSQL_DATABASE: "weight"
       MYSQL_ROOT_PASSWORD: "root"
@@ -27,8 +27,6 @@ services:
     build: .
     networks:
       - BlueTeam
-    ports:
-      - "5000:8000" # for local testing
     command: python ./weight.py
     depends_on:
       - db
